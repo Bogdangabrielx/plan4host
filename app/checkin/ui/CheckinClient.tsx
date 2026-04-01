@@ -11,6 +11,7 @@ type PropertyInfo = {
   id: string;
   name: string;
   regulation_pdf_url?: string | null;
+  checkin_document_upload_mode?: "required" | "optional" | "disabled" | null;
   contact_email?: string | null;
   contact_phone?: string | null;
   contact_address?: string | null;
@@ -551,6 +552,13 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
     } catch {}
   }, [waOpen]);
 
+  const checkinDocumentUploadMode =
+    prop?.checkin_document_upload_mode === "optional" || prop?.checkin_document_upload_mode === "disabled"
+      ? prop.checkin_document_upload_mode
+      : "required";
+  const docSectionVisible = checkinDocumentUploadMode !== "disabled";
+  const docUploadRequired = checkinDocumentUploadMode === "required";
+
   // Document section
   type DocType = "" | "id_card" | "passport";
   const [docType, setDocType] = useState<DocType>("");
@@ -1051,6 +1059,16 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
 
   const hasTypes = types.length > 0;
 
+  useEffect(() => {
+    if (checkinDocumentUploadMode !== "disabled") return;
+    setDocType("");
+    setDocSeries("");
+    setDocNumber("");
+    setDocNationality("");
+    setDocFile(null);
+    setDocFilePreview(null);
+  }, [checkinDocumentUploadMode]);
+
   const [mapEmbedUrl, setMapEmbedUrl] = useState<string | null>(null);
   const [mapOpenUrl, setMapOpenUrl] = useState<string | null>(null);
   const [mapBusy, setMapBusy] = useState<boolean>(false);
@@ -1143,6 +1161,28 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
     }
   }
 
+  function getOptionalUploadHint(propName: string) {
+    switch (lang) {
+      case "ro":
+        return `Daca preferati sa nu incarcati o poza, aceasta proprietate ${propName} permite acest lucru, dar este posibil sa vi se solicite prezentarea fizica a documentului in momentul cazarii.`;
+      case "es":
+        return `Si prefieres no subir una foto, esta propiedad ${propName} lo permite, pero es posible que te pidan presentar físicamente el documento al hacer el check-in.`;
+      case "de":
+        return `Wenn du lieber kein Foto hochladen möchtest, erlaubt die Unterkunft ${propName} dies, aber beim Check-in kann die physische Vorlage des Dokuments verlangt werden.`;
+      case "el":
+        return `Αν προτιμάτε να μην ανεβάσετε φωτογραφία, το κατάλυμα ${propName} το επιτρέπει, αλλά ενδέχεται να ζητηθεί η φυσική επίδειξη του εγγράφου κατά το check-in.`;
+      case "fr":
+        return `Si vous préférez ne pas téléverser de photo, l’hébergement ${propName} l’autorise, mais il est possible qu’une présentation physique du document soit demandée lors du check-in.`;
+      case "it":
+        return `Se preferisci non caricare una foto, la struttura ${propName} lo consente, ma potrebbe richiedere la presentazione fisica del documento al check-in.`;
+      case "pt":
+        return `Se preferires não carregar uma foto, a propriedade ${propName} permite isso, mas poderá pedir a apresentação física do documento no check-in.`;
+      case "en":
+      default:
+        return `If you prefer not to upload a photo, ${propName} allows this, but the property may ask to physically see your document at check-in.`;
+    }
+  }
+
   // trebuie să fie deschis PDF-ul dacă există
   const consentGatePassed = !pdfUrl || pdfViewed;
 
@@ -1151,8 +1191,16 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
   const currentNationality = (nationalityRef.current?.getText() ?? docNationality).trim();
 
   const countryValid = currentCountry.length > 0;
+  const docAttempted =
+    docType !== "" ||
+    docSeries.trim().length > 0 ||
+    docNumber.trim().length > 0 ||
+    currentNationality.length > 0 ||
+    !!docFile;
 
   const docValid = (() => {
+    if (!docSectionVisible) return true;
+    if (!docUploadRequired && !docAttempted) return true;
     if (docType === "") return false;
     if (docNumber.trim().length < 1) return false;
     if (docType === "id_card") return docSeries.trim().length > 0;
@@ -1282,7 +1330,7 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
     // No room/type selection required at check-in
     countryValid &&
     docValid &&
-    !!docFile && // document upload obligatoriu
+    (!docUploadRequired || !!docFile) &&
     sigDirty && // semnătura este obligatorie
     companionsValid &&
     consentGatePassed && agree &&
@@ -1380,10 +1428,11 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
     const nationalityToSend = (nationalityRef.current?.getText() ?? docNationality).trim();
 
     try {
-      // 4.1 upload fișier (obligatoriu) + semnătură (opțional)
+      // 4.1 upload fișier (în funcție de setarea proprietății) + semnătură
       const uploaded = await uploadDocFile();
-      if (!uploaded) throw new Error(T("missingIdError"));
+      if (docUploadRequired && !uploaded) throw new Error(T("missingIdError"));
       const uploadedSig = await uploadSignature();
+      const includeDocMeta = docSectionVisible && (docType !== "" || !!uploaded);
 
       // 4.2 payload
       const payload: any = {
@@ -1402,13 +1451,13 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
         requested_room_id:     null,
 
         // document
-        doc_type: docType, // "id_card" | "passport"
-        doc_series: docType === "id_card" ? docSeries.trim() : null,
-        doc_number: docNumber.trim(),
-        doc_nationality: docType === "passport" ? nationalityToSend : null,
+        doc_type: includeDocMeta ? docType : null,
+        doc_series: includeDocMeta && docType === "id_card" ? docSeries.trim() : null,
+        doc_number: includeDocMeta ? docNumber.trim() : null,
+        doc_nationality: includeDocMeta && docType === "passport" ? nationalityToSend : null,
         // multiple docs (id + optional signature)
         docs: [
-          {
+          ...(uploaded ? [{
             doc_type: docType,
             doc_series: docType === 'id_card' ? docSeries.trim() : null,
             doc_number: docNumber.trim(),
@@ -1416,7 +1465,7 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
             storage_bucket: 'guest_docs',
             storage_path: uploaded.path,
             mime_type: uploaded.mime,
-          },
+          }] : []),
           ...(uploadedSig ? [{
             doc_type: 'signature',
             storage_bucket: 'guest_docs',
@@ -2585,11 +2634,12 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
             </div>
 
             {/* Identity document */}
+            {docSectionVisible && (
             <div  style={{ ...ROW_1, marginTop: 6 }}>
               <div>
                 <label htmlFor="checkin-doc-type" style={LABEL_ROW}>
                   <Image src={formIcon("id")} alt="" width={16} height={16} />
-                  <span>{T('docTypeLabel')}</span>
+                  <span>{docUploadRequired ? T('docTypeLabel') : T('docTypeLabel').replace('*', '')}</span>
                 </label>
                 <select 
                   id="checkin-doc-type"
@@ -2667,13 +2717,21 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
               )}
 
             </div>
+            )}
 
-            {/* Upload ID document (photo/PDF) — obligatoriu */}
+            {/* Upload ID document (photo/PDF) */}
+            {docSectionVisible && (
             <div className="ci-formBlock" style={{ marginTop: 16 }}>
               <div className="ci-sectionHead">
                 <span className="ci-sectionIcon" aria-hidden />
-                <div className="ci-sectionTitle">{T('uploadId')}</div>
+                <div className="ci-sectionTitle">{docUploadRequired ? T('uploadId') : T('uploadId').replace('*', '')}</div>
               </div>
+
+              {!docUploadRequired && (
+                <p style={{ margin: "0 0 12px", color: "var(--muted)", fontSize: 13, lineHeight: 1.5 }}>
+                  {getOptionalUploadHint(prop?.name || T("propertyFallback"))}
+                </p>
+              )}
 
               <label
                 className="ci-actionBtn ci-uploadBtn"
@@ -2747,6 +2805,7 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
                 </div>
               )}
             </div>
+            )}
 
             {showIdUploadInfo && (
               <div role="dialog" aria-modal="true" className="ci-modalOverlay" onClick={onConfirmIdUploadInfo}>
