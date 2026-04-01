@@ -2503,7 +2503,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       {prop && (
         <>
           {/* Check-in Link */}
-          <section className="sb-cardglow" style={card}>
+          <section className="sb-cardglow" style={{ ...card, position: "relative", zIndex: docModeOpen ? 40 : 1 }}>
             <SectionHeader icon="/svg_checkin.svg" title={t.checkinLink} iconSize={isNarrow ? 18 : 20} />
             <div style={CARD_BODY}>
               {!isNarrow && (
@@ -2537,7 +2537,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     {copied ? t.copied : t.copyCheckinLink}
                   </button>
 
-                  <div ref={docModeRef} style={{ position: "relative", minWidth: 0 }}>
+                  <div ref={docModeRef} style={{ position: "relative", minWidth: 0, zIndex: docModeOpen ? 41 : "auto" }}>
                     <button
                       type="button"
                       className="sb-select sb-cardglow p4h-docmode-select"
@@ -2558,10 +2558,25 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       }}
                     >
                       <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                        <MaskIcon src={currentDocModeOption.icon} size={18} color="var(--text)" />
-                        <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {currentDocModeOption.label}
-                        </span>
+                        {docModeSaving ? (
+                          <>
+                            <LoadingPill variant="compact" title={t.saving} />
+                            <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {t.saving}
+                            </span>
+                          </>
+                        ) : docModeFeedback === "saved" ? (
+                          <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {t.saved}
+                          </span>
+                        ) : (
+                          <>
+                            <MaskIcon src={currentDocModeOption.icon} size={18} color="var(--text)" />
+                            <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {currentDocModeOption.label}
+                            </span>
+                          </>
+                        )}
                       </span>
                       <span aria-hidden style={{ color: "var(--muted)", flex: "0 0 auto" }}>▾</span>
                     </button>
@@ -2618,14 +2633,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <small style={HELPER_TEXT_STYLE}>
                     {t.chooseSourceBeforeCopy}
                   </small>
-                  <small style={HELPER_TEXT_STYLE}>
-                    {docModeSaving ? (
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                        <LoadingPill variant="compact" title={t.saving} />
-                        <span>{t.saving}</span>
-                      </span>
-                    ) : docModeFeedback === "saved" ? t.saved : t.idPhotoModeHint}
-                  </small>
+                  <small style={HELPER_TEXT_STYLE}>{t.chooseSourceBeforeCopy}</small>
+                  <small style={HELPER_TEXT_STYLE}>{t.idPhotoModeHint}</small>
                 </div>
               )}
 
@@ -2651,7 +2660,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <label style={LABEL_STYLE}>
                     {t.idPhotoMode}
                   </label>
-                  <div ref={docModeRef} style={{ position: "relative", minWidth: 0 }}>
+                  <div ref={docModeRef} style={{ position: "relative", minWidth: 0, zIndex: docModeOpen ? 41 : "auto" }}>
                     <button
                       type="button"
                       className="sb-select sb-cardglow p4h-docmode-select"
@@ -2672,10 +2681,25 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       }}
                     >
                       <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                        <MaskIcon src={currentDocModeOption.icon} size={18} color="var(--text)" />
-                        <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {currentDocModeOption.label}
-                        </span>
+                        {docModeSaving ? (
+                          <>
+                            <LoadingPill variant="compact" title={t.saving} />
+                            <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {t.saving}
+                            </span>
+                          </>
+                        ) : docModeFeedback === "saved" ? (
+                          <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {t.saved}
+                          </span>
+                        ) : (
+                          <>
+                            <MaskIcon src={currentDocModeOption.icon} size={18} color="var(--text)" />
+                            <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {currentDocModeOption.label}
+                            </span>
+                          </>
+                        )}
                       </span>
                       <span aria-hidden style={{ color: "var(--muted)", flex: "0 0 auto" }}>▾</span>
                     </button>
@@ -2728,14 +2752,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       </div>
                     )}
                   </div>
-                  <small style={HELPER_TEXT_STYLE}>
-                    {docModeSaving ? (
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                        <LoadingPill variant="compact" title={t.saving} />
-                        <span>{t.saving}</span>
-                      </span>
-                    ) : docModeFeedback === "saved" ? t.saved : t.idPhotoModeHint}
-                  </small>
+                  <small style={HELPER_TEXT_STYLE}>{t.idPhotoModeHint}</small>
                 </div>
               )}
             </div>
