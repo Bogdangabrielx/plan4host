@@ -49,18 +49,45 @@ type HouseRulesDraft = {
 const card: React.CSSProperties = {
   background: "var(--panel)",
   border: "1px solid var(--border)",
-  borderRadius: 12,
-  padding: 16,
+  borderRadius: 14,
+  padding: 18,
 };
 const FIELD: React.CSSProperties = {
   width: "100%",
-  padding: 10,
+  padding: 11,
   background: "var(--card)",
   color: "var(--text)",
   border: "1px solid var(--border)",
-  borderRadius: 8,
+  borderRadius: 10,
   fontFamily: "inherit",
 };
+const CARD_BODY: React.CSSProperties = { display: "grid", gap: 12, alignItems: "start" };
+const LABEL_STYLE: React.CSSProperties = {
+  display: "block",
+  marginBottom: 6,
+  color: "var(--text)",
+  fontSize: "var(--fs-s)",
+  lineHeight: "var(--lh-s)",
+  fontWeight: 700,
+};
+const HELPER_TEXT_STYLE: React.CSSProperties = {
+  color: "var(--muted)",
+  fontSize: 12,
+  lineHeight: 1.45,
+  fontWeight: 400,
+};
+const ACTION_BUTTON_STYLE: React.CSSProperties = {
+  width: "100%",
+  justifyContent: "center",
+  minHeight: 42,
+};
+const ACTION_GRID_STYLE = (isNarrow: boolean): React.CSSProperties => ({
+  display: "grid",
+  gap: 10,
+  alignItems: "center",
+  gridTemplateColumns: isNarrow ? "1fr" : "repeat(auto-fit, minmax(180px, 220px))",
+  justifyContent: "start",
+});
 
 const PRIMARY_ACTION_CLASS = "sb-btn sb-btn--primary sb-cardglow";
 const PRIMARY_ACTION_STYLE: React.CSSProperties = {
@@ -113,7 +140,7 @@ function SectionHeader({
   iconSize?: number;
 }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
         <MaskIcon src={icon} size={iconSize} color="var(--text)" />
         <h3 style={{ margin: 0, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</h3>
@@ -2473,7 +2500,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           {/* Check-in Link */}
           <section className="sb-cardglow" style={card}>
             <SectionHeader icon="/svg_checkin.svg" title={t.checkinLink} iconSize={isNarrow ? 18 : 20} />
-            <div style={{ display: "grid", gap: 8, alignItems: "start" }}>
+            <div style={CARD_BODY}>
               {!isNarrow && (
                 <div
                   style={{
@@ -2494,9 +2521,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <button
                     className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
                     style={{
-                      width: "100%",
-                      maxWidth: "100%",
-                      justifyContent: "center",
+                      ...ACTION_BUTTON_STYLE,
                     }}
                     onClick={() => {
                       if (!prop?.regulation_pdf_url) { setNoPdfOpen(true); return; }
@@ -2583,27 +2608,23 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     )}
                   </div>
 
-                  <small style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.4, fontWeight: 400 }}>
+                  <small style={HELPER_TEXT_STYLE}>
                     {t.chooseSourceBeforeCopy}
                   </small>
-                  <small style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.4, fontWeight: 400 }}>
+                  <small style={HELPER_TEXT_STYLE}>
                     {docModeSaving ? t.saving : t.idPhotoModeHint}
                   </small>
                 </div>
               )}
 
               {isNarrow && (
-                <div style={{ display: "grid", gap: 6 }}>
-                  <label style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", color: "var(--text)", fontWeight: 700 }}>
+                <div style={{ display: "grid", gap: 8 }}>
+                  <label style={LABEL_STYLE}>
                     {t.checkinLink}
                   </label>
                   <button
                     className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
-                    style={{
-                      width: "100%",
-                      maxWidth: "100%",
-                      justifyContent: "center",
-                    }}
+                    style={ACTION_BUTTON_STYLE}
                     onClick={() => {
                       if (!prop?.regulation_pdf_url) { setNoPdfOpen(true); return; }
                       openSourcePicker();
@@ -2612,10 +2633,10 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   >
                     {copied ? t.copied : t.copyCheckinLink}
                   </button>
-                  <small style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.4, fontWeight: 400 }}>
+                  <small style={HELPER_TEXT_STYLE}>
                     {t.chooseSourceBeforeCopy}
                   </small>
-                  <label style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", color: "var(--text)", fontWeight: 700 }}>
+                  <label style={LABEL_STYLE}>
                     {t.idPhotoMode}
                   </label>
                   <div ref={docModeRef} style={{ position: "relative", minWidth: 0 }}>
@@ -2693,7 +2714,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       </div>
                     )}
                   </div>
-                  <small style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.4, fontWeight: 400 }}>
+                  <small style={HELPER_TEXT_STYLE}>
                     {docModeSaving ? t.saving : t.idPhotoModeHint}
                   </small>
                 </div>
@@ -3004,15 +3025,9 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               }
             />
             {prop.regulation_pdf_url ? (
-              <div style={{ display: "grid", gap: isNarrow ? 10 : 8 }}>
+              <div style={CARD_BODY}>
                 <div
-                  style={{
-                    display: "grid",
-                    gap: 10,
-                    alignItems: "center",
-                    gridTemplateColumns: isNarrow ? "1fr" : "repeat(auto-fit, minmax(180px, 220px))",
-                    justifyContent: "start",
-                  }}
+                  style={ACTION_GRID_STYLE(isNarrow)}
                 >
                   <a
                     href={prop.regulation_pdf_url}
@@ -3021,8 +3036,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     className={PRIMARY_ACTION_CLASS}
                     style={{
                       ...PRIMARY_ACTION_STYLE,
-                      width: "100%",
-                      justifyContent: "center",
+                      ...ACTION_BUTTON_STYLE,
                     }}
                   >
                     {t.open}
@@ -3030,7 +3044,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <button
                     className="sb-btn sb-cardglow"
                     onClick={triggerPdfUpload}
-                    style={{ width: "100%", justifyContent: "center" }}
+                    style={ACTION_BUTTON_STYLE}
                   >
                     {t.replacePdf}
                   </button>
@@ -3047,7 +3061,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     title={uiLang === "ro" ? "Citeste textul PDF si pregateste-l pentru asistentul AI al oaspetelui" : "Read PDF text and prepare it as source for the guest AI assistant"}
                     style={{
                       ...AI_ACTION_STYLE,
-                      width: "100%",
+                      ...ACTION_BUTTON_STYLE,
                     }}
                   >
                     {uiLang === "ro" ? "Citeste si pregateste textul pentru AI" : "Read & prepare text for AI"}
@@ -3066,7 +3080,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <Info text={uiLang === "ro"
                     ? "PDF (Regulament intern), ideal sub 5 MB. Recomandat A4 portret; textul sa ramana usor de citit."
                     : PDF_INFO} />
-                  <small style={{ color: "var(--muted)" }}>
+                  <small style={HELPER_TEXT_STYLE}>
                     Uploaded{" "}
                     {prop.regulation_pdf_uploaded_at
                       ? new Date(prop.regulation_pdf_uploaded_at).toLocaleString()
@@ -3076,12 +3090,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               </div>
             ) : (
               <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
-                <span style={{ color:'var(--muted)' }}>{t.noPdfUploaded}</span>
+                <span style={HELPER_TEXT_STYLE}>{t.noPdfUploaded}</span>
                 <button
                   className="sb-btn"
                   onClick={() => { setHighlightUpload(false); triggerPdfUpload(); }}
                   ref={uploadBtnRef}
                   style={{
+                    ...ACTION_BUTTON_STYLE,
                     border: highlightUpload ? '2px solid var(--primary)' : undefined,
                     boxShadow: highlightUpload ? '0 0 0 4px color-mix(in srgb, var(--primary) 25%, transparent)' : undefined,
                     transition: 'box-shadow 160ms ease, border-color 160ms ease',
@@ -3167,9 +3182,9 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
             }}
           >
             <SectionHeader icon="/svg_contact_the_host.svg" title={t.propertyContact} iconSize={isNarrow ? 18 : 20} />
-            <form onSubmit={saveContacts} style={{ display:'grid', gap:12, maxWidth:560 }}>
+            <form onSubmit={saveContacts} style={{ ...CARD_BODY, maxWidth: 560 }}>
               <div>
-                <label style={{ display:'block', marginBottom:6 }}>{t.email}</label>
+                <label style={LABEL_STYLE}>{t.email}</label>
                 <input
                   type="email"
                   value={prop.contact_email ?? ''}
@@ -3178,14 +3193,14 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   placeholder={uiLang === "ro" ? "exemplu@hotel.com" : "example@hotel.com"}
                   style={FIELD}
                 />
-                <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", marginTop: 6 }}>
+                <div style={{ ...HELPER_TEXT_STYLE, marginTop: 6 }}>
                   {uiLang === "ro"
                     ? "Oaspetii vor vedea asta in portalul lor si te pot contacta direct la nevoie."
                     : "Guests will see this in their portal and can contact you directly if needed."}
                 </div>
               </div>
 	              <div>
-	                <label style={{ display:'block', marginBottom:6 }}>{t.phone}</label>
+	                <label style={LABEL_STYLE}>{t.phone}</label>
 	                <div ref={dialWrapRef} style={{ position: "relative" }}>
 	                  <button
 	                    type="button"
@@ -3279,14 +3294,14 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                    </div>
 	                  )}
 	                </div>
-                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", marginTop: 6 }}>
+                  <div style={{ ...HELPER_TEXT_STYLE, marginTop: 6 }}>
                     {uiLang === "ro"
                       ? "Util pentru intrebari urgente sau probleme la sosire."
                       : "Useful for urgent questions or arrival issues."}
                   </div>
 	              </div>
               <div>
-                <label style={{ display:'block', marginBottom:6 }}>{t.address}</label>
+                <label style={LABEL_STYLE}>{t.address}</label>
                 <input
                   value={prop.contact_address ?? ''}
                   onChange={(e) => { const v = e.currentTarget.value; setProp(prev => prev ? { ...prev, contact_address: v } : prev); }}
@@ -3294,7 +3309,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   placeholder={uiLang === "ro" ? "Strada, oras, detalii optionale" : "Street, city, optional details"}
                   style={FIELD}
                 />
-                <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", marginTop: 6 }}>
+                <div style={{ ...HELPER_TEXT_STYLE, marginTop: 6 }}>
                   {uiLang === "ro"
                     ? "Afisat doar daca vrei ca oaspetii sa vada locatia exacta."
                     : "Shown only if you want guests to see the exact location."}
@@ -3304,7 +3319,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               {isNarrow ? (
                 <div style={{ display:'grid', gap:8 }}>
                   <div>
-                    <label style={{ display:'block', marginBottom:6 }}>{t.overlayPosition}</label>
+                    <label style={LABEL_STYLE}>{t.overlayPosition}</label>
                     <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
                       <select
                         value={prop.contact_overlay_position ?? ''}
@@ -3325,16 +3340,17 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     <button
                       type="submit"
                       className={PRIMARY_ACTION_CLASS}
-                      style={{ ...PRIMARY_ACTION_STYLE, width: "100%" }}
+                      style={{ ...PRIMARY_ACTION_STYLE, ...ACTION_BUTTON_STYLE }}
                     >
                       {t.save}
                     </button>
                   </div>
                 </div>
               ) : (
-                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8, flexWrap:'wrap' }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
-                    <label style={{ display:'block', margin:0 }}>{t.overlayPosition}</label>
+                <div style={{ display:'flex', alignItems:'end', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
+                  <div style={{ display:'grid', gap:6 }}>
+                    <label style={{ ...LABEL_STYLE, marginBottom: 0 }}>{t.overlayPosition}</label>
+                    <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
                     <select
                       value={prop.contact_overlay_position ?? ''}
                       onChange={(e)=>{ const v = (e.currentTarget.value || '') as any; setProp(prev => prev ? { ...prev, contact_overlay_position: (v || null) } : prev); }}
@@ -3348,9 +3364,10 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     <Info text={uiLang === "ro"
                       ? "Aceste date de contact apar pe banner, ca un card transparent. Alege pozitia: sus, centru sau jos."
                       : "These contact details are shown on top of your banner image as a glass card. Choose where to place it: at the top, centered, or near the bottom."} />
+                    </div>
                   </div>
                   <div>
-                    <button type="submit" className={PRIMARY_ACTION_CLASS} style={PRIMARY_ACTION_STYLE}>
+                    <button type="submit" className={PRIMARY_ACTION_CLASS} style={{ ...PRIMARY_ACTION_STYLE, minWidth: 180 }}>
                       {t.save}
                     </button>
                   </div>
@@ -3388,28 +3405,22 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 </span>
               }
             />
-            <div style={{ display:'grid', gap:10 }}>
+            <div style={CARD_BODY}>
               {prop.presentation_image_url ? (
-                <div style={{ display:'grid', gap:8 }}>
+                <div style={{ display:'grid', gap:10 }}>
                   <img src={prop.presentation_image_url} alt="Presentation" style={{ width: 420, maxWidth:'100%', height: 240, objectFit:'cover', borderRadius: 12, border:'1px solid var(--border)', background:'#fff' }} />
-                  <small style={{ color:'var(--muted)' }}>
+                  <small style={HELPER_TEXT_STYLE}>
                     {t.uploaded} {prop.presentation_image_uploaded_at ? new Date(prop.presentation_image_uploaded_at).toLocaleString() : ''}
                   </small>
                   <div
-                    style={{
-                      display: "grid",
-                      gap: 10,
-                      alignItems: "center",
-                      gridTemplateColumns: isNarrow ? "repeat(2, minmax(0, 1fr))" : "repeat(2, minmax(180px, 220px))",
-                      justifyContent: "start",
-                    }}
+                    style={ACTION_GRID_STYLE(isNarrow)}
                   >
                     <a
                       href={prop.presentation_image_url}
                       target="_blank"
                       rel="noreferrer"
                       className="sb-btn sb-cardglow"
-                      style={{ width: "100%", justifyContent: "center", gap: 10 }}
+                      style={{ ...ACTION_BUTTON_STYLE, gap: 10 }}
                     >
                       <MaskIcon src="/svg_preview_image.svg" size={isNarrow ? 18 : 20} />
                       {t.preview}
@@ -3418,7 +3429,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       className="sb-btn sb-cardglow"
                       onClick={triggerImageUpload}
                       ref={imageUploadBtnRef}
-                      style={{ width: "100%", justifyContent: "center", gap: 10 }}
+                      style={{ ...ACTION_BUTTON_STYLE, gap: 10 }}
                     >
                       <MaskIcon src="/svg_replaceimage.svg" size={isNarrow ? 18 : 20} />
                       {t.replaceImage}
@@ -3432,8 +3443,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 </div>
               ) : (
                 <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
-                  <span style={{ color:'var(--muted)' }}>{t.noImageUploaded}</span>
-                  <button className="sb-btn sb-cardglow" onClick={triggerImageUpload} ref={imageUploadBtnRef}>{t.uploadImage}</button>
+                  <span style={HELPER_TEXT_STYLE}>{t.noImageUploaded}</span>
+                  <button className="sb-btn sb-cardglow" onClick={triggerImageUpload} ref={imageUploadBtnRef} style={{ minWidth: 180 }}>{t.uploadImage}</button>
                   <Info text={uiLang === "ro"
                     ? "Recomandat: banner 3:1, minim 1200×400 (ideal 1800×600), JPG/WebP, sub ~500 KB."
                     : IMAGE_INFO} />
@@ -3697,7 +3708,7 @@ function SocialLinksEditor({ prop, setProp, supabase, setStatus, lang }: {
 
   return (
     <div ref={containerRef}>
-      <label style={{ display:'block', marginBottom:6 }}>{lang === "ro" ? "Link-uri sociale" : "Social Links"}</label>
+      <label style={LABEL_STYLE}>{lang === "ro" ? "Link-uri sociale" : "Social Links"}</label>
       <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
         {(['facebook','instagram','tiktok','website','location'] as Key[]).map(k => (
           <button
@@ -3721,7 +3732,7 @@ function SocialLinksEditor({ prop, setProp, supabase, setStatus, lang }: {
             onBlur={() => { void commitActive().catch(() => {}); }}
             style={FIELD}
           />
-          <small style={{ color:'var(--muted)' }}>
+          <small style={HELPER_TEXT_STYLE}>
             {lang === "ro"
               ? "Tip: Goleste campul pentru a elimina linkul. Se salveaza automat la click in afara."
               : "Tip: Clear the field to remove the link. It saves automatically on click away."}
