@@ -61,6 +61,12 @@ RLS/policies for new tables are to be added later (mirror `bookings` as needed).
   - Inserts a row in `form_bookings` with guest fields and `state='open'`.
   - Saves uploaded docs to `form_documents` (ID + optional signature). Storage paths are signed on read.
   - Auto‑matching to existing bookings is disabled.
+  - Sends an internal notification email to:
+    - the account admin
+    - all active team members with scope `guest_overview`
+  - Purpose:
+    - announce that a guest completed the check-in form
+    - the reservation is awaiting room assignment in Guest Overview
 
 Confirmation email:
 - API: `POST /api/checkin/confirm`
@@ -138,4 +144,3 @@ Confirmation email:
 - Admin backfill/admin UI for manual reconciliation.
 - Enforce stricter provider source filters (e.g., `source IN ('ical','manual','ManualAssign','inbox')`) if desired.
 - Guard UI: hide QR button for forms not yet linked.
-

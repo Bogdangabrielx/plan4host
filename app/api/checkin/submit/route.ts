@@ -531,23 +531,43 @@ export async function POST(req: NextRequest) {
 
     try { broadcastNewGuestOverview(admin, property_id, start_date, end_date); } catch {}
 
-    // Email admin/owner: New check-in submitted — awaiting room
+    // Email admin + all active team members with Guest Overview access.
     try {
       const account_id = (rProp.data as any)?.account_id as string | null;
       const propName = ((rProp.data as any)?.name || '').toString();
       if (account_id) {
-        const rAdmin = await admin
+        const rMembers = await admin
           .from('account_users')
-          .select('user_id,role,disabled')
+          .select('user_id,role,disabled,scopes')
           .eq('account_id', account_id)
-          .eq('role', 'admin')
           .eq('disabled', false)
-          .maybeSingle();
-        const uid = (rAdmin.data as any)?.user_id as string | null;
-        if (uid) {
-          const { data: u } = await admin.auth.admin.getUserById(uid);
-          const to = u?.user?.email || '';
-          if (to) {
+          .order('created_at', { ascending: true });
+        const recipients = Array.isArray(rMembers.data)
+          ? rMembers.data.filter((m: any) => {
+              const scopes = Array.isArray(m?.scopes) ? (m.scopes as string[]) : [];
+              return m?.role === 'admin' || scopes.includes('guest_overview');
+            })
+          : [];
+        if (recipients.length) {
+          const emails = Array.from(
+            new Set(
+              (
+                await Promise.all(
+                  recipients.map(async (m: any) => {
+                    const uid = (m?.user_id || '').toString();
+                    if (!uid) return null;
+                    try {
+                      const { data: u } = await admin.auth.admin.getUserById(uid);
+                      return (u?.user?.email || '').trim().toLowerCase() || null;
+                    } catch {
+                      return null;
+                    }
+                  })
+                )
+              ).filter(Boolean) as string[]
+            )
+          );
+          if (emails.length) {
             const transporter = createTransport({
               host: process.env.SMTP_HOST,
               port: Number(process.env.SMTP_PORT || 587),
@@ -583,7 +603,15 @@ export async function POST(req: NextRequest) {
                 </a>
               </p>
             `);
-            try { await transporter.sendMail({ from: `${fromName} <${fromEmail}>`, to, subject, html }); } catch {}
+            try {
+              await transporter.sendMail({
+                from: `${fromName} <${fromEmail}>`,
+                to: fromEmail,
+                bcc: emails,
+                subject,
+                html,
+              });
+            } catch {}
           }
         }
       }

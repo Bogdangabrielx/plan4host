@@ -272,6 +272,160 @@ alter table public.account_sync_events enable row level security;
 
 ---
 
+## `public.ical_suppressions`
+
+### De ce era flaguit
+
+- Supabase semnala ca tabelul este in schema `public`, dar RLS nu era activ.
+
+### La ce este folosit
+
+- Pastreaza perechi `property_id + ical_uid` pentru evenimente iCal sterse manual.
+- Scris de:
+  - `app/api/bookings/[id]/route.ts`
+- Citit de:
+  - `app/api/cron/ical/autosync/route.ts`
+  - `app/api/ical/sync/all/route.ts`
+  - `app/api/ical/sync/type/route.ts`
+- Rol:
+  - previne reimportul unui eveniment iCal sters manual din calendar
+
+### Bug real descoperit in timpul auditului
+
+- Lookup-ul din sync facea `select("id")`, dar tabelul nu are coloana `id`.
+- Asta producea `400` pe requestul catre `ical_suppressions`.
+- Efect:
+  - suppression exista in DB
+  - dar sync-ul o ignora si readucea evenimentul in calendar
+
+Fix de cod aplicat:
+- `app/api/cron/ical/autosync/route.ts`
+- `app/api/ical/sync/all/route.ts`
+- `app/api/ical/sync/type/route.ts`
+
+Corectie:
+- `select("id")` -> `select("property_id")`
+
+### Risc daca porneam RLS prost
+
+- Evenimentele iCal sterse manual puteau incepe sa reapara in calendar.
+- Cronul si Sync Now puteau ignora suppression-urile reale.
+
+### Ce am decis
+
+- Activam doar RLS.
+- Nu adaugam politici publice sau pentru `authenticated`.
+- Tabelul este folosit doar server-side, deci varianta minima este cea mai sigura.
+
+### SQL rulat
+
+Fisier migrare:
+- `supabase/migrations/2026-04-01_ical_suppressions_enable_rls.sql`
+
+Continut:
+
+```sql
+alter table public.ical_suppressions enable row level security;
+```
+
+### De ce consideram fixul safe
+
+- Scrierea se face server-side la delete booking.
+- Citirea se face server-side in cron/sync.
+- UI/browser nu are nevoie de acces direct la acest tabel.
+
+### Ce verificam daca apare un regres
+
+- Dupa stergerea unui eveniment iCal, `Sync now` nu il mai readuce.
+- Autosync respecta suppression-ul pentru acelasi `property_id + ical_uid`.
+
+### Status
+
+- Pregatit in migrare.
+
+---
+
+## `public.room_detail_checks`
+
+### De ce era flaguit
+
+- Supabase semnala doua lucruri:
+  - tabelul este in schema `public`, dar RLS nu era activ
+  - existau deja policies create pe tabel, fara ca RLS sa fie pornit
+
+### La ce este folosit
+
+- Tabel activ de UI pentru checklist-ul per proprietate/camera.
+- Citit de:
+  - `app/app/propertySetup/ui/PropertySetupClient.tsx`
+  - `app/app/calendar/ui/RoomDetailModal.tsx`
+- Scris de:
+  - `app/app/propertySetup/ui/PropertySetupClient.tsx`
+    - insert
+    - rename
+    - toggle default
+    - delete
+    - reorder
+
+### Ce exista deja in Supabase-ul real
+
+- Tabelul are schema normala:
+  - `id`
+  - `property_id`
+  - `label`
+  - `default_value`
+  - `sort_index`
+  - `created_at`
+- Exista deja policies:
+  - `p_rdc_select`
+  - `p_rdc_write`
+
+Interpretare functionala:
+- `p_rdc_select`
+  - permite citire membrilor contului proprietatii
+- `p_rdc_write`
+  - permite scriere celor care au drept de write pe scope-ul `property_setup`
+
+### Risc daca porneam RLS prost
+
+- Property Setup nu mai putea incarca checklist-ul.
+- Room Detail Modal nu mai putea afisa check-urile.
+- Adminii sau membrii cu scope corect puteau pierde write access.
+
+### Ce am decis
+
+- Nu inventam politici noi.
+- Activam doar RLS, pentru ca politicile exista deja in mediul real.
+
+### SQL rulat
+
+Fisier migrare:
+- `supabase/migrations/2026-04-01_room_detail_checks_enable_rls.sql`
+
+Continut:
+
+```sql
+alter table public.room_detail_checks enable row level security;
+```
+
+### De ce consideram fixul safe
+
+- Nu schimba modelul de acces deja definit.
+- Doar activeaza politicile existente.
+- Se potriveste cu usage-ul real din UI.
+
+### Ce verificam daca apare un regres
+
+- In Property Setup se incarca lista de checks.
+- Se poate adauga / redenumi / sterge / reordona un check.
+- In Room Detail Modal se afiseaza check-urile proprietatii.
+
+### Status
+
+- Pregatit in migrare.
+
+---
+
 ## `public.stripe_events_processed`
 
 ### De ce era flaguit
@@ -314,16 +468,183 @@ alter table public.stripe_events_processed enable row level security;
 
 ### De ce consideram fixul safe
 
-- Nu exista consum direct din UI.
-- Nu exista citiri publice legitime pe acest tabel.
-- Tabelul este intern, iar activarea simpla a RLS reduce expunerea fara sa afecteze un flow public.
-- Daca un flow intern va folosi ulterior service role, acesta ramane compatibil.
+- In codul actual nu exista usage runtime confirmat pentru acest tabel.
+- Nu schimbam niciun flow functional activ.
+- Inchidem doar un tabel intern expus inutil in schema `public`.
 
 ### Ce verificam daca apare un regres
 
-- Stripe webhook continua sa functioneze normal.
-- Nu apar erori noi in zona de billing/webhook.
-- Daca pe viitor legam webhook-ul la acest tabel, revenim si documentam explicit politica necesara.
+- Billing webhook continua sa functioneze normal.
+- Nu apar erori noi in zona Stripe / subscriptions.
+
+### Status
+
+- Pregatit in migrare.
+
+---
+
+## `public.form_bookings`
+
+### Starea initiala in Supabase
+
+- `RLS = off`
+- `0 policies`
+- Foreign keys:
+  - `property_id -> properties.id`
+  - `room_id -> rooms.id`
+  - `room_type_id -> room_types.id`
+- Triggers:
+  - niciun trigger pe tabelul `form_bookings`
+
+### La ce este folosit
+
+- Guestul scrie aici cand trimite formularul:
+  - `app/api/checkin/submit/route.ts`
+- Guest QR / retained data este citit server-side:
+  - `app/r/ci/[id]/page.tsx`
+- Guest Overview foloseste direct tabela din client:
+  - `app/app/guest/ui/GuestOverviewClient.tsx`
+- Link/edit prin UI trece prin:
+  - `app/form-bookings/[id]/route.ts`
+- Calendarul sincronizeaza datele spre formularul linkuit:
+  - `app/app/calendar/ui/RoomDetailModal.tsx`
+- Alte flow-uri server-side citesc/folosesc datele din formular:
+  - `app/api/guest-overview/route.ts`
+  - `app/api/checkin/confirm/route.ts`
+  - `app/api/reservation-message/confirm-room/route.ts`
+  - `app/api/bookings/[id]/contact/route.ts`
+
+### Ce am decis
+
+- Activam RLS.
+- Adaugam politici doar pentru `authenticated`.
+- Nu adaugam policy de `INSERT` pentru userii autentificati.
+  - motiv: guest submission scrie server-side cu `service role`
+- Permitem:
+  - `SELECT`
+  - `UPDATE`
+  - `DELETE`
+- Scope-uri permise:
+  - `admin`
+  - `guest_overview`
+  - `calendar`
+  - `reservations` (compat legacy)
+
+### De ce modelul asta este safe
+
+- Nu deschidem tabela catre guest/public prin RLS.
+- Guest flow-ul public ramane prin rutele server-side existente.
+- Pastram functionale exact flow-urile client-side confirmate in cod:
+  - Guest Overview citeste direct
+  - Guest Overview poate sterge formularul
+  - Calendar poate actualiza datele formularului linkuit
+- Nu dam `INSERT` direct din client, unde nu exista nevoie reala confirmata.
+
+### SQL rulat
+
+Fisier migrare:
+- `supabase/migrations/2026-04-01_form_bookings_enable_rls.sql`
+
+Continut:
+
+```sql
+alter table public.form_bookings enable row level security;
+
+drop policy if exists p_fb_select_access on public.form_bookings;
+create policy p_fb_select_access
+on public.form_bookings
+for select
+to authenticated
+using (
+  exists (
+    select 1
+    from public.account_users au
+    where au.account_id = public.property_account_id(form_bookings.property_id)
+      and au.user_id = auth.uid()
+      and coalesce(au.disabled, false) = false
+      and (
+        au.role = 'admin'
+        or 'guest_overview' = any(au.scopes)
+        or 'calendar' = any(au.scopes)
+        or 'reservations' = any(au.scopes)
+      )
+  )
+);
+
+drop policy if exists p_fb_update_access on public.form_bookings;
+create policy p_fb_update_access
+on public.form_bookings
+for update
+to authenticated
+using (
+  exists (
+    select 1
+    from public.account_users au
+    where au.account_id = public.property_account_id(form_bookings.property_id)
+      and au.user_id = auth.uid()
+      and coalesce(au.disabled, false) = false
+      and (
+        au.role = 'admin'
+        or 'guest_overview' = any(au.scopes)
+        or 'calendar' = any(au.scopes)
+        or 'reservations' = any(au.scopes)
+      )
+  )
+)
+with check (
+  exists (
+    select 1
+    from public.account_users au
+    where au.account_id = public.property_account_id(form_bookings.property_id)
+      and au.user_id = auth.uid()
+      and coalesce(au.disabled, false) = false
+      and (
+        au.role = 'admin'
+        or 'guest_overview' = any(au.scopes)
+        or 'calendar' = any(au.scopes)
+        or 'reservations' = any(au.scopes)
+      )
+  )
+);
+
+drop policy if exists p_fb_delete_access on public.form_bookings;
+create policy p_fb_delete_access
+on public.form_bookings
+for delete
+to authenticated
+using (
+  exists (
+    select 1
+    from public.account_users au
+    where au.account_id = public.property_account_id(form_bookings.property_id)
+      and au.user_id = auth.uid()
+      and coalesce(au.disabled, false) = false
+      and (
+        au.role = 'admin'
+        or 'guest_overview' = any(au.scopes)
+        or 'calendar' = any(au.scopes)
+        or 'reservations' = any(au.scopes)
+      )
+  )
+);
+```
+
+### Revert rapid
+
+```sql
+drop policy if exists p_fb_select_access on public.form_bookings;
+drop policy if exists p_fb_update_access on public.form_bookings;
+drop policy if exists p_fb_delete_access on public.form_bookings;
+alter table public.form_bookings disable row level security;
+```
+
+### Ce verificam daca apare un regres
+
+- Guest Overview continua sa incarce formularele.
+- Guest Overview poate edita / confirma / sterge formularul din modal.
+- Calendar poate actualiza datele unui booking legat si poate oglindi datele in `form_bookings`.
+- Guest submit continua sa creeze formulare noi.
+- Pagina publica `app/r/ci/[id]/page.tsx` continua sa functioneze.
 
 ### Status
 
