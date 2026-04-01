@@ -1482,6 +1482,7 @@ export default function ReservationMessageClient({
 	      </div>
         <div
           ref={secondaryLangMenuRef}
+          className="modalCard rm-secondary-lang-card"
           style={{
             position: "relative",
             display: "flex",
@@ -1592,6 +1593,23 @@ export default function ReservationMessageClient({
             </div>
           )}
         </div>
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              .rm-secondary-lang-card,
+              .rm-secondary-lang-card:hover {
+                transform: none !important;
+                box-shadow: none !important;
+              }
+              .rm-secondary-lang-card::before,
+              .rm-secondary-lang-card::after {
+                opacity: 0 !important;
+                animation: none !important;
+                display: none !important;
+              }
+            `,
+          }}
+        />
 
 	      <div className="rm-desktop-grid" data-active={activeId ? "1" : "0"}>
 	        <div className="rm-left">
