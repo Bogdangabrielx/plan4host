@@ -2656,9 +2656,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     )}
                   </div>
 
-                  <small style={HELPER_TEXT_STYLE}>
-                    {t.chooseSourceBeforeCopy}
-                  </small>
                   <small style={HELPER_TEXT_STYLE}>{t.chooseSourceBeforeCopy}</small>
                   <small style={HELPER_TEXT_STYLE}>{t.idPhotoModeHint}</small>
                 </div>
