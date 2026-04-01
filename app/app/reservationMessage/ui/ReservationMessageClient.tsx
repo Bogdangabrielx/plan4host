@@ -321,7 +321,7 @@ export default function ReservationMessageClient({
   isAdmin: boolean;
   initialLang: "ro" | "en";
 }) {
-  const [properties] = useState<Property[]>(initialProperties);
+  const [properties, setProperties] = useState<Property[]>(initialProperties);
   const isSinglePropertyAccount = properties.length === 1;
   const { propertyId, setPropertyId, ready: propertyReady } = usePersistentPropertyState(properties);
   // Cache property presentation images (for avatar in pill selector)
@@ -356,6 +356,8 @@ export default function ReservationMessageClient({
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const sb = useMemo(() => createClient(), []);
   const [hasRoomTypes, setHasRoomTypes] = useState(false);
+  const [secondaryLangSaving, setSecondaryLangSaving] = useState<GuestContentLang | null>(null);
+  const [secondaryLangStatus, setSecondaryLangStatus] = useState<"idle" | "saved" | "error">("idle");
 
   function decodeSchedulerValue(val: string): { kind: TemplateState["schedule_kind"] | null; offset: number | null } {
     const raw = String(val || "").trim();
@@ -416,6 +418,34 @@ export default function ReservationMessageClient({
   const secondaryLang: GuestContentLang = selectedProperty?.guest_secondary_language ?? "ro";
   const composerDefaultLang: ComposerLang = uiLang === "en" ? "en" : secondaryLang;
   const secondaryLangMeta = GUEST_LANG_META[secondaryLang];
+
+  async function saveSecondaryLanguage(nextLang: GuestContentLang) {
+    if (!selectedProperty || !isAdmin) return;
+    const prevLang = (selectedProperty.guest_secondary_language || "ro") as GuestContentLang;
+    if (nextLang === prevLang) return;
+
+    setSecondaryLangSaving(nextLang);
+    setSecondaryLangStatus("idle");
+    setProperties((prev) => prev.map((p) => (p.id === selectedProperty.id ? { ...p, guest_secondary_language: nextLang } : p)));
+    if (lang !== "en") setLang(nextLang);
+
+    try {
+      const { error } = await sb
+        .from("properties")
+        .update({ guest_secondary_language: nextLang })
+        .eq("id", selectedProperty.id);
+      if (error) throw error;
+      setSecondaryLangStatus("saved");
+      window.setTimeout(() => setSecondaryLangStatus("idle"), 1200);
+    } catch {
+      setProperties((prev) => prev.map((p) => (p.id === selectedProperty.id ? { ...p, guest_secondary_language: prevLang } : p)));
+      if (lang !== "en") setLang(prevLang);
+      setSecondaryLangStatus("error");
+      window.setTimeout(() => setSecondaryLangStatus("idle"), 1600);
+    } finally {
+      setSecondaryLangSaving(null);
+    }
+  }
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1365,7 +1395,7 @@ export default function ReservationMessageClient({
       <div style={{ padding: isSmall ? "10px 12px 16px" : "16px", display: "grid", gap: 12 }}>
 
       {/* Property selector (pill with avatar) — align like Calendar (sb-toolbar) */}
-	      <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
+	      <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 16, alignItems: 'stretch', flexWrap: 'wrap', marginBottom: 12 }}>
         <div
           className="modalCard Sb-cardglow"
           style={{
@@ -1420,7 +1450,68 @@ export default function ReservationMessageClient({
             {properties.map((p) => (<option key={p.id} value={p.id}>{p.name}</option>))}
           </select>
         </div>
-	        {isSmall && <div style={{ flexBasis: '100%', height: 8 }} />}
+        <div
+          className="modalCard Sb-cardglow"
+          style={{
+            display: 'grid',
+            gap: 8,
+            padding: '10px 12px',
+            borderRadius: 16,
+            background: 'var(--panel)',
+            border: '1px solid var(--border)',
+            minWidth: isSmall ? '100%' : 260,
+            flex: isSmall ? '1 1 100%' : '0 0 auto',
+            alignContent: 'start',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+            <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--muted)' }}>
+              {uiLang === 'ro' ? 'Limba a doua' : 'Second language'}
+            </span>
+            <span style={{ fontSize: 11, color: secondaryLangStatus === 'error' ? 'var(--danger)' : 'var(--muted)' }}>
+              {secondaryLangSaving
+                ? (uiLang === 'ro' ? 'Se salveaza…' : 'Saving…')
+                : secondaryLangStatus === 'saved'
+                  ? (uiLang === 'ro' ? 'Salvat' : 'Saved')
+                  : secondaryLangStatus === 'error'
+                    ? (uiLang === 'ro' ? 'Eroare' : 'Error')
+                    : ''}
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            {(Object.entries(GUEST_LANG_META) as Array<[GuestContentLang, { label: string; flagSrc: string }]>)
+              .map(([code, meta]) => {
+                const active = secondaryLang === code;
+                const disabled = !isAdmin || !!secondaryLangSaving;
+                return (
+                  <button
+                    key={code}
+                    type="button"
+                    className="sb-btn"
+                    aria-label={meta.label}
+                    title={meta.label}
+                    onClick={() => saveSecondaryLanguage(code)}
+                    disabled={disabled}
+                    style={{
+                      width: 42,
+                      height: 42,
+                      padding: 0,
+                      borderRadius: 999,
+                      border: active ? '1px solid var(--primary)' : '1px solid var(--border)',
+                      background: active ? 'color-mix(in srgb, var(--primary) 18%, var(--panel))' : 'var(--card)',
+                      boxShadow: active ? '0 0 0 2px color-mix(in srgb, var(--primary) 28%, transparent)' : 'none',
+                      display: 'grid',
+                      placeItems: 'center',
+                      cursor: disabled ? 'default' : 'pointer',
+                      opacity: disabled && !active ? 0.6 : 1,
+                    }}
+                  >
+                    <img src={meta.flagSrc} alt="" width={22} height={22} style={{ display: 'block', width: 22, height: 22, borderRadius: 999, objectFit: 'cover' }} />
+                  </button>
+                );
+              })}
+          </div>
+        </div>
 	      </div>
 
 	      <div className="rm-desktop-grid" data-active={activeId ? "1" : "0"}>
