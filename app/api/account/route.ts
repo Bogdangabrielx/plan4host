@@ -24,7 +24,7 @@ export async function GET() {
 
     const { data: membership, error: memErr } = await supabase
       .from("account_users")
-      .select("name, phone, email")
+      .select("name, phone, email, role")
       .eq("account_id", accountId)
       .eq("user_id", uid)
       .maybeSingle();
@@ -49,6 +49,7 @@ export async function GET() {
       company: accountRow?.company ?? null,
       phone: membership?.phone ?? null,
       email: membership?.email ?? auth?.user?.email ?? null,
+      role: membership?.role ?? "admin",
     });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Unexpected error" }, { status: 500 });

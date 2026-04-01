@@ -16,6 +16,7 @@ const translations = {
     saved: "Saved",
     saveError: "Save failed",
     propertyManager: "Property Manager",
+    teamMember: "Team Member",
     accountInformation: "Account Information",
     emailAddress: "Email Address",
     phoneNumber: "Phone Number",
@@ -39,6 +40,7 @@ const translations = {
     saved: "Salvat",
     saveError: "Eroare la salvare",
     propertyManager: "Manager Proprietate",
+    teamMember: "Membru echipa",
     accountInformation: "Informații cont",
     emailAddress: "Adresă de email",
     phoneNumber: "Număr de telefon",
@@ -108,6 +110,7 @@ export default function AccountClient() {
   const [company, setCompany] = useState("");
   const [phone, setPhone] = useState("");
   const [accountEmail, setAccountEmail] = useState<string | null>(null);
+  const [accountRole, setAccountRole] = useState<"admin" | "editor" | "viewer">("admin");
   const [editingCompany, setEditingCompany] = useState(false);
   const [editingPhone, setEditingPhone] = useState(false);
   const [saving, setSaving] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -248,6 +251,7 @@ export default function AccountClient() {
         if (typeof j.phone === "string") setPhone(j.phone);
         if (typeof j.company === "string") setCompany(j.company);
         if (typeof j.email === "string" && j.email.trim()) setAccountEmail(j.email);
+        if (j.role === "admin" || j.role === "editor" || j.role === "viewer") setAccountRole(j.role);
         if (typeof j.name === "string" && j.name.trim()) {
           setDisplayName(j.name);
           setEditedName(j.name);
@@ -592,7 +596,9 @@ export default function AccountClient() {
                         </button>
                       )}
                     </div>
-                    <p style={{ margin: "2px 0 0", color: "var(--muted)", opacity: 0.95, fontSize: 16 }}>{t.propertyManager}</p>
+                    <p style={{ margin: "2px 0 0", color: "var(--muted)", opacity: 0.95, fontSize: 16 }}>
+                      {accountRole === "admin" ? t.propertyManager : t.teamMember}
+                    </p>
                     <div className="account-hero__badges">
                       <span
                         style={{
@@ -648,7 +654,16 @@ export default function AccountClient() {
                     false
                   )}
                   {renderField(t.phoneNumber, phone || null, t.phonePlaceholder, editingPhone, () => setEditingPhone(true), setPhone, savePhone)}
-                  {renderField(t.company, company || null, t.companyPlaceholder, editingCompany, () => setEditingCompany(true), setCompany, saveCompany)}
+                  {renderField(
+                    t.company,
+                    company || null,
+                    t.companyPlaceholder,
+                    editingCompany,
+                    () => setEditingCompany(true),
+                    setCompany,
+                    saveCompany,
+                    accountRole === "admin"
+                  )}
                   <div
                     style={{
                       padding: 18,
