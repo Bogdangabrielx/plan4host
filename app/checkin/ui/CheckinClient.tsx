@@ -1166,17 +1166,17 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
       case "ro":
         return `Optional. Daca preferati sa nu incarcati o poza, ${propName} permite acest lucru, dar proprietatea poate solicita verificarea fizica a documentului la check-in.`;
       case "es":
-        return `Si prefieres no subir una foto, esta propiedad ${propName} lo permite, pero es posible que te pidan presentar físicamente el documento al hacer el check-in.`;
+        return `Opcional. Si prefieres no subir una foto, ${propName} lo permite, pero la propiedad puede pedir verificar físicamente tu documento en el check-in.`;
       case "de":
-        return `Wenn du lieber kein Foto hochladen möchtest, erlaubt die Unterkunft ${propName} dies, aber beim Check-in kann die physische Vorlage des Dokuments verlangt werden.`;
+        return `Optional. Wenn du lieber kein Foto hochladen möchtest, erlaubt ${propName} dies, aber die Unterkunft kann dein Dokument beim Check-in physisch prüfen.`;
       case "el":
-        return `Αν προτιμάτε να μην ανεβάσετε φωτογραφία, το κατάλυμα ${propName} το επιτρέπει, αλλά ενδέχεται να ζητηθεί η φυσική επίδειξη του εγγράφου κατά το check-in.`;
+        return `Προαιρετικό. Αν προτιμάτε να μην ανεβάσετε φωτογραφία, το ${propName} το επιτρέπει, αλλά το κατάλυμα μπορεί να ζητήσει φυσικό έλεγχο του εγγράφου στο check-in.`;
       case "fr":
-        return `Si vous préférez ne pas téléverser de photo, l’hébergement ${propName} l’autorise, mais il est possible qu’une présentation physique du document soit demandée lors du check-in.`;
+        return `Optionnel. Si vous préférez ne pas téléverser de photo, ${propName} l’autorise, mais l’hébergement peut demander une vérification physique du document lors du check-in.`;
       case "it":
-        return `Se preferisci non caricare una foto, la struttura ${propName} lo consente, ma potrebbe richiedere la presentazione fisica del documento al check-in.`;
+        return `Opzionale. Se preferisci non caricare una foto, ${propName} lo consente, ma la struttura può richiedere la verifica fisica del documento al check-in.`;
       case "pt":
-        return `Se preferires não carregar uma foto, a propriedade ${propName} permite isso, mas poderá pedir a apresentação física do documento no check-in.`;
+        return `Opcional. Se preferires não carregar uma foto, ${propName} permite isso, mas a propriedade pode pedir a verificação física do documento no check-in.`;
       case "en":
       default:
         return `Optional. If you prefer not to upload a photo, ${propName} allows this, but the property may ask to physically check your document at check-in.`;
@@ -1188,6 +1188,18 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
     switch (lang) {
       case "ro":
         return "Incarca poza actului de identitate (optional)";
+      case "es":
+        return "Sube foto del documento (opcional)";
+      case "de":
+        return "Ausweisfoto hochladen (optional)";
+      case "el":
+        return "Ανεβάστε φωτογραφία εγγράφου (προαιρετικό)";
+      case "fr":
+        return "Téléverser la photo du document (optionnel)";
+      case "it":
+        return "Carica foto del documento (opzionale)";
+      case "pt":
+        return "Carregar foto do documento (opcional)";
       case "en":
       default:
         return "Upload ID photo (optional)";
@@ -1199,6 +1211,18 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
     switch (lang) {
       case "ro":
         return "Alege fisier (optional)...";
+      case "es":
+        return "Elegir archivo (opcional)...";
+      case "de":
+        return "Datei wählen (optional)...";
+      case "el":
+        return "Επιλέξτε αρχείο (προαιρετικό)...";
+      case "fr":
+        return "Choisir un fichier (optionnel)...";
+      case "it":
+        return "Scegli file (opzionale)...";
+      case "pt":
+        return "Escolher ficheiro (opcional)...";
       case "en":
       default:
         return "Choose file (optional)...";
