@@ -1487,13 +1487,15 @@ export default function ReservationMessageClient({
             alignItems: "center",
             justifyContent: "space-between",
             gap: 10,
-            padding: "10px 12px",
+            padding: 14,
             borderRadius: 16,
             background: "var(--panel)",
             border: "1px solid var(--border)",
             width: "100%",
             marginTop: -2,
             zIndex: secondaryLangMenuOpen ? 40 : "auto",
+            minHeight: 58,
+            boxSizing: "border-box",
           }}
         >
           <span style={{ fontSize: 12, fontWeight: 800, color: secondaryLangStatus === "error" ? "var(--danger)" : "var(--muted)" }}>
