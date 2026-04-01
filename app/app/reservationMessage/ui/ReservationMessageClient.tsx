@@ -1525,17 +1525,16 @@ export default function ReservationMessageClient({
               justifyContent: "space-between",
               gap: 6,
               cursor: !isAdmin || !!secondaryLangSaving ? "default" : "pointer",
+              lineHeight: 1,
             }}
           >
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>
-              <img
-                src={secondaryLangMeta.flagSrc}
-                alt=""
-                width={20}
-                height={20}
-                style={{ display: "block", width: 20, height: 20, borderRadius: 999, objectFit: "cover" }}
-              />
-            </span>
+            <img
+              src={secondaryLangMeta.flagSrc}
+              alt=""
+              width={20}
+              height={20}
+              style={{ display: "block", width: 20, height: 20, borderRadius: 999, objectFit: "cover", flex: "0 0 auto" }}
+            />
             <span style={{ color: "var(--muted)", fontSize: 11, transform: secondaryLangMenuOpen ? "rotate(180deg)" : "none", transition: "transform .18s ease" }}>
               ▼
             </span>
