@@ -276,6 +276,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 
   const [prop, setProp] = useState<Property | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copyCtaStep, setCopyCtaStep] = useState<0 | 1>(0);
   const [showSrc, setShowSrc] = useState(false);
   const [providers, setProviders] = useState<ProviderItem[]>([]);
   // House Rules gating
@@ -369,6 +370,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     skipForNow: uiLang === "ro" ? "Sari peste momentan" : "Skip for now",
     checkinLink: uiLang === "ro" ? "Link check-in" : "Check-in Link",
     copyCheckinLink: uiLang === "ro" ? "Copiaza link-ul de check-in" : "Copy check-in link",
+    copyCheckinLinkAlt: uiLang === "ro" ? "Seteaza-l ca mesaj automat" : "Set it as an auto message",
     copied: uiLang === "ro" ? "Copiat!" : "Copied!",
     chooseSourceBeforeCopy: uiLang === "ro" ? "Poti alege o sursa inainte de copiere." : "You can choose a source before copying.",
     idPhotoMode: uiLang === "ro" ? "Poza document" : "Document photo",
@@ -544,6 +546,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   }
 
   useEffect(() => { if (propertyReady) refresh(); }, [propertyId, supabase, propertyReady]);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setCopyCtaStep((prev) => (prev === 0 ? 1 : 0));
+    }, 2000);
+    return () => window.clearInterval(id);
+  }, []);
 
   // Onboarding banner (arrive after calendar onboarding)
   useEffect(() => {
@@ -2566,7 +2575,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     title={prop?.regulation_pdf_url ? t.copyCheckinLink : (uiLang === "ro" ? "Incarca mai intai PDF-ul cu regulamentul intern" : "Upload House Rules PDF first")}
                   >
                     <MaskIcon src="/svg_send_demo.svg" size={18} color="#ffffff" />
-                    {copied ? t.copied : t.copyCheckinLink}
+                    {copied ? t.copied : (copyCtaStep === 0 ? t.copyCheckinLink : t.copyCheckinLinkAlt)}
                   </button>
 
                   <div ref={docModeRef} style={{ position: "relative", minWidth: 0, zIndex: docModeOpen ? 41 : "auto" }}>
@@ -2670,7 +2679,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     title={prop?.regulation_pdf_url ? t.copyCheckinLink : (uiLang === "ro" ? "Incarca mai intai PDF-ul cu regulamentul intern" : "Upload House Rules PDF first")}
                   >
                     <MaskIcon src="/svg_send_demo.svg" size={18} color="#ffffff" />
-                    {copied ? t.copied : t.copyCheckinLink}
+                    {copied ? t.copied : (copyCtaStep === 0 ? t.copyCheckinLink : t.copyCheckinLinkAlt)}
                   </button>
                   <small style={HELPER_TEXT_STYLE}>
                     {t.chooseSourceBeforeCopy}
