@@ -2453,7 +2453,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     display: "grid",
                     gap: 10,
                     alignItems: "start",
-                    gridTemplateColumns: "220px minmax(0, 1fr)",
+                    gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
                   }}
                 >
                   <label style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", color: "var(--text)", fontWeight: 700 }}>
@@ -2466,8 +2466,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <button
                     className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
                     style={{
-                      width: 220,
-                      maxWidth: 220,
+                      width: "100%",
+                      maxWidth: "100%",
                       justifyContent: "center",
                     }}
                     onClick={() => {
@@ -2487,7 +2487,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       void saveCheckinDocumentUploadMode(next);
                     }}
                     disabled={docModeSaving}
-                    style={{ maxWidth: "100%", minWidth: 0 }}
+                    style={{ width: "100%", maxWidth: "100%", minWidth: 0 }}
                   >
                     <option value="required">{t.idPhotoModeRequired}</option>
                     <option value="optional">{t.idPhotoModeOptional}</option>
