@@ -6,6 +6,7 @@ export type TeamMembershipRow = {
   account_id: string;
   role: TeamRole;
   disabled: boolean | null;
+  scopes: string[] | null;
 };
 
 export async function resolveTeamAccountContext(
@@ -26,7 +27,7 @@ export async function resolveTeamAccountContext(
 
   const { data: memberships } = await supa
     .from("account_users")
-    .select("account_id, role, disabled")
+    .select("account_id, role, disabled, scopes")
     .eq("user_id", userId)
     .order("created_at", { ascending: true });
 
