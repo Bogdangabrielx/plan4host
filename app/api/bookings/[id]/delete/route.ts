@@ -33,6 +33,11 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
   try {
     await admin.from("booking_documents").delete().eq("booking_id", id);
   } catch {}
+
+  const del = await admin.from("bookings").delete().eq("id", id).select("id").maybeSingle();
+  if (del.error) return NextResponse.json({ error: del.error.message }, { status: 400 });
+  if (!del.data) return NextResponse.json({ error: "Not found or already deleted" }, { status: 404 });
+
   if (formId) {
     try {
       await admin.from("form_documents").delete().eq("form_id", formId);
@@ -41,10 +46,6 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
       await admin.from("form_bookings").delete().eq("id", formId);
     } catch {}
   }
-
-  const del = await admin.from("bookings").delete().eq("id", id).select("id").maybeSingle();
-  if (del.error) return NextResponse.json({ error: del.error.message }, { status: 400 });
-  if (!del.data) return NextResponse.json({ error: "Not found or already deleted" }, { status: 404 });
 
   return NextResponse.json({ ok: true });
 }

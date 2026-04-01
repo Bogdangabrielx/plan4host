@@ -2435,7 +2435,14 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           <section className="sb-cardglow" style={card}>
             <SectionHeader icon="/svg_checkin.svg" title={t.checkinLink} iconSize={isNarrow ? 18 : 20} />
             <div style={{ display: "grid", gap: 8, alignItems: "start" }}>
-              <div>
+              <div
+                style={{
+                  display: "grid",
+                  gap: 12,
+                  alignItems: "start",
+                  gridTemplateColumns: isNarrow ? "1fr" : "220px minmax(0, 1fr)",
+                }}
+              >
                 <button
                   className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
                   style={{
@@ -2451,30 +2458,55 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 >
                   {copied ? t.copied : t.copyCheckinLink}
                 </button>
-              </div>
-              <div style={{ display: "grid", gap: 6, maxWidth: 560 }}>
-                <label style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", color: "var(--text)", fontWeight: 700 }}>
-                  {t.idPhotoMode}
-                </label>
-                <select
-                  className="sb-select sb-cardglow"
-                  value={(prop.checkin_document_upload_mode || "required") as string}
-                  onChange={(e) => {
-                    const next = (e.currentTarget.value || "required") as "required" | "optional" | "disabled";
-                    void saveCheckinDocumentUploadMode(next);
-                  }}
-                  disabled={docModeSaving}
-                  style={{ maxWidth: 560 }}
-                >
-                  <option value="required">{t.idPhotoModeRequired}</option>
-                  <option value="optional">{t.idPhotoModeOptional}</option>
-                  <option value="disabled">{t.idPhotoModeDisabled}</option>
-                </select>
-                <small style={{ color: "var(--muted)" }}>
-                  {docModeSaving ? t.saving : t.idPhotoModeHint}
-                </small>
+                {!isNarrow && (
+                  <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
+                    <label style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", color: "var(--text)", fontWeight: 700 }}>
+                      {t.idPhotoMode}
+                    </label>
+                    <select
+                      className="sb-select sb-cardglow"
+                      value={(prop.checkin_document_upload_mode || "required") as string}
+                      onChange={(e) => {
+                        const next = (e.currentTarget.value || "required") as "required" | "optional" | "disabled";
+                        void saveCheckinDocumentUploadMode(next);
+                      }}
+                      disabled={docModeSaving}
+                      style={{ maxWidth: "100%" }}
+                    >
+                      <option value="required">{t.idPhotoModeRequired}</option>
+                      <option value="optional">{t.idPhotoModeOptional}</option>
+                      <option value="disabled">{t.idPhotoModeDisabled}</option>
+                    </select>
+                    <small style={{ color: "var(--muted)" }}>
+                      {docModeSaving ? t.saving : t.idPhotoModeHint}
+                    </small>
+                  </div>
+                )}
               </div>
               <small style={{ color: "var(--muted)" }}>{t.chooseSourceBeforeCopy}</small>
+              {isNarrow && (
+                <div style={{ display: "grid", gap: 6 }}>
+                  <label style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", color: "var(--text)", fontWeight: 700 }}>
+                    {t.idPhotoMode}
+                  </label>
+                  <select
+                    className="sb-select sb-cardglow"
+                    value={(prop.checkin_document_upload_mode || "required") as string}
+                    onChange={(e) => {
+                      const next = (e.currentTarget.value || "required") as "required" | "optional" | "disabled";
+                      void saveCheckinDocumentUploadMode(next);
+                    }}
+                    disabled={docModeSaving}
+                  >
+                    <option value="required">{t.idPhotoModeRequired}</option>
+                    <option value="optional">{t.idPhotoModeOptional}</option>
+                    <option value="disabled">{t.idPhotoModeDisabled}</option>
+                  </select>
+                  <small style={{ color: "var(--muted)" }}>
+                    {docModeSaving ? t.saving : t.idPhotoModeHint}
+                  </small>
+                </div>
+              )}
             </div>
           </section>
 

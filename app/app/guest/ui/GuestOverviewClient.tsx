@@ -2062,8 +2062,24 @@ function EditFormBookingModal({
                   setDeleteBusy(true);
                   setError(null);
                   try {
-                    const { error: e1 } = await supabase.from('form_bookings').delete().eq('id', bookingId);
-                    if (e1) throw new Error(e1.message);
+                    const linked = await supabase
+                      .from('bookings')
+                      .select('id,form_id')
+                      .eq('form_id', bookingId)
+                      .maybeSingle();
+                    if (linked.error) throw new Error(linked.error.message);
+
+                    const linkedId = (linked.data as { id?: string | null } | null)?.id ? String((linked.data as any).id) : null;
+                    if (linkedId) {
+                      const res = await fetch(`/api/bookings/${encodeURIComponent(linkedId)}`, { method: 'DELETE' });
+                      if (!res.ok) {
+                        const jj = await res.json().catch(() => ({} as any));
+                        throw new Error(jj?.error || (lang === "ro" ? "Nu am putut sterge rezervarea legata." : "Failed to delete linked booking."));
+                      }
+                    } else {
+                      const { error: e1 } = await supabase.from('form_bookings').delete().eq('id', bookingId);
+                      if (e1) throw new Error(e1.message);
+                    }
                     setDeleteOpen(false);
                     try { onSaved(); } catch {}
                     try { onClose(); } catch {}

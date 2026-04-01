@@ -234,6 +234,10 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   } catch {}
   // Șterge și documentele asociate rezervării (cleanup complet)
   try { await admin.from("booking_documents").delete().eq("booking_id", id); } catch {}
+
+  const del = await admin.from("bookings").delete().eq("id", id).select("id").maybeSingle();
+  if (del.error) return NextResponse.json({ error: del.error.message }, { status: 400 });
+
   if (form_id) {
     try {
       const rFormDocs = await admin
@@ -256,9 +260,6 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
     try { await admin.from("form_documents").delete().eq("form_id", form_id); } catch {}
     try { await admin.from("form_bookings").delete().eq("id", form_id); } catch {}
   }
-
-  const del = await admin.from("bookings").delete().eq("id", id).select("id").maybeSingle();
-  if (del.error) return NextResponse.json({ error: del.error.message }, { status: 400 });
 
   return NextResponse.json({ ok: true });
 }
