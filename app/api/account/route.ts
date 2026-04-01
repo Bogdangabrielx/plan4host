@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getServiceSupabase } from "@/lib/supabase/service";
+import { resolveTeamAccountContext } from "@/lib/auth/team-account";
 
 type Payload = {
   name?: string | null;
@@ -10,7 +11,7 @@ type Payload = {
   phone?: string | null;
 };
 
-// Citește profilul direct din tabelul accounts (coloanele name/company/phone).
+// Profilul personal vine din account_users; compania rămâne account-level.
 export async function GET() {
   try {
     const supabase = createClient();
@@ -18,51 +19,36 @@ export async function GET() {
     const uid = auth?.user?.id;
     if (!uid) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-    // Rezolvă account_id: titular (accounts.id = user.id) sau membership în account_users
-    let accountId = uid;
+    const ctx = await resolveTeamAccountContext(supabase as any, String(uid));
+    const accountId = ctx.accountId ?? uid;
+
     const { data: membership, error: memErr } = await supabase
       .from("account_users")
-      .select("account_id, role, disabled")
+      .select("name, phone, email")
+      .eq("account_id", accountId)
       .eq("user_id", uid)
-      .order("created_at", { ascending: true })
       .maybeSingle();
-    if (!memErr && membership?.account_id) {
-      accountId = membership.account_id as string;
+    if (memErr) {
+      console.error("GET /api/account membership select failed", memErr);
+      return NextResponse.json({ error: memErr.message }, { status: 500 });
     }
 
-    // Unele baze pot avea coloana scrisă greșit ca "nane" (legacy). Suportăm ambele.
-    const trySelect = async () => {
-      const primary = await supabase
-        .from("accounts")
-        .select("name, company, phone")
-        .eq("id", accountId)
-        .maybeSingle();
-      if (!primary.error) return { data: primary.data, column: "name" as const };
-      if (primary.error.code === "42703") {
-        const alt = await supabase
-          .from("accounts")
-          .select("nane, company, phone")
-          .eq("id", accountId)
-          .maybeSingle();
-        if (!alt.error) return { data: alt.data, column: "nane" as const };
-        return { error: alt.error };
-      }
-      return { error: primary.error };
-    };
-
-    const sel = await trySelect();
-    if ("error" in sel) {
-      const err = sel.error ?? ({ message: "Select failed (unknown error)" } as any);
-      console.error("GET /api/account select failed", err);
-      return NextResponse.json({ error: err.message }, { status: 500 });
+    const { data: accountRow, error: accErr } = await supabase
+      .from("accounts")
+      .select("company")
+      .eq("id", accountId)
+      .maybeSingle();
+    if (accErr) {
+      console.error("GET /api/account account select failed", accErr);
+      return NextResponse.json({ error: accErr.message }, { status: 500 });
     }
-    const data = sel.data as any;
 
     return NextResponse.json({
       ok: true,
-      name: sel.column === "name" ? data?.name ?? null : data?.nane ?? null,
-      company: data?.company ?? null,
-      phone: data?.phone ?? null,
+      name: membership?.name ?? null,
+      company: accountRow?.company ?? null,
+      phone: membership?.phone ?? null,
+      email: membership?.email ?? auth?.user?.email ?? null,
     });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Unexpected error" }, { status: 500 });
@@ -80,27 +66,11 @@ export async function PATCH(request: Request) {
 
     const body = (await request.json().catch(() => ({}))) as Payload;
 
-    // Rezolvă account_id: titular sau membership. Doar admin poate edita dacă e membru.
-    let accountId = uid;
-    const { data: membership, error: memErr } = await supabase
-      .from("account_users")
-      .select("account_id, role, disabled")
-      .eq("user_id", uid)
-      .order("created_at", { ascending: true })
-      .maybeSingle();
-    if (!memErr && membership?.account_id) {
-      if (membership.disabled) {
-        return NextResponse.json({ error: "User disabled" }, { status: 403 });
-      }
-      if (membership.role !== "admin") {
-        return NextResponse.json({ error: "Only account admins can edit profile." }, { status: 403 });
-      }
-      // Dacă ești sub-user (account_id != uid), RLS pe accounts va bloca update-ul.
-      // Cerem doar titularului contului să editeze profilul.
-      if (membership.account_id !== uid) {
-        return NextResponse.json({ error: "Only the account owner can update account profile." }, { status: 403 });
-      }
-      accountId = membership.account_id as string;
+    const ctx = await resolveTeamAccountContext(supabase as any, String(uid));
+    const accountId = ctx.accountId ?? uid;
+    const membership = ctx.membership;
+    if (membership?.disabled) {
+      return NextResponse.json({ error: "User disabled" }, { status: 403 });
     }
 
     const nameValue = typeof body.name !== "undefined" ? body.name?.trim() || null : undefined;
@@ -115,14 +85,11 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ ok: true, updated: false });
     }
 
-    // helper: update un câmp; dacă coloana lipsește (42703) ignorăm și contăm ca 0 rânduri
     const svc = getServiceSupabase();
-    const updateField = async (field: string, value: string | null) => {
+    const updateMembershipField = async (field: string, value: string | null) => {
       const { error } = await svc
-        .from("accounts")
-        .update({ [field]: value })
-        .eq("id", accountId);
-      if (error?.code === "42703") return { ok: false, skipped: true };
+        .from("account_users")
+        .upsert({ account_id: accountId, user_id: uid, [field]: value }, { onConflict: "account_id,user_id" });
       if (error) return { ok: false, skipped: false, error };
       return { ok: true, touched: true };
     };
@@ -131,27 +98,25 @@ export async function PATCH(request: Request) {
     let touched = 0;
 
     if (typeof nameValue !== "undefined") {
-      const r = await updateField("name", nameValue);
-      if (!r.ok && r.skipped) {
-        // fallback pentru coloana typo "nane"
-        const alt = await updateField("nane", nameValue);
-        if (!alt.ok && alt.error) errors.push(alt.error);
-        if (alt.ok && alt.touched) touched++;
-      } else if (!r.ok && r.error) {
+      const r = await updateMembershipField("name", nameValue);
+      if (!r.ok && r.error) {
         errors.push(r.error);
       } else if (r.ok && r.touched) {
         touched++;
       }
     }
-    if (typeof companyValue !== "undefined") {
-      const r = await updateField("company", companyValue);
+    if (typeof phoneValue !== "undefined") {
+      const r = await updateMembershipField("phone", phoneValue);
       if (!r.ok && r.error) errors.push(r.error);
       if (r.ok && r.touched) touched++;
     }
-    if (typeof phoneValue !== "undefined") {
-      const r = await updateField("phone", phoneValue);
-      if (!r.ok && r.error) errors.push(r.error);
-      if (r.ok && r.touched) touched++;
+    if (typeof companyValue !== "undefined") {
+      if (accountId !== uid) {
+        return NextResponse.json({ error: "Only the account owner can update company." }, { status: 403 });
+      }
+      const { error } = await svc.from("accounts").update({ company: companyValue }).eq("id", accountId);
+      if (error) errors.push(error);
+      else touched++;
     }
 
     if (errors.length) {

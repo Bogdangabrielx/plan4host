@@ -107,6 +107,7 @@ export default function AccountClient() {
   const [editedName, setEditedName] = useState("");
   const [company, setCompany] = useState("");
   const [phone, setPhone] = useState("");
+  const [accountEmail, setAccountEmail] = useState<string | null>(null);
   const [editingCompany, setEditingCompany] = useState(false);
   const [editingPhone, setEditingPhone] = useState(false);
   const [saving, setSaving] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -246,7 +247,8 @@ export default function AccountClient() {
         if (cancelled) return;
         if (typeof j.phone === "string") setPhone(j.phone);
         if (typeof j.company === "string") setCompany(j.company);
-        if (!displayName && typeof j.name === "string" && j.name.trim()) {
+        if (typeof j.email === "string" && j.email.trim()) setAccountEmail(j.email);
+        if (typeof j.name === "string" && j.name.trim()) {
           setDisplayName(j.name);
           setEditedName(j.name);
         }
@@ -637,7 +639,7 @@ export default function AccountClient() {
                 >
                   {renderField(
                     t.emailAddress,
-                    user?.email ?? translations[lang].unknown,
+                    (accountEmail || user?.email) ?? translations[lang].unknown,
                     "example@domain.com",
                     false,
                     () => {},
