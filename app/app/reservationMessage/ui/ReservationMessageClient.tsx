@@ -358,6 +358,8 @@ export default function ReservationMessageClient({
   const [hasRoomTypes, setHasRoomTypes] = useState(false);
   const [secondaryLangSaving, setSecondaryLangSaving] = useState<GuestContentLang | null>(null);
   const [secondaryLangStatus, setSecondaryLangStatus] = useState<"idle" | "saved" | "error">("idle");
+  const [secondaryLangMenuOpen, setSecondaryLangMenuOpen] = useState(false);
+  const secondaryLangMenuRef = useRef<HTMLDivElement | null>(null);
 
   function decodeSchedulerValue(val: string): { kind: TemplateState["schedule_kind"] | null; offset: number | null } {
     const raw = String(val || "").trim();
@@ -468,6 +470,18 @@ export default function ReservationMessageClient({
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, []);
+
+  useEffect(() => {
+    if (!secondaryLangMenuOpen) return;
+    const onPointerDown = (event: MouseEvent) => {
+      const target = event.target as Node | null;
+      if (secondaryLangMenuRef.current && target && !secondaryLangMenuRef.current.contains(target)) {
+        setSecondaryLangMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [secondaryLangMenuOpen]);
 
   // Keep template language default in sync with app language unless user explicitly picked a tab.
   useEffect(() => {
@@ -1450,69 +1464,124 @@ export default function ReservationMessageClient({
             {properties.map((p) => (<option key={p.id} value={p.id}>{p.name}</option>))}
           </select>
         </div>
+	      </div>
         <div
+          ref={secondaryLangMenuRef}
           className="modalCard Sb-cardglow"
           style={{
-            display: 'grid',
+            position: "relative",
+            display: "grid",
             gap: 8,
-            padding: '10px 12px',
+            padding: "12px 14px",
             borderRadius: 16,
-            background: 'var(--panel)',
-            border: '1px solid var(--border)',
-            minWidth: isSmall ? '100%' : 260,
-            flex: isSmall ? '1 1 100%' : '0 0 auto',
-            alignContent: 'start',
+            background: "var(--panel)",
+            border: "1px solid var(--border)",
+            width: "100%",
+            maxWidth: isSmall ? "100%" : 340,
+            marginTop: -2,
+            zIndex: secondaryLangMenuOpen ? 40 : "auto",
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-            <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--muted)' }}>
-              {uiLang === 'ro' ? 'Limba a doua' : 'Second language'}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+            <span style={{ fontSize: 12, fontWeight: 800, color: "var(--muted)" }}>
+              {uiLang === "ro" ? "Limba a doua actuala" : "Current second language"}
             </span>
-            <span style={{ fontSize: 11, color: secondaryLangStatus === 'error' ? 'var(--danger)' : 'var(--muted)' }}>
+            <span style={{ fontSize: 11, color: secondaryLangStatus === "error" ? "var(--danger)" : "var(--muted)" }}>
               {secondaryLangSaving
-                ? (uiLang === 'ro' ? 'Se salveaza…' : 'Saving…')
-                : secondaryLangStatus === 'saved'
-                  ? (uiLang === 'ro' ? 'Salvat' : 'Saved')
-                  : secondaryLangStatus === 'error'
-                    ? (uiLang === 'ro' ? 'Eroare' : 'Error')
-                    : ''}
+                ? (uiLang === "ro" ? "Se salveaza…" : "Saving…")
+                : secondaryLangStatus === "saved"
+                  ? (uiLang === "ro" ? "Salvat" : "Saved")
+                  : secondaryLangStatus === "error"
+                    ? (uiLang === "ro" ? "Eroare" : "Error")
+                    : ""}
             </span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            {(Object.entries(GUEST_LANG_META) as Array<[GuestContentLang, { label: string; flagSrc: string }]>)
-              .map(([code, meta]) => {
-                const active = secondaryLang === code;
-                const disabled = !isAdmin || !!secondaryLangSaving;
-                return (
-                  <button
-                    key={code}
-                    type="button"
-                    className="sb-btn"
-                    aria-label={meta.label}
-                    title={meta.label}
-                    onClick={() => saveSecondaryLanguage(code)}
-                    disabled={disabled}
-                    style={{
-                      width: 42,
-                      height: 42,
-                      padding: 0,
-                      borderRadius: 999,
-                      border: active ? '1px solid var(--primary)' : '1px solid var(--border)',
-                      background: active ? 'color-mix(in srgb, var(--primary) 18%, var(--panel))' : 'var(--card)',
-                      boxShadow: active ? '0 0 0 2px color-mix(in srgb, var(--primary) 28%, transparent)' : 'none',
-                      display: 'grid',
-                      placeItems: 'center',
-                      cursor: disabled ? 'default' : 'pointer',
-                      opacity: disabled && !active ? 0.6 : 1,
-                    }}
-                  >
-                    <img src={meta.flagSrc} alt="" width={22} height={22} style={{ display: 'block', width: 22, height: 22, borderRadius: 999, objectFit: 'cover' }} />
-                  </button>
-                );
-              })}
-          </div>
+          <button
+            type="button"
+            className="sb-btn"
+            disabled={!isAdmin || !!secondaryLangSaving}
+            onClick={() => setSecondaryLangMenuOpen((prev) => !prev)}
+            style={{
+              minHeight: 48,
+              padding: "10px 12px",
+              borderRadius: 12,
+              border: "1px solid var(--border)",
+              background: "var(--card)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 10,
+              width: "100%",
+              cursor: !isAdmin || !!secondaryLangSaving ? "default" : "pointer",
+            }}
+          >
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+              <img
+                src={secondaryLangMeta.flagSrc}
+                alt=""
+                width={22}
+                height={22}
+                style={{ display: "block", width: 22, height: 22, borderRadius: 999, objectFit: "cover" }}
+              />
+            </span>
+            <span style={{ color: "var(--muted)", fontSize: 14, transform: secondaryLangMenuOpen ? "rotate(180deg)" : "none", transition: "transform .18s ease" }}>
+              ▼
+            </span>
+          </button>
+          {secondaryLangMenuOpen && (
+            <div
+              className="Sb-cardglow"
+              style={{
+                position: "absolute",
+                top: "calc(100% - 8px)",
+                left: 0,
+                display: "grid",
+                gap: 6,
+                padding: 8,
+                borderRadius: 14,
+                background: "var(--panel)",
+                border: "1px solid var(--border)",
+                boxShadow: "0 24px 50px rgba(0,0,0,.28)",
+                zIndex: 50,
+                width: "fit-content",
+              }}
+            >
+              {(Object.entries(GUEST_LANG_META) as Array<[GuestContentLang, { label: string; flagSrc: string }]>)
+                .map(([code, meta]) => {
+                  const active = secondaryLang === code;
+                  return (
+                    <button
+                      key={code}
+                      type="button"
+                      className="sb-btn"
+                      onClick={async () => {
+                        setSecondaryLangMenuOpen(false);
+                        await saveSecondaryLanguage(code);
+                      }}
+                      style={{
+                        width: 44,
+                        height: 44,
+                        padding: 0,
+                        borderRadius: 999,
+                        border: active ? "1px solid var(--primary)" : "1px solid transparent",
+                        background: active ? "color-mix(in srgb, var(--primary) 16%, var(--card))" : "var(--card)",
+                        display: "grid",
+                        placeItems: "center",
+                      }}
+                    >
+                      <img
+                        src={meta.flagSrc}
+                        alt={meta.label}
+                        width={22}
+                        height={22}
+                        style={{ display: "block", width: 22, height: 22, borderRadius: 999, objectFit: "cover" }}
+                      />
+                    </button>
+                  );
+                })}
+            </div>
+          )}
         </div>
-	      </div>
 
 	      <div className="rm-desktop-grid" data-active={activeId ? "1" : "0"}>
 	        <div className="rm-left">
