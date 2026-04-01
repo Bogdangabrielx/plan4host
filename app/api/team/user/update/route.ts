@@ -7,7 +7,7 @@ import { resolveTeamAccountContext } from "@/lib/auth/team-account";
 
 function bad(status: number, body: any) { return NextResponse.json(body, { status }); }
 
-const ALLOWED_SCOPES = new Set(["cleaning","reservations","channels","inbox","calendar","propertySetup","checkinEditor","reservationMessage","checkin_editor","reservation_message"]);
+const ALLOWED_SCOPES = new Set(["cleaning","reservations","channels","inbox","calendar","propertySetup","checkinEditor","reservationMessage","checkin_editor","reservation_message","notifications","notification"]);
 const sanitizeScopes = (arr: any): string[] =>
   (Array.isArray(arr) ? arr : []).filter((s) => typeof s === "string" && ALLOWED_SCOPES.has(s));
 
@@ -59,13 +59,14 @@ export async function PATCH(req: Request) {
     }
     if (scopesRaw !== undefined) {
       // Canonicalize incoming scopes (UI or external callers)
-      const CANON = new Set(["calendar","guest_overview","property_setup","checkin_editor","reservation_message","cleaning","channels"]);
+      const CANON = new Set(["calendar","guest_overview","property_setup","checkin_editor","reservation_message","notifications","cleaning","channels"]);
       const ALIASES: Record<string, string> = {
         inbox: "guest_overview",
         reservations: "calendar",
         propertySetup: "property_setup",
         checkinEditor: "checkin_editor",
         reservationMessage: "reservation_message",
+        notification: "notifications",
       };
       const normalize = (s: string) => ALIASES[s] ?? s;
       const list = Array.isArray(scopesRaw) ? scopesRaw : [];
@@ -75,6 +76,7 @@ export async function PATCH(req: Request) {
         const k = normalize(x);
         if (CANON.has(k)) result.add(k);
       }
+      result.add("notifications");
       patch.scopes = Array.from(result);
     }
     if (Object.keys(patch).length === 0) return NextResponse.json({ ok: true });

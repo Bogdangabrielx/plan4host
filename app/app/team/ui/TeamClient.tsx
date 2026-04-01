@@ -352,7 +352,7 @@ export default function TeamClient() {
   };
   function normalizeScopes(scopes: string[] | null | undefined): string[] {
     if (!Array.isArray(scopes) || scopes.length === 0) return [];
-    const norm = Array.from(new Set(scopes.map(normalize)));
+    const norm = Array.from(new Set(scopes.map(normalize))).filter((k) => k !== "notifications");
     norm.sort((a, b) => (ORDER.indexOf(a as any) - ORDER.indexOf(b as any)) || a.localeCompare(b));
     return norm;
   }
@@ -549,16 +549,19 @@ export default function TeamClient() {
                 <label style={{ ...label, fontWeight: 900 }}>{lang === "ro" ? "Acces" : "Access"}</label>
                 <div className="scopesWrap">
                   {allScopes.map(({ key, title }) => {
-                    const checked = scopes.includes(key);
+                    const alwaysOn = key === "notifications";
+                    const checked = alwaysOn || scopes.includes(key);
                     return (
                       <button
                         key={key}
                         type="button"
                         className="scopeChip"
-                        onClick={() => toggleScope(key)}
+                        onClick={() => { if (!alwaysOn) toggleScope(key); }}
                         disabled={loading}
                         aria-pressed={checked}
                         title={title}
+                        aria-disabled={alwaysOn}
+                        style={alwaysOn ? { cursor: "default", opacity: 0.92 } : undefined}
                       >
                         <MaskIcon
                           src={SCOPE_ICON[key] || "/svg_dashboard.svg"}
