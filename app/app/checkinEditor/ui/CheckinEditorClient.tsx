@@ -2557,6 +2557,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
                     style={{
                       ...ACTION_BUTTON_STYLE,
+                      gap: 8,
                     }}
                     onClick={() => {
                       if (!prop?.regulation_pdf_url) { setNoPdfOpen(true); return; }
@@ -2564,6 +2565,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     }}
                     title={prop?.regulation_pdf_url ? t.copyCheckinLink : (uiLang === "ro" ? "Incarca mai intai PDF-ul cu regulamentul intern" : "Upload House Rules PDF first")}
                   >
+                    <MaskIcon src="/svg_send_demo.svg" size={18} color="#ffffff" />
                     {copied ? t.copied : t.copyCheckinLink}
                   </button>
 
@@ -2667,6 +2669,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     }}
                     title={prop?.regulation_pdf_url ? t.copyCheckinLink : (uiLang === "ro" ? "Incarca mai intai PDF-ul cu regulamentul intern" : "Upload House Rules PDF first")}
                   >
+                    <MaskIcon src="/svg_send_demo.svg" size={18} color="#ffffff" />
                     {copied ? t.copied : t.copyCheckinLink}
                   </button>
                   <small style={HELPER_TEXT_STYLE}>
@@ -3368,8 +3371,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                         <option value="down">{t.down}</option>
                       </select>
                       <Info text={uiLang === "ro"
-                        ? "Aceste date de contact apar pe banner, ca un card transparent. Alege pozitia: sus, centru sau jos."
-                        : "These contact details are shown on top of your banner image as a glass card. Choose where to place it: at the top, centered, or near the bottom."} />
+                        ? "Aceste date de contact apar pe bannerul proprietatii, afisat in formularul de check-in si in portalul de mesaje al oaspetelui. Alege pozitia: sus, centru sau jos."
+                        : "These contact details are shown on the property banner used in the check-in form and in the guest messaging portal. Choose where to place them: at the top, centered, or near the bottom."} />
                     </div>
                   </div>
                   <div>
@@ -3398,8 +3401,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       <option value="down">{t.down}</option>
                     </select>
                     <Info text={uiLang === "ro"
-                      ? "Aceste date de contact apar pe banner, ca un card transparent. Alege pozitia: sus, centru sau jos."
-                      : "These contact details are shown on top of your banner image as a glass card. Choose where to place it: at the top, centered, or near the bottom."} />
+                      ? "Aceste date de contact apar pe bannerul proprietatii, afisat in formularul de check-in si in portalul de mesaje al oaspetelui. Alege pozitia: sus, centru sau jos."
+                      : "These contact details are shown on the property banner used in the check-in form and in the guest messaging portal. Choose where to place them: at the top, centered, or near the bottom."} />
                     </div>
                   </div>
                   <div>
