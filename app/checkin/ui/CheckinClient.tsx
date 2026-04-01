@@ -745,6 +745,7 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
 
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMsg, setErrorMsg] = useState<string>("");
+  const [validationIssues, setValidationIssues] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Privacy Policy acknowledgement gate
@@ -1225,6 +1226,119 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
     }
   }
 
+  function stripRequiredMark(label: string) {
+    return label.replace("*", "").trim();
+  }
+
+  function getValidationTitle() {
+    switch (lang) {
+      case "ro":
+        return "Te rugam sa completezi:";
+      case "es":
+        return "Por favor, completa:";
+      case "de":
+        return "Bitte vervollständige:";
+      case "el":
+        return "Παρακαλώ συμπληρώστε:";
+      case "fr":
+        return "Merci de compléter :";
+      case "it":
+        return "Per favore completa:";
+      case "pt":
+        return "Por favor, completa:";
+      case "en":
+      default:
+        return "Please complete:";
+    }
+  }
+
+  function getCompanionsIssueLabel() {
+    switch (lang) {
+      case "ro":
+        return "Datele insotitorilor";
+      case "es":
+        return "Datos de los acompanantes";
+      case "de":
+        return "Daten der Mitreisenden";
+      case "el":
+        return "Στοιχεία συνοδών";
+      case "fr":
+        return "Informations des accompagnants";
+      case "it":
+        return "Dati degli accompagnatori";
+      case "pt":
+        return "Dados dos acompanhantes";
+      case "en":
+      default:
+        return "Companion details";
+    }
+  }
+
+  function getHouseRulesIssueLabel() {
+    switch (lang) {
+      case "ro":
+        return "Regulile proprietatii";
+      case "es":
+        return "Normas de la propiedad";
+      case "de":
+        return "Hausregeln";
+      case "el":
+        return "Κανόνες καταλύματος";
+      case "fr":
+        return "Regles de l'hebergement";
+      case "it":
+        return "Regole della struttura";
+      case "pt":
+        return "Regras da propriedade";
+      case "en":
+      default:
+        return "House rules";
+    }
+  }
+
+  function getPrivacyIssueLabel() {
+    switch (lang) {
+      case "ro":
+        return "Confirmarea politicii de confidentialitate";
+      case "es":
+        return "Confirmacion de la politica de privacidad";
+      case "de":
+        return "Bestaetigung der Datenschutzerklaerung";
+      case "el":
+        return "Επιβεβαίωση πολιτικής απορρήτου";
+      case "fr":
+        return "Confirmation de la politique de confidentialite";
+      case "it":
+        return "Conferma della privacy";
+      case "pt":
+        return "Confirmacao da politica de privacidade";
+      case "en":
+      default:
+        return "Privacy confirmation";
+    }
+  }
+
+  function getValidationIssues() {
+    const issues: string[] = [];
+    if (!firstName.trim()) issues.push(stripRequiredMark(T("firstName")));
+    if (!lastName.trim()) issues.push(stripRequiredMark(T("lastName")));
+    if (!/\S+@\S+\.\S+/.test(email)) issues.push(stripRequiredMark(T("email")));
+    if (normalizedPhone.replace(/\D/g, "").length < 8) issues.push(stripRequiredMark(T("phone")));
+    if (!startDate) issues.push(stripRequiredMark(T("checkinDate")));
+    if (!endDate || !!dateError) issues.push(stripRequiredMark(T("checkoutDate")));
+    if (!countryValid) issues.push(stripRequiredMark(T("country")));
+    if (!docType) issues.push(stripRequiredMark(T("docTypeLabel")));
+    if (!docNumber.trim()) issues.push(stripRequiredMark(T("docNumberLabel")));
+    if (docType === "id_card" && !docSeries.trim()) issues.push(stripRequiredMark(T("docSeriesLabel")));
+    if (docType === "passport" && !currentNationality.length) issues.push(stripRequiredMark(T("nationality")));
+    if (docUploadRequired && !docFile) issues.push(stripRequiredMark(T("uploadId")));
+    if (!sigDirty) issues.push(stripRequiredMark(T("signatureLabel")));
+    if (!companionsValid) issues.push(getCompanionsIssueLabel());
+    if (!consentGatePassed) issues.push(getHouseRulesIssueLabel());
+    if (!agree) issues.push(getPrivacyIssueLabel());
+    return issues;
+  }
+
   // trebuie să fie deschis PDF-ul dacă există
   const consentGatePassed = !pdfUrl || pdfViewed;
 
@@ -1368,6 +1482,11 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
     companionsValid &&
     consentGatePassed && agree &&
     submitState !== "submitting";
+  const isSubmitting = submitState === "submitting";
+
+  useEffect(() => {
+    if (canSubmit) setValidationIssues([]);
+  }, [canSubmit]);
 
   // deschide PDF-ul (marchează vizualizat)
   function onOpenPdf() {
@@ -1448,6 +1567,7 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
     if (!canSubmit) return;
     setSubmitState("submitting");
     setErrorMsg("");
+    setValidationIssues([]);
     // Show confirmation modal immediately to indicate progress
     setConfirmOpen(true);
     setConfirmStatus("sending");
@@ -1574,7 +1694,12 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!canSubmit) return;
+    if (!canSubmit) {
+      setValidationIssues(getValidationIssues());
+      setErrorMsg("");
+      setSubmitState("error");
+      return;
+    }
     // Ask for final confirmation before sending anything.
     setConfirmOpen(false);
     setReviewOpen(true);
@@ -2951,7 +3076,18 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
             )}
 
             {/* Error */}
-            {submitState === "error" && errorMsg && (
+            {submitState === "error" && validationIssues.length > 0 && (
+              <div role="alert" style={{ padding: 12, borderRadius: 12, background: "var(--danger)", color: "#0c111b", fontWeight: 800 }}>
+                <div style={{ marginBottom: 8 }}>{getValidationTitle()}</div>
+                <ul style={{ margin: 0, paddingLeft: 18, fontWeight: 700 }}>
+                  {validationIssues.map((issue) => (
+                    <li key={issue}>{issue}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {submitState === "error" && !validationIssues.length && errorMsg && (
               <div role="alert" style={{ padding: 12, borderRadius: 12, background: "var(--danger)", color: "#0c111b", fontWeight: 800 }}>
                 {errorMsg}
               </div>
@@ -2961,15 +3097,17 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
             <div style={{ display: "grid", gap: 10, justifyItems: isNarrow ? "stretch" : "center" }}>
               <button
                 type="submit"
-                disabled={!canSubmit}
+                disabled={isSubmitting}
+                aria-disabled={!canSubmit || isSubmitting}
                 className="sb-btn sb-btn--primary ci-actionBtn ci-actionBtn--success sb-cardglow"
                 style={{
                   width: "100%",
                   maxWidth: isNarrow ? undefined : 520,
                   margin: isNarrow ? undefined : "0 auto",
+                  opacity: canSubmit ? 1 : 0.7,
                 }}
               >
-                {submitState === "submitting" ? T('submitSubmitting') : T('submit')}
+                {isSubmitting ? T('submitSubmitting') : T('submit')}
               </button>
             </div>
           </form>
