@@ -1482,7 +1482,7 @@ export default function ReservationMessageClient({
 	      </div>
         <div
           ref={secondaryLangMenuRef}
-          className="modalCard"
+          className="sb-card"
           style={{
             position: "relative",
             display: "flex",
