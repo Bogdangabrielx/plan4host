@@ -354,6 +354,7 @@ export default function ReservationMessageClient({
   const { setPill } = useHeader();
   const titleRef = useRef<HTMLDivElement | null>(null);
   const bodyRef = useRef<HTMLDivElement | null>(null);
+  const composerRef = useRef<HTMLElement | null>(null);
   const sb = useMemo(() => createClient(), []);
   const [hasRoomTypes, setHasRoomTypes] = useState(false);
   const [secondaryLangSaving, setSecondaryLangSaving] = useState<GuestContentLang | null>(null);
@@ -482,6 +483,18 @@ export default function ReservationMessageClient({
     document.addEventListener("mousedown", onPointerDown);
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [secondaryLangMenuOpen]);
+
+  useEffect(() => {
+    if (!activeId || !composerRef.current) return;
+    const scrollToComposer = () => {
+      composerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.setTimeout(() => {
+        try { titleRef.current?.focus(); } catch {}
+      }, 260);
+    };
+    const raf = window.requestAnimationFrame(scrollToComposer);
+    return () => window.cancelAnimationFrame(raf);
+  }, [activeId]);
 
   // Keep template language default in sync with app language unless user explicitly picked a tab.
   useEffect(() => {
@@ -1928,7 +1941,7 @@ export default function ReservationMessageClient({
 
 	      {/* Message composer — only when a template is active */}
 	      {activeId && (
-	        <section className="sb-cardglow" style={card}>
+	        <section ref={composerRef} className="sb-cardglow" style={card}>
 	          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
 	            <h2 style={{ margin: 0 }}>{t.message}</h2>
 	            <div style={{ display:'inline-flex', gap:8 }}>
