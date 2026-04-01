@@ -2259,8 +2259,7 @@ function EditFormBookingModal({
               {docsOpen && (
                 <div style={{ display:'grid', gridTemplateColumns: isSmall ? '1fr' : '1fr 1fr', gap:12 }}>
                   {(() => {
-                    const idDoc = docs.find(d => (d.doc_type || '').toLowerCase() === 'id_card' || (d.doc_type || '').toLowerCase() === 'passport')
-                      || docs.find(d => (d.mime_type || '').startsWith('image/')) || null;
+                    const idDoc = docs.find(d => (d.doc_type || '').toLowerCase() === 'id_card' || (d.doc_type || '').toLowerCase() === 'passport') || null;
                     const sigDoc = docs.find(d => (d.doc_type || '').toLowerCase() === 'signature')
                       || docs.find(d => (!d.doc_type || d.doc_type === null) && (d.mime_type || '').startsWith('image/') && d.id !== (idDoc?.id || '')) || null;
                     return (

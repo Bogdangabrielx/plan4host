@@ -187,8 +187,12 @@ export default async function CheckinQrView({ params }: { params: { id: string }
     );
   }
 
-  const idDoc = docs.find(d => (d.doc_type||'').toLowerCase()==='id_card' || (d.doc_type||'').toLowerCase()==='passport') || docs.find(d => (d.mime_type||'').startsWith('image/')) || null;
-  const sigDoc = docs.find(d => (d.doc_type||'').toLowerCase()==='signature') || docs.find(d => (!d.doc_type || d.doc_type===null) && (d.mime_type||'').startsWith('image/') && d.id !== (idDoc?.id||'')) || null;
+  const idDoc =
+    docs.find(d => (d.doc_type || '').toLowerCase() === 'id_card' || (d.doc_type || '').toLowerCase() === 'passport') || null;
+  const sigDoc =
+    docs.find(d => (d.doc_type || '').toLowerCase() === 'signature') ||
+    docs.find(d => (!d.doc_type || d.doc_type === null) && (d.mime_type || '').startsWith('image/') && d.id !== (idDoc?.id || '')) ||
+    null;
 
   // Force page to light theme (like /r/[token]/page.tsx)
   const cookieStore = cookies();

@@ -275,8 +275,7 @@ export default function RoomDetailModal({
   const primaryDoc: BookingDoc | null = useMemo(() => {
     if (!docs.length) return null;
     const pref = docs.find((d) => d.doc_type === "id_card" || d.doc_type === "passport");
-    if (pref) return pref;
-    return [...docs].sort((a, b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime())[0];
+    return pref || null;
   }, [docs]);
   const signatureDoc: BookingDoc | null = useMemo(() => {
     const byType = docs.find((d) => (d.doc_type || '').toLowerCase() === 'signature');
