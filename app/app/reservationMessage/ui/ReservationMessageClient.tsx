@@ -1571,8 +1571,8 @@ export default function ReservationMessageClient({
                         height: 40,
                         padding: 0,
                         borderRadius: 999,
-                        border: active ? "1px solid var(--primary)" : "1px solid transparent",
-                        background: active ? "color-mix(in srgb, var(--primary) 16%, var(--card))" : "var(--card)",
+                        border: "1px solid transparent",
+                        background: "var(--card)",
                         display: "grid",
                         placeItems: "center",
                       }}
