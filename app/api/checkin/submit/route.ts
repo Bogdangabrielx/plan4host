@@ -549,25 +549,33 @@ export async function POST(req: NextRequest) {
             })
           : [];
         if (recipients.length) {
-          const emails = Array.from(
+          const resolved = (
+            await Promise.all(
+              recipients.map(async (m: any) => {
+                const uid = (m?.user_id || '').toString();
+                if (!uid) return null;
+                try {
+                  const { data: u } = await admin.auth.admin.getUserById(uid);
+                  const email = (u?.user?.email || '').trim().toLowerCase() || null;
+                  if (!email) return null;
+                  return { role: (m?.role || '').toString(), email };
+                } catch {
+                  return null;
+                }
+              })
+            )
+          ).filter(Boolean) as Array<{ role: string; email: string }>;
+          const adminEmail =
+            resolved.find((r) => r.role === 'admin')?.email
+            || null;
+          const bccEmails = Array.from(
             new Set(
-              (
-                await Promise.all(
-                  recipients.map(async (m: any) => {
-                    const uid = (m?.user_id || '').toString();
-                    if (!uid) return null;
-                    try {
-                      const { data: u } = await admin.auth.admin.getUserById(uid);
-                      return (u?.user?.email || '').trim().toLowerCase() || null;
-                    } catch {
-                      return null;
-                    }
-                  })
-                )
-              ).filter(Boolean) as string[]
+              resolved
+                .filter((r) => r.email && r.email !== adminEmail)
+                .map((r) => r.email)
             )
           );
-          if (emails.length) {
+          if (adminEmail || bccEmails.length) {
             const transporter = createTransport({
               host: process.env.SMTP_HOST,
               port: Number(process.env.SMTP_PORT || 587),
@@ -575,6 +583,7 @@ export async function POST(req: NextRequest) {
               auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
             });
             const fromEmail = process.env.FROM_EMAIL || 'office@plan4host.com';
+            const fallbackInbox = 'office@plan4host.com';
             const fromName  = process.env.FROM_NAME  || 'Plan4Host';
             const appBase = (process.env.NEXT_PUBLIC_APP_URL || '').toString().replace(/\/+$/, '');
             const link = `${appBase}/app/guest?property=${encodeURIComponent(property_id)}`;
@@ -606,8 +615,8 @@ export async function POST(req: NextRequest) {
             try {
               await transporter.sendMail({
                 from: `${fromName} <${fromEmail}>`,
-                to: fromEmail,
-                bcc: emails,
+                to: adminEmail || fallbackInbox,
+                ...(bccEmails.length ? { bcc: bccEmails } : {}),
                 subject,
                 html,
               });
