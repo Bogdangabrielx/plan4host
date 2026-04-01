@@ -1492,7 +1492,6 @@ export default function ReservationMessageClient({
             background: "var(--panel)",
             border: "1px solid var(--border)",
             width: "100%",
-            maxWidth: isSmall ? "100%" : 340,
             marginTop: -2,
             zIndex: secondaryLangMenuOpen ? 40 : "auto",
           }}
