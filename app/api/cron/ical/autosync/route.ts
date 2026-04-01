@@ -237,7 +237,7 @@ async function createOrUpdateFromEvent(
   if (ev.uid) {
     try {
       const { data: suppr } = await supa.from("ical_suppressions")
-        .select("id").eq("property_id", feed.property_id).eq("ical_uid", ev.uid).limit(1);
+        .select("property_id").eq("property_id", feed.property_id).eq("ical_uid", ev.uid).limit(1);
       if ((suppr?.length || 0) > 0) return { skipped: true, reason: "suppressed" };
     } catch {}
   }
