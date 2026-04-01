@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import TeamClient from "./ui/TeamClient";
 import { cookies } from "next/headers";
+import { resolveTeamAccountContext } from "@/lib/auth/team-account";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -19,25 +20,11 @@ export default async function TeamPage() {
   const mode = await supa.rpc("account_access_mode");
   if ((mode.data as string | null) === "billing_only") redirect("/app/subscription");
 
-  // rolul userului în cont
-  const { data: au } = await supa
-    .from("account_users")
-    .select("account_id, role, disabled")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: true });
-
-  const m = (au ?? [])[0] as { account_id: string; role: string; disabled: boolean } | undefined;
-  if (!m || m.disabled) redirect("/app");
-
-  // preferăm rândul unde utilizatorul este admin, dacă există
-  let membership = m;
-  const adminRow = (au ?? []).find((row: any) => row.role === "admin" && !row.disabled);
-  if (adminRow) membership = adminRow as any;
-
-  if (membership.role !== "admin") redirect("/app");
+  const ctx = await resolveTeamAccountContext(supa as any, String(user.id));
+  if (!ctx.membership || ctx.membership.role !== "admin") redirect("/app");
 
   // Team e disponibil doar pe plan Premium (citit direct din accounts.plan)
-  const accountId = membership.account_id;
+  const accountId = ctx.membership.account_id;
   const { data: acc } = await supa
     .from("accounts")
     .select("plan")

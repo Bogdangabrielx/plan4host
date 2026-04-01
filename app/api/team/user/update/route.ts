@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
+import { resolveTeamAccountContext } from "@/lib/auth/team-account";
 
 function bad(status: number, body: any) { return NextResponse.json(body, { status }); }
 
@@ -24,28 +25,11 @@ export async function PATCH(req: Request) {
     const disabled: boolean | undefined = typeof body?.disabled === "boolean" ? body.disabled : undefined;
     if (!userId) return bad(400, { error: "userId required" });
 
-    // determină account + cere ca actorul să fie admin
-    let accountId: string | null = null;
-    const { data: meRow } = await supa
-      .from("account_users")
-      .select("account_id, role, disabled")
-      .eq("user_id", actor.id)
-      .order("created_at", { ascending: true })
-      .limit(1);
-    if (meRow?.length && !meRow[0].disabled && meRow[0].role === "admin") {
-      accountId = meRow[0].account_id as string;
-    } else {
-      const { data: acc } = await supa.from("accounts").select("id").eq("id", actor.id).maybeSingle();
-      if (!acc?.id) return bad(403, { error: "Forbidden" });
-      accountId = acc.id as string;
-      const { data: meAdmin } = await supa
-        .from("account_users")
-        .select("role, disabled")
-        .eq("account_id", accountId)
-        .eq("user_id", actor.id)
-        .maybeSingle();
-      if (!meAdmin || meAdmin.disabled || meAdmin.role !== "admin") return bad(403, { error: "Forbidden" });
+    const ctx = await resolveTeamAccountContext(supa as any, String(actor.id));
+    if (!ctx.membership || ctx.membership.role !== "admin" || !ctx.accountId) {
+      return bad(403, { error: "Forbidden" });
     }
+    const accountId = ctx.accountId;
 
     // țintă trebuie să fie în același cont
     const { data: target } = await supa

@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
+import { resolveTeamAccountContext } from "@/lib/auth/team-account";
 
 function bad(status: number, body: any) { return NextResponse.json(body, { status }); }
 
@@ -13,22 +14,11 @@ export async function GET() {
     const actor = auth.user; 
     if (!actor) return bad(401, { error: "Not authenticated" });
 
-    // determină accountId: prefer membru; fallback cont propriu
-    let accountId: string | null = null;
-    const { data: auRows } = await supa
-      .from("account_users")
-      .select("account_id, disabled")
-      .eq("user_id", actor.id)
-      .order("created_at", { ascending: true })
-      .limit(1);
-
-    if (auRows?.length && !auRows[0].disabled) {
-      accountId = auRows[0].account_id as string;
-    } else {
-      const { data: acc } = await supa.from("accounts").select("id").eq("id", actor.id).maybeSingle();
-      if (acc?.id) accountId = acc.id as string;
+    const ctx = await resolveTeamAccountContext(supa as any, String(actor.id));
+    if (!ctx.membership || ctx.membership.role !== "admin" || !ctx.accountId) {
+      return bad(403, { error: "Forbidden" });
     }
-    if (!accountId) return NextResponse.json({ ok: true, members: [] });
+    const accountId = ctx.accountId;
 
     // listă cu service client (evită edge-case RLS)
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;

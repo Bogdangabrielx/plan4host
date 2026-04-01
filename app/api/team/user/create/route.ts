@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 import { createTransport } from "nodemailer";
 import { buildTeamWelcomeEmail } from "@/lib/email/templates";
+import { resolveTeamAccountContext } from "@/lib/auth/team-account";
 
 function bad(status: number, body: any) { return NextResponse.json(body, { status }); }
 
@@ -45,38 +46,15 @@ export async function POST(req: Request) {
     if (!email || !password) return bad(400, { error: "Email and password are required" });
     if (!/^(editor|viewer)$/.test(role)) return bad(400, { error: "Invalid role" });
 
-    // determină account + cere ca actorul să fie admin al contului
-    let accountId: string | null = null;
-    const { data: accSelf } = await supa.from("accounts").select("id").eq("id", actor.id).maybeSingle();
-    if (accSelf?.id) {
-      accountId = accSelf.id as string;
-      // verifică actorul e admin în contul lui (ar trebui să existe rând admin în account_users)
-      const { data: me } = await supa
-        .from("account_users")
-        .select("role, disabled")
-        .eq("account_id", accountId)
-        .eq("user_id", actor.id)
-        .maybeSingle();
-      if (!me || me.disabled || me.role !== "admin") return bad(403, { error: "Only admin can create users" });
-      // plan gating: Premium only (direct from accounts.plan)
-      const { data: accPlan } = await supa.from("accounts").select("plan").eq("id", accountId).maybeSingle();
-      const plan = (accPlan?.plan as string | null)?.toLowerCase?.() ?? "basic";
-      if (plan !== "premium") return bad(403, { error: "Team is available on Premium plan only" });
-    } else {
-      const { data: au } = await supa
-        .from("account_users")
-        .select("account_id, role, disabled")
-        .eq("user_id", actor.id)
-        .order("created_at", { ascending: true })
-        .limit(1);
-      const row = au?.[0] as any;
-      if (!row || row.disabled || row.role !== "admin") return bad(403, { error: "Only admin can create users" });
-      accountId = row.account_id as string;
-
-      const { data: accPlan } = await supa.from("accounts").select("plan").eq("id", accountId).maybeSingle();
-      const plan = (accPlan?.plan as string | null)?.toLowerCase?.() ?? "basic";
-      if (plan !== "premium") return bad(403, { error: "Team is available on Premium plan only" });
+    const ctx = await resolveTeamAccountContext(supa as any, String(actor.id));
+    if (!ctx.membership || ctx.membership.role !== "admin" || !ctx.accountId) {
+      return bad(403, { error: "Only admin can create users" });
     }
+    const accountId = ctx.accountId;
+
+    const { data: accPlan } = await supa.from("accounts").select("plan").eq("id", accountId).maybeSingle();
+    const plan = (accPlan?.plan as string | null)?.toLowerCase?.() ?? "basic";
+    if (plan !== "premium") return bad(403, { error: "Team is available on Premium plan only" });
 
     // creează utilizator auth
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
