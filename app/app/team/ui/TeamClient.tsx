@@ -85,6 +85,9 @@ export default function TeamClient() {
   const [roleError, setRoleError] = useState<boolean>(false);
   const [scopes, setScopes] = useState<string[]>([]);
   const [q, setQ] = useState<string>("");
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [editRole, setEditRole] = useState<Role>("editor");
+  const [editScopes, setEditScopes] = useState<string[]>([]);
   const searchRef = useRef<HTMLInputElement | null>(null);
   const t = {
     en: {
@@ -104,6 +107,9 @@ export default function TeamClient() {
       viewer: "viewer",
       create: "Create",
       members: "Members",
+      editAccess: "Edit access",
+      saveChanges: "Save changes",
+      cancel: "Cancel",
       loading: "Loading...",
       search: "Search member…",
       roleLabel: "role",
@@ -118,10 +124,10 @@ export default function TeamClient() {
         calendar: "Calendar",
         guest_overview: "Guest Overview",
         property_setup: "Property Setup",
-        checkin_editor: "Check-in Editor",
-        reservation_message: "Automatic Messages",
+        checkin_editor: "Check-in",
+        reservation_message: "Messages",
         cleaning: "Cleaning Board",
-        channels: "Sync Calendars",
+        channels: "Channels",
       } as Record<string, string>,
     },
     ro: {
@@ -141,6 +147,9 @@ export default function TeamClient() {
       viewer: "viewer",
       create: "Creeaza",
       members: "Membri",
+      editAccess: "Editeaza accesul",
+      saveChanges: "Salveaza modificarile",
+      cancel: "Anuleaza",
       loading: "Se incarca...",
       search: "Cauta membru…",
       roleLabel: "rol",
@@ -155,10 +164,10 @@ export default function TeamClient() {
         calendar: "Calendar",
         guest_overview: "Oaspeti",
         property_setup: "Setari proprietate",
-        checkin_editor: "Editor check-in",
-        reservation_message: "Mesaje automate",
+        checkin_editor: "Check-in",
+        reservation_message: "Mesaje",
         cleaning: "Curatenie",
-        channels: "Sincronizare calendare",
+        channels: "Canale",
       } as Record<string, string>,
     },
   } as const;
@@ -252,6 +261,9 @@ export default function TeamClient() {
   function toggleScope(key: string) {
     setScopes((prev) => prev.includes(key) ? prev.filter(x => x !== key) : [...prev, key]);
   }
+  function toggleEditScope(key: string) {
+    setEditScopes((prev) => prev.includes(key) ? prev.filter(x => x !== key) : [...prev, key]);
+  }
 
   async function createUser() {
     if (!email || !password) return;
@@ -323,6 +335,19 @@ export default function TeamClient() {
     const j = await res.json().catch(() => ({}));
     if (!res.ok) alert(j?.error || i18n.failed);
     await load();
+  }
+
+  function openEditMember(u: Member) {
+    if (u.role === "admin") return;
+    setEditingMember(u);
+    setEditRole(u.role);
+    setEditScopes(normalizeScopes(u.scopes));
+  }
+
+  async function saveMemberAccess() {
+    if (!editingMember) return;
+    await updateUser(editingMember, { role: editRole, scopes: editScopes });
+    setEditingMember(null);
   }
 
   const allScopes: { key: string; title: string }[] = [
@@ -872,6 +897,24 @@ export default function TeamClient() {
                       >
                         <span aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>🔑</span>
                       </button>
+                      <button
+                        className="sb-btn sb-btn--icon"
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: 999,
+                          display: "grid",
+                          placeItems: "center",
+                          opacity: isAdmin ? 0.45 : 1,
+                          cursor: isAdmin ? "not-allowed" : "pointer",
+                        }}
+                        onClick={() => !isAdmin && openEditMember(u)}
+                        disabled={loading || isAdmin}
+                        title={isAdmin ? i18n.notAllowedForAdmin : i18n.editAccess}
+                        aria-label={i18n.editAccess}
+                      >
+                        <MaskIcon src="/svg_edit_icon.svg" size={18} color="var(--text)" opacity={0.92} />
+                      </button>
                   {false && (
                     <button
                       style={{ ...ghostBtn, opacity: isAdmin ? 0.5 : 1, cursor: isAdmin ? "not-allowed" : "pointer" }}
@@ -918,6 +961,110 @@ export default function TeamClient() {
             </ul>
           </section>
         </div>
+
+        {editingMember ? (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 1000,
+              background: "rgba(0,0,0,.38)",
+              display: "grid",
+              placeItems: "center",
+              padding: 16,
+            }}
+            onClick={() => setEditingMember(null)}
+          >
+            <section
+              className="sb-cardglow"
+              style={{ ...card, width: "min(560px, 100%)", display: "grid", gap: 14 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <SectionHeader icon="/svg_team.svg" title={i18n.editAccess} />
+              <div style={{ color: "var(--muted)", fontSize: 13, overflow: "hidden", textOverflow: "ellipsis" }}>
+                {editingMember.email || editingMember.user_id}
+              </div>
+
+              <div style={{ display: "grid", gap: 8 }}>
+                <label style={{ ...label, fontWeight: 900 }}>{i18n.role}</label>
+                <div className="roleGrid">
+                  <button
+                    type="button"
+                    className="sb-btn"
+                    onClick={() => setEditRole("editor")}
+                    style={{
+                      borderRadius: 999,
+                      padding: "10px 12px",
+                      border: "1px solid var(--border)",
+                      background: editRole === "editor" ? "color-mix(in srgb, var(--primary) 75%, var(--card))" : "var(--card)",
+                      color: editRole === "editor" ? "#0c111b" : "var(--muted)",
+                      fontWeight: 900,
+                      minHeight: 40,
+                      width: "100%",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {i18n.editor}
+                  </button>
+                  <button
+                    type="button"
+                    className="sb-btn"
+                    onClick={() => setEditRole("viewer")}
+                    style={{
+                      borderRadius: 999,
+                      padding: "10px 12px",
+                      border: "1px solid var(--border)",
+                      background: editRole === "viewer" ? "color-mix(in srgb, var(--primary) 75%, var(--card))" : "var(--card)",
+                      color: editRole === "viewer" ? "#0c111b" : "var(--muted)",
+                      fontWeight: 900,
+                      minHeight: 40,
+                      width: "100%",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {i18n.viewer}
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gap: 8 }}>
+                <label style={{ ...label, fontWeight: 900 }}>{lang === "ro" ? "Acces" : "Access"}</label>
+                <div className="scopesWrap">
+                  {allScopes.map(({ key, title }) => {
+                    const checked = editScopes.includes(key);
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        className="scopeChip"
+                        onClick={() => toggleEditScope(key)}
+                        aria-pressed={checked}
+                        title={title}
+                      >
+                        <MaskIcon
+                          src={SCOPE_ICON[key] || "/svg_dashboard.svg"}
+                          size={16}
+                          color={checked ? "#0c111b" : "var(--muted)"}
+                          opacity={checked ? 0.95 : 0.85}
+                        />
+                        <span style={{ opacity: checked ? 1 : 0.9 }}>{title}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                <button className="sb-btn" onClick={() => setEditingMember(null)}>
+                  {i18n.cancel}
+                </button>
+                <button className="sb-btn sb-btn--primary sb-cardglow" onClick={saveMemberAccess} disabled={loading}>
+                  {i18n.saveChanges}
+                </button>
+              </div>
+            </section>
+          </div>
+        ) : null}
 
         {/* ⬇️ CSS responsive */}
         <style jsx>{`
