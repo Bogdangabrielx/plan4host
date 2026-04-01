@@ -1497,7 +1497,7 @@ export default function ReservationMessageClient({
             boxSizing: "border-box",
           }}
         >
-          <span style={{ fontSize: 12, fontWeight: 800, color: secondaryLangStatus === "error" ? "var(--danger)" : "var(--muted)" }}>
+          <span style={{ fontSize: 12, fontWeight: 800, color: secondaryLangStatus === "error" ? "var(--danger)" : "var(--text)" }}>
             {secondaryLangSaving
               ? (uiLang === "ro" ? "Se salveaza limba a doua…" : "Saving second language…")
               : secondaryLangStatus === "saved"
