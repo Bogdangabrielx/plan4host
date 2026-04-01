@@ -1482,7 +1482,6 @@ export default function ReservationMessageClient({
 	      </div>
         <div
           ref={secondaryLangMenuRef}
-          className="sb-card"
           style={{
             position: "relative",
             display: "flex",
@@ -1497,6 +1496,7 @@ export default function ReservationMessageClient({
             marginTop: -2,
             zIndex: secondaryLangMenuOpen ? 40 : "auto",
             boxSizing: "border-box",
+            overflow: "visible",
           }}
         >
           <span style={{ fontSize: 12, fontWeight: 800, color: secondaryLangStatus === "error" ? "var(--danger)" : "var(--text)" }}>
