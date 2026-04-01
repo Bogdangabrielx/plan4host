@@ -343,9 +343,9 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     chooseSourceBeforeCopy: uiLang === "ro" ? "Poti alege o sursa inainte de copiere." : "You can choose a source before copying.",
     idPhotoMode: uiLang === "ro" ? "Poza document" : "Document photo",
     idPhotoModeHint: uiLang === "ro" ? "Alegi daca oaspetii trebuie sa incarce poza documentului la check-in." : "Choose whether guests must upload a document photo at check-in.",
-    idPhotoModeRequired: uiLang === "ro" ? "Required - Da, este obligatoriu sa incarce poza de document" : "Required - Guest must upload a document photo",
-    idPhotoModeOptional: uiLang === "ro" ? "Optional - In cazul in care nu doreste sa incarce, poate sa nu incarce" : "Optional - Guest may skip the document photo",
-    idPhotoModeDisabled: uiLang === "ro" ? "Disabled - Nu solicitam incarcare de poza document" : "Disabled - Do not request a document photo",
+    idPhotoModeRequired: uiLang === "ro" ? "Solicita mereu poza documentului" : "Required - Guest must upload a document photo",
+    idPhotoModeOptional: uiLang === "ro" ? "Poza documentului este optionala" : "Optional - Guest may skip the document photo",
+    idPhotoModeDisabled: uiLang === "ro" ? "Nu solicita poza documentului" : "Disabled - Do not request a document photo",
     saving: uiLang === "ro" ? "Se salveaza..." : "Saving...",
     houseRulesPdf: uiLang === "ro" ? "PDF regulament intern" : "House Rules PDF",
     noPdfUploaded: uiLang === "ro" ? "Nu exista PDF incarcat." : "No PDF uploaded.",
@@ -2447,57 +2447,85 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           <section className="sb-cardglow" style={card}>
             <SectionHeader icon="/svg_checkin.svg" title={t.checkinLink} iconSize={isNarrow ? 18 : 20} />
             <div style={{ display: "grid", gap: 8, alignItems: "start" }}>
-              <div
-                style={{
-                  display: "grid",
-                  gap: 12,
-                  alignItems: isNarrow ? "start" : "center",
-                  gridTemplateColumns: isNarrow ? "1fr" : "220px minmax(0, 1fr)",
-                }}
-              >
-                <button
-                  className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
+              {!isNarrow && (
+                <div
                   style={{
-                    width: isNarrow ? "100%" : 220,
-                    maxWidth: isNarrow ? "100%" : 220,
-                    justifyContent: "center",
+                    display: "grid",
+                    gap: 10,
+                    alignItems: "start",
+                    gridTemplateColumns: "220px minmax(0, 1fr)",
                   }}
-                  onClick={() => {
-                    if (!prop?.regulation_pdf_url) { setNoPdfOpen(true); return; }
-                    openSourcePicker();
-                  }}
-                  title={prop?.regulation_pdf_url ? t.copyCheckinLink : (uiLang === "ro" ? "Incarca mai intai PDF-ul cu regulamentul intern" : "Upload House Rules PDF first")}
                 >
-                  {copied ? t.copied : t.copyCheckinLink}
-                </button>
-                {!isNarrow && (
-                  <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
-                    <label style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", color: "var(--text)", fontWeight: 700 }}>
-                      {t.idPhotoMode}
-                    </label>
-                    <select
-                      className="sb-select sb-cardglow p4h-docmode-select"
-                      value={(prop.checkin_document_upload_mode || "required") as string}
-                      onChange={(e) => {
-                        const next = (e.currentTarget.value || "required") as "required" | "optional" | "disabled";
-                        void saveCheckinDocumentUploadMode(next);
-                      }}
-                      disabled={docModeSaving}
-                      style={{ maxWidth: "100%", minWidth: 0 }}
-                    >
-                      <option value="required">{t.idPhotoModeRequired}</option>
-                      <option value="optional">{t.idPhotoModeOptional}</option>
-                      <option value="disabled">{t.idPhotoModeDisabled}</option>
-                    </select>
-                    <small style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.4, fontWeight: 400 }}>
-                      {docModeSaving ? t.saving : t.idPhotoModeHint}
-                    </small>
-                  </div>
-                )}
-              </div>
-              <small style={{ color: "var(--muted)" }}>{t.chooseSourceBeforeCopy}</small>
+                  <label style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", color: "var(--text)", fontWeight: 700 }}>
+                    {t.checkinLink}
+                  </label>
+                  <label style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", color: "var(--text)", fontWeight: 700 }}>
+                    {t.idPhotoMode}
+                  </label>
+
+                  <button
+                    className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
+                    style={{
+                      width: 220,
+                      maxWidth: 220,
+                      justifyContent: "center",
+                    }}
+                    onClick={() => {
+                      if (!prop?.regulation_pdf_url) { setNoPdfOpen(true); return; }
+                      openSourcePicker();
+                    }}
+                    title={prop?.regulation_pdf_url ? t.copyCheckinLink : (uiLang === "ro" ? "Incarca mai intai PDF-ul cu regulamentul intern" : "Upload House Rules PDF first")}
+                  >
+                    {copied ? t.copied : t.copyCheckinLink}
+                  </button>
+
+                  <select
+                    className="sb-select sb-cardglow p4h-docmode-select"
+                    value={(prop.checkin_document_upload_mode || "required") as string}
+                    onChange={(e) => {
+                      const next = (e.currentTarget.value || "required") as "required" | "optional" | "disabled";
+                      void saveCheckinDocumentUploadMode(next);
+                    }}
+                    disabled={docModeSaving}
+                    style={{ maxWidth: "100%", minWidth: 0 }}
+                  >
+                    <option value="required">{t.idPhotoModeRequired}</option>
+                    <option value="optional">{t.idPhotoModeOptional}</option>
+                    <option value="disabled">{t.idPhotoModeDisabled}</option>
+                  </select>
+
+                  <small style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.4, fontWeight: 400 }}>
+                    {t.chooseSourceBeforeCopy}
+                  </small>
+                  <small style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.4, fontWeight: 400 }}>
+                    {docModeSaving ? t.saving : t.idPhotoModeHint}
+                  </small>
+                </div>
+              )}
+
               {isNarrow && (
                 <div style={{ display: "grid", gap: 6 }}>
+                  <label style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", color: "var(--text)", fontWeight: 700 }}>
+                    {t.checkinLink}
+                  </label>
+                  <button
+                    className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
+                    style={{
+                      width: "100%",
+                      maxWidth: "100%",
+                      justifyContent: "center",
+                    }}
+                    onClick={() => {
+                      if (!prop?.regulation_pdf_url) { setNoPdfOpen(true); return; }
+                      openSourcePicker();
+                    }}
+                    title={prop?.regulation_pdf_url ? t.copyCheckinLink : (uiLang === "ro" ? "Incarca mai intai PDF-ul cu regulamentul intern" : "Upload House Rules PDF first")}
+                  >
+                    {copied ? t.copied : t.copyCheckinLink}
+                  </button>
+                  <small style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.4, fontWeight: 400 }}>
+                    {t.chooseSourceBeforeCopy}
+                  </small>
                   <label style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", color: "var(--text)", fontWeight: 700 }}>
                     {t.idPhotoMode}
                   </label>
