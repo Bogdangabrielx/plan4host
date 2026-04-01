@@ -118,6 +118,8 @@ export default function TeamClient() {
         calendar: "Calendar",
         guest_overview: "Guest Overview",
         property_setup: "Property Setup",
+        checkin_editor: "Check-in Editor",
+        reservation_message: "Automatic Messages",
         cleaning: "Cleaning Board",
         channels: "Sync Calendars",
       } as Record<string, string>,
@@ -153,6 +155,8 @@ export default function TeamClient() {
         calendar: "Calendar",
         guest_overview: "Oaspeti",
         property_setup: "Setari proprietate",
+        checkin_editor: "Editor check-in",
+        reservation_message: "Mesaje automate",
         cleaning: "Curatenie",
         channels: "Sincronizare calendare",
       } as Record<string, string>,
@@ -325,13 +329,15 @@ export default function TeamClient() {
     { key: "calendar",        title: i18n.scopeTitles.calendar },
     { key: "guest_overview",  title: i18n.scopeTitles.guest_overview },
     { key: "property_setup",  title: i18n.scopeTitles.property_setup },
+    { key: "checkin_editor",  title: i18n.scopeTitles.checkin_editor },
+    { key: "reservation_message", title: i18n.scopeTitles.reservation_message },
     { key: "cleaning",        title: i18n.scopeTitles.cleaning },
     // keep key 'channels' (scope id) but show friendly label matching the page name
     { key: "channels",        title: i18n.scopeTitles.channels },
   ];
 
   // Pretty-print scopes in Members list (handles legacy tokens too)
-  const ORDER = ["calendar","guest_overview","property_setup","cleaning","channels"] as const;
+  const ORDER = ["calendar","guest_overview","property_setup","checkin_editor","reservation_message","cleaning","channels"] as const;
   const TITLE_BY: Record<string, string> = Object.fromEntries(allScopes.map(s => [s.key, s.title]));
   const ALIASES: Record<string, string> = { inbox: "guest_overview", reservations: "calendar", propertySetup: "property_setup" };
   const normalize = (s: string) => ALIASES[s] ?? s;
@@ -339,6 +345,8 @@ export default function TeamClient() {
     calendar: "/svg_calendar.svg",
     guest_overview: "/svg_guests.svg",
     property_setup: "/svg_amenities.svg",
+    checkin_editor: "/svg_checkin.svg",
+    reservation_message: "/svg_send_demo.svg",
     cleaning: "/svg_cleaning.svg",
     channels: "/svg_channels.svg",
   };

@@ -10,12 +10,14 @@ import { resolveTeamAccountContext } from "@/lib/auth/team-account";
 function bad(status: number, body: any) { return NextResponse.json(body, { status }); }
 
 // Canonical scope tokens (DB):
-//  - calendar, guest_overview, property_setup, cleaning, channels, notifications
-const CANON = new Set(["calendar","guest_overview","property_setup","cleaning","channels","notifications"]);
+//  - calendar, guest_overview, property_setup, checkin_editor, reservation_message, cleaning, channels, notifications
+const CANON = new Set(["calendar","guest_overview","property_setup","checkin_editor","reservation_message","cleaning","channels","notifications"]);
 const ALIASES: Record<string, string> = {
   inbox: "guest_overview",
   reservations: "calendar",
   propertySetup: "property_setup",
+  checkinEditor: "checkin_editor",
+  reservationMessage: "reservation_message",
   notification: "notifications",
 };
 const normalize = (s: string) => ALIASES[s] ?? s;
