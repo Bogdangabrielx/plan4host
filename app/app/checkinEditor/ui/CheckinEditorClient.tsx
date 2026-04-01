@@ -2526,9 +2526,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   {t.saved}
                 </div>
               )}
-              <div style={{ color: "var(--text)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)", fontWeight: 700 }}>
-                {docModeSaving ? t.saving : t.saved}
-              </div>
             </div>
           </div>
         )}
