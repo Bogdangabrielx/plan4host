@@ -13,6 +13,7 @@ import { buildSimplePdfBytes } from "@/lib/pdf/simplePdf";
 type Property = {
   id: string;
   name: string;
+  checkin_document_upload_mode?: "required" | "optional" | "disabled" | null;
   regulation_pdf_url?: string | null;
   regulation_pdf_uploaded_at?: string | null;
   ai_house_rules_text?: string | null;
@@ -325,6 +326,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [aiStatusPhase, setAiStatusPhase] = useState<"idle" | "reading" | "success" | "failed">("idle");
   const [currentPlan, setCurrentPlan] = useState<"basic" | "standard" | "premium" | null>(null);
   const [aiPremiumPopupOpen, setAiPremiumPopupOpen] = useState(false);
+  const [docModeSaving, setDocModeSaving] = useState(false);
   const t = {
     title: uiLang === "ro" ? "Editor check-in" : "Check-in Editor",
     calendarConnected: uiLang === "ro" ? "Calendar conectat" : "Calendar connected",
@@ -339,6 +341,12 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     copyCheckinLink: uiLang === "ro" ? "Copiaza link-ul de check-in" : "Copy check-in link",
     copied: uiLang === "ro" ? "Copiat!" : "Copied!",
     chooseSourceBeforeCopy: uiLang === "ro" ? "Poti alege o sursa inainte de copiere." : "You can choose a source before copying.",
+    idPhotoMode: uiLang === "ro" ? "Poza document" : "Document photo",
+    idPhotoModeHint: uiLang === "ro" ? "Alegi daca oaspetii trebuie sa incarce poza documentului la check-in." : "Choose whether guests must upload a document photo at check-in.",
+    idPhotoModeRequired: uiLang === "ro" ? "Required - Da, este obligatoriu sa incarce poza de document" : "Required - Guest must upload a document photo",
+    idPhotoModeOptional: uiLang === "ro" ? "Optional - In cazul in care nu doreste sa incarce, poate sa nu incarce" : "Optional - Guest may skip the document photo",
+    idPhotoModeDisabled: uiLang === "ro" ? "Disabled - Nu solicitam incarcare de poza document" : "Disabled - Do not request a document photo",
+    saving: uiLang === "ro" ? "Se salveaza..." : "Saving...",
     houseRulesPdf: uiLang === "ro" ? "PDF regulament intern" : "House Rules PDF",
     noPdfUploaded: uiLang === "ro" ? "Nu exista PDF incarcat." : "No PDF uploaded.",
     uploadPdf: uiLang === "ro" ? "Incarca PDF" : "Upload PDF",
@@ -469,7 +477,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     try {
       const { data, error } = await supabase
         .from("properties")
-        .select("id,name,regulation_pdf_url,regulation_pdf_uploaded_at,ai_house_rules_text,contact_email,contact_phone,contact_address,presentation_image_url,presentation_image_uploaded_at,contact_overlay_position,social_facebook,social_instagram,social_tiktok,social_website,social_location")
+        .select("id,name,checkin_document_upload_mode,regulation_pdf_url,regulation_pdf_uploaded_at,ai_house_rules_text,contact_email,contact_phone,contact_address,presentation_image_url,presentation_image_uploaded_at,contact_overlay_position,social_facebook,social_instagram,social_tiktok,social_website,social_location")
         .eq("id", propertyId)
         .maybeSingle();
       if (seq !== loadSeqRef.current) return;
@@ -950,6 +958,25 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       setContactsWizardError(e?.message || "Could not save social links.");
     } finally {
       setContactsWizardLoading(false);
+    }
+  }
+
+  async function saveCheckinDocumentUploadMode(nextMode: "required" | "optional" | "disabled") {
+    if (!prop || docModeSaving) return;
+    const prevMode = (prop.checkin_document_upload_mode || "required") as "required" | "optional" | "disabled";
+    setProp((prev) => (prev ? { ...prev, checkin_document_upload_mode: nextMode } : prev));
+    setDocModeSaving(true);
+    try {
+      const { error } = await supabase
+        .from("properties")
+        .update({ checkin_document_upload_mode: nextMode })
+        .eq("id", prop.id);
+      if (error) throw error;
+    } catch (e: any) {
+      setProp((prev) => (prev ? { ...prev, checkin_document_upload_mode: prevMode } : prev));
+      alert(e?.message || (uiLang === "ro" ? "Nu am putut salva setarea." : "Could not save setting."));
+    } finally {
+      setDocModeSaving(false);
     }
   }
 
@@ -2424,6 +2451,28 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 >
                   {copied ? t.copied : t.copyCheckinLink}
                 </button>
+              </div>
+              <div style={{ display: "grid", gap: 6, maxWidth: 560 }}>
+                <label style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", color: "var(--text)", fontWeight: 700 }}>
+                  {t.idPhotoMode}
+                </label>
+                <select
+                  className="sb-select sb-cardglow"
+                  value={(prop.checkin_document_upload_mode || "required") as string}
+                  onChange={(e) => {
+                    const next = (e.currentTarget.value || "required") as "required" | "optional" | "disabled";
+                    void saveCheckinDocumentUploadMode(next);
+                  }}
+                  disabled={docModeSaving}
+                  style={{ maxWidth: 560 }}
+                >
+                  <option value="required">{t.idPhotoModeRequired}</option>
+                  <option value="optional">{t.idPhotoModeOptional}</option>
+                  <option value="disabled">{t.idPhotoModeDisabled}</option>
+                </select>
+                <small style={{ color: "var(--muted)" }}>
+                  {docModeSaving ? t.saving : t.idPhotoModeHint}
+                </small>
               </div>
               <small style={{ color: "var(--muted)" }}>{t.chooseSourceBeforeCopy}</small>
             </div>

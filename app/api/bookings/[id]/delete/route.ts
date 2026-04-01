@@ -10,6 +10,15 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
   const id = params.id;
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
+  const rGet = await admin
+    .from("bookings")
+    .select("id,form_id")
+    .eq("id", id)
+    .maybeSingle();
+  if (rGet.error) return NextResponse.json({ error: rGet.error.message }, { status: 400 });
+  if (!rGet.data) return NextResponse.json({ error: "Not found or already deleted" }, { status: 404 });
+  const formId = (rGet.data as any).form_id ? String((rGet.data as any).form_id) : null;
+
   // Dacă ai ON DELETE CASCADE pe tabelele child, e suficient un singur delete:
   // altfel, ștergem manual child-urile înainte (best-effort).
   try {
@@ -21,6 +30,17 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
   try {
     await admin.from("booking_contacts").delete().eq("booking_id", id);
   } catch {}
+  try {
+    await admin.from("booking_documents").delete().eq("booking_id", id);
+  } catch {}
+  if (formId) {
+    try {
+      await admin.from("form_documents").delete().eq("form_id", formId);
+    } catch {}
+    try {
+      await admin.from("form_bookings").delete().eq("id", formId);
+    } catch {}
+  }
 
   const del = await admin.from("bookings").delete().eq("id", id).select("id").maybeSingle();
   if (del.error) return NextResponse.json({ error: del.error.message }, { status: 400 });

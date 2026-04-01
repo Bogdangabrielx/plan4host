@@ -187,15 +187,15 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   // 0) Citește booking-ul (ca să vedem dacă e iCal)
   const rGet = await admin
     .from("bookings")
-    .select("id,property_id,source,ical_uid")
+    .select("id,property_id,source,ical_uid,form_id")
     .eq("id", id)
     .maybeSingle();
 
   if (rGet.error) return NextResponse.json({ error: rGet.error.message }, { status: 400 });
   if (!rGet.data)  return NextResponse.json({ error: "Already deleted" }, { status: 404 });
 
-  const { property_id, source, ical_uid } = rGet.data as {
-    property_id: string; source: string | null; ical_uid: string | null;
+  const { property_id, source, ical_uid, form_id } = rGet.data as {
+    property_id: string; source: string | null; ical_uid: string | null; form_id: string | null;
   };
 
   // 1) Dacă e iCal: suprimă reimportul aceluiași UID
@@ -234,6 +234,28 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   } catch {}
   // Șterge și documentele asociate rezervării (cleanup complet)
   try { await admin.from("booking_documents").delete().eq("booking_id", id); } catch {}
+  if (form_id) {
+    try {
+      const rFormDocs = await admin
+        .from("form_documents")
+        .select("storage_bucket,storage_path")
+        .eq("form_id", form_id);
+      if (!rFormDocs.error && Array.isArray(rFormDocs.data)) {
+        const byBucket: Record<string, string[]> = {};
+        for (const row of (rFormDocs.data as any[])) {
+          const b = String(row.storage_bucket || "").trim();
+          const p = String(row.storage_path || "").trim();
+          if (!b || !p) continue;
+          (byBucket[b] ||= []).push(p);
+        }
+        for (const [bucket, paths] of Object.entries(byBucket)) {
+          try { await (admin as any).storage.from(bucket).remove(paths); } catch {}
+        }
+      }
+    } catch {}
+    try { await admin.from("form_documents").delete().eq("form_id", form_id); } catch {}
+    try { await admin.from("form_bookings").delete().eq("id", form_id); } catch {}
+  }
 
   const del = await admin.from("bookings").delete().eq("id", id).select("id").maybeSingle();
   if (del.error) return NextResponse.json({ error: del.error.message }, { status: 400 });
