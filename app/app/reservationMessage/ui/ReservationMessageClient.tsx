@@ -1487,14 +1487,13 @@ export default function ReservationMessageClient({
             alignItems: "center",
             justifyContent: "space-between",
             gap: 10,
-            padding: 14,
+            padding: "12px 14px",
             borderRadius: 16,
             background: "var(--panel)",
             border: "1px solid var(--border)",
             width: "100%",
             marginTop: -2,
             zIndex: secondaryLangMenuOpen ? 40 : "auto",
-            minHeight: 58,
             boxSizing: "border-box",
           }}
         >
@@ -1509,21 +1508,18 @@ export default function ReservationMessageClient({
           </span>
           <button
             type="button"
-            className="sb-btn"
             disabled={!isAdmin || !!secondaryLangSaving}
             onClick={() => setSecondaryLangMenuOpen((prev) => !prev)}
             style={{
-              width: 54,
-              minWidth: 54,
-              height: 38,
-              padding: "0 8px",
-              borderRadius: 999,
-              border: "1px solid var(--border)",
-              background: "var(--card)",
+              padding: 0,
+              border: "none",
+              background: "transparent",
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between",
               gap: 6,
+              width: "auto",
+              minWidth: 0,
+              height: "auto",
               cursor: !isAdmin || !!secondaryLangSaving ? "default" : "pointer",
               lineHeight: 1,
             }}
@@ -1535,7 +1531,7 @@ export default function ReservationMessageClient({
               height={20}
               style={{ display: "block", width: 20, height: 20, borderRadius: 999, objectFit: "cover", flex: "0 0 auto" }}
             />
-            <span style={{ color: "var(--muted)", fontSize: 11, transform: secondaryLangMenuOpen ? "rotate(180deg)" : "none", transition: "transform .18s ease" }}>
+            <span style={{ color: "var(--muted)", fontSize: 11, transform: secondaryLangMenuOpen ? "rotate(180deg)" : "none", transition: "transform .18s ease", paddingTop: 1 }}>
               ▼
             </span>
           </button>
@@ -1544,8 +1540,8 @@ export default function ReservationMessageClient({
               className="Sb-cardglow"
               style={{
                 position: "absolute",
-                top: "calc(100% - 2px)",
-                right: 12,
+                top: "calc(100% - 4px)",
+                right: 10,
                 display: "grid",
                 gap: 6,
                 padding: 6,
