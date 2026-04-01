@@ -31,8 +31,12 @@ export async function PATCH(req: Request) {
     }
     const accountId = ctx.accountId;
 
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    const admin = createAdmin(url, serviceKey, { auth: { persistSession: false } });
+
     // țintă trebuie să fie în același cont
-    const { data: target } = await supa
+    const { data: target } = await admin
       .from("account_users")
       .select("role, account_id")
       .eq("account_id", accountId)
@@ -80,10 +84,6 @@ export async function PATCH(req: Request) {
       patch.scopes = Array.from(result);
     }
     if (Object.keys(patch).length === 0) return NextResponse.json({ ok: true });
-
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-    const admin = createAdmin(url, serviceKey, { auth: { persistSession: false } });
 
     const upd = await admin
       .from("account_users")
