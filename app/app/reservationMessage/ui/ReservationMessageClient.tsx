@@ -487,7 +487,9 @@ export default function ReservationMessageClient({
   useEffect(() => {
     if (!activeId || !composerRef.current) return;
     const scrollToComposer = () => {
-      composerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const rect = composerRef.current?.getBoundingClientRect();
+      const top = rect ? window.scrollY + rect.top - 12 : null;
+      if (top != null) window.scrollTo({ top, behavior: "smooth" });
       window.setTimeout(() => {
         try { titleRef.current?.focus(); } catch {}
       }, 260);
