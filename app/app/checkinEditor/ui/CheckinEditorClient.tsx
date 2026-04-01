@@ -327,6 +327,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [currentPlan, setCurrentPlan] = useState<"basic" | "standard" | "premium" | null>(null);
   const [aiPremiumPopupOpen, setAiPremiumPopupOpen] = useState(false);
   const [docModeSaving, setDocModeSaving] = useState(false);
+  const [docModeOpen, setDocModeOpen] = useState(false);
+  const docModeRef = useRef<HTMLDivElement | null>(null);
   const t = {
     title: uiLang === "ro" ? "Editor check-in" : "Check-in Editor",
     calendarConnected: uiLang === "ro" ? "Calendar conectat" : "Calendar connected",
@@ -343,9 +345,9 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     chooseSourceBeforeCopy: uiLang === "ro" ? "Poti alege o sursa inainte de copiere." : "You can choose a source before copying.",
     idPhotoMode: uiLang === "ro" ? "Poza document" : "Document photo",
     idPhotoModeHint: uiLang === "ro" ? "Alegi daca oaspetii trebuie sa incarce poza documentului la check-in." : "Choose whether guests must upload a document photo at check-in.",
-    idPhotoModeRequired: uiLang === "ro" ? "Solicita mereu poza documentului" : "Required - Guest must upload a document photo",
-    idPhotoModeOptional: uiLang === "ro" ? "Poza documentului este optionala" : "Optional - Guest may skip the document photo",
-    idPhotoModeDisabled: uiLang === "ro" ? "Nu solicita poza documentului" : "Disabled - Do not request a document photo",
+    idPhotoModeRequired: uiLang === "ro" ? "Solicita mereu poza documentului" : "Always request a document photo",
+    idPhotoModeOptional: uiLang === "ro" ? "Poza documentului este optionala" : "Let guests skip the document photo",
+    idPhotoModeDisabled: uiLang === "ro" ? "Nu solicita poza documentului" : "Do not request a document photo",
     saving: uiLang === "ro" ? "Se salveaza..." : "Saving...",
     houseRulesPdf: uiLang === "ro" ? "PDF regulament intern" : "House Rules PDF",
     noPdfUploaded: uiLang === "ro" ? "Nu exista PDF incarcat." : "No PDF uploaded.",
@@ -374,6 +376,23 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     houseRulesRecommended: uiLang === "ro" ? "Regulament intern recomandat" : "House Rules recommended",
     uploadLater: uiLang === "ro" ? "Voi incarca mai tarziu" : "I will upload later",
   } as const;
+
+  useEffect(() => {
+    if (!docModeOpen) return;
+    function onDoc(e: Event) {
+      const target = e.target as Node | null;
+      if (docModeRef.current && target && !docModeRef.current.contains(target)) setDocModeOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setDocModeOpen(false);
+    }
+    document.addEventListener("pointerdown", onDoc, true);
+    document.addEventListener("keydown", onKey, true);
+    return () => {
+      document.removeEventListener("pointerdown", onDoc, true);
+      document.removeEventListener("keydown", onKey, true);
+    };
+  }, [docModeOpen]);
 
   useEffect(() => {
     let mounted = true;
@@ -979,6 +998,14 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       setDocModeSaving(false);
     }
   }
+
+  const docModeOptions = [
+    { value: "required" as const, label: t.idPhotoModeRequired, icon: "/svg_requierd_photo.svg" },
+    { value: "optional" as const, label: t.idPhotoModeOptional, icon: "/svg_optional_photo.svg" },
+    { value: "disabled" as const, label: t.idPhotoModeDisabled, icon: "/svg_disabled_photo.svg" },
+  ];
+  const currentDocMode = (prop?.checkin_document_upload_mode || "required") as "required" | "optional" | "disabled";
+  const currentDocModeOption = docModeOptions.find((opt) => opt.value === currentDocMode) || docModeOptions[0];
 
   async function advanceSocialWizard(commit: boolean) {
     const currentKey = CONTACTS_SOCIAL_KEYS[contactsWizardSocialIndex];
@@ -2479,20 +2506,81 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     {copied ? t.copied : t.copyCheckinLink}
                   </button>
 
-                  <select
-                    className="sb-select sb-cardglow p4h-docmode-select"
-                    value={(prop.checkin_document_upload_mode || "required") as string}
-                    onChange={(e) => {
-                      const next = (e.currentTarget.value || "required") as "required" | "optional" | "disabled";
-                      void saveCheckinDocumentUploadMode(next);
-                    }}
-                    disabled={docModeSaving}
-                    style={{ width: "100%", maxWidth: "100%", minWidth: 0 }}
-                  >
-                    <option value="required">{t.idPhotoModeRequired}</option>
-                    <option value="optional">{t.idPhotoModeOptional}</option>
-                    <option value="disabled">{t.idPhotoModeDisabled}</option>
-                  </select>
+                  <div ref={docModeRef} style={{ position: "relative", minWidth: 0 }}>
+                    <button
+                      type="button"
+                      className="sb-select sb-cardglow p4h-docmode-select"
+                      aria-haspopup="listbox"
+                      aria-expanded={docModeOpen}
+                      onClick={() => { if (!docModeSaving) setDocModeOpen((v) => !v); }}
+                      disabled={docModeSaving}
+                      style={{
+                        width: "100%",
+                        maxWidth: "100%",
+                        minWidth: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 10,
+                        textAlign: "left",
+                        cursor: docModeSaving ? "default" : "pointer",
+                      }}
+                    >
+                      <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                        <img src={currentDocModeOption.icon} alt="" width={18} height={18} style={{ display: "block", flex: "0 0 auto" }} />
+                        <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {currentDocModeOption.label}
+                        </span>
+                      </span>
+                      <span aria-hidden style={{ color: "var(--muted)", flex: "0 0 auto" }}>▾</span>
+                    </button>
+                    {docModeOpen && (
+                      <div
+                        role="listbox"
+                        style={{
+                          position: "absolute",
+                          left: 0,
+                          right: 0,
+                          top: "calc(100% + 6px)",
+                          zIndex: 30,
+                          background: "var(--panel)",
+                          border: "1px solid var(--border)",
+                          borderRadius: 10,
+                          padding: 6,
+                          display: "grid",
+                          gap: 4,
+                          boxShadow: "0 12px 30px rgba(0,0,0,0.18)",
+                        }}
+                      >
+                        {docModeOptions.map((opt) => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => {
+                              setDocModeOpen(false);
+                              if (opt.value !== currentDocMode) void saveCheckinDocumentUploadMode(opt.value);
+                            }}
+                            style={{
+                              padding: "8px 10px",
+                              borderRadius: 8,
+                              border: "1px solid var(--border)",
+                              background: opt.value === currentDocMode ? "var(--primary)" : "var(--card)",
+                              color: opt.value === currentDocMode ? "#0c111b" : "var(--text)",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              textAlign: "left",
+                              minWidth: 0,
+                            }}
+                          >
+                            <img src={opt.icon} alt="" width={18} height={18} style={{ display: "block", flex: "0 0 auto" }} />
+                            <span style={{ minWidth: 0 }}>{opt.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
                   <small style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.4, fontWeight: 400 }}>
                     {t.chooseSourceBeforeCopy}
@@ -2529,20 +2617,81 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <label style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", color: "var(--text)", fontWeight: 700 }}>
                     {t.idPhotoMode}
                   </label>
-                  <select
-                    className="sb-select sb-cardglow p4h-docmode-select"
-                    value={(prop.checkin_document_upload_mode || "required") as string}
-                    onChange={(e) => {
-                      const next = (e.currentTarget.value || "required") as "required" | "optional" | "disabled";
-                      void saveCheckinDocumentUploadMode(next);
-                    }}
-                    disabled={docModeSaving}
-                    style={{ width: "100%", minWidth: 0, maxWidth: "100%" }}
-                  >
-                    <option value="required">{t.idPhotoModeRequired}</option>
-                    <option value="optional">{t.idPhotoModeOptional}</option>
-                    <option value="disabled">{t.idPhotoModeDisabled}</option>
-                  </select>
+                  <div ref={docModeRef} style={{ position: "relative", minWidth: 0 }}>
+                    <button
+                      type="button"
+                      className="sb-select sb-cardglow p4h-docmode-select"
+                      aria-haspopup="listbox"
+                      aria-expanded={docModeOpen}
+                      onClick={() => { if (!docModeSaving) setDocModeOpen((v) => !v); }}
+                      disabled={docModeSaving}
+                      style={{
+                        width: "100%",
+                        minWidth: 0,
+                        maxWidth: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 10,
+                        textAlign: "left",
+                        cursor: docModeSaving ? "default" : "pointer",
+                      }}
+                    >
+                      <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                        <img src={currentDocModeOption.icon} alt="" width={18} height={18} style={{ display: "block", flex: "0 0 auto" }} />
+                        <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {currentDocModeOption.label}
+                        </span>
+                      </span>
+                      <span aria-hidden style={{ color: "var(--muted)", flex: "0 0 auto" }}>▾</span>
+                    </button>
+                    {docModeOpen && (
+                      <div
+                        role="listbox"
+                        style={{
+                          position: "absolute",
+                          left: 0,
+                          right: 0,
+                          top: "calc(100% + 6px)",
+                          zIndex: 30,
+                          background: "var(--panel)",
+                          border: "1px solid var(--border)",
+                          borderRadius: 10,
+                          padding: 6,
+                          display: "grid",
+                          gap: 4,
+                          boxShadow: "0 12px 30px rgba(0,0,0,0.18)",
+                        }}
+                      >
+                        {docModeOptions.map((opt) => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => {
+                              setDocModeOpen(false);
+                              if (opt.value !== currentDocMode) void saveCheckinDocumentUploadMode(opt.value);
+                            }}
+                            style={{
+                              padding: "8px 10px",
+                              borderRadius: 8,
+                              border: "1px solid var(--border)",
+                              background: opt.value === currentDocMode ? "var(--primary)" : "var(--card)",
+                              color: opt.value === currentDocMode ? "#0c111b" : "var(--text)",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              textAlign: "left",
+                              minWidth: 0,
+                            }}
+                          >
+                            <img src={opt.icon} alt="" width={18} height={18} style={{ display: "block", flex: "0 0 auto" }} />
+                            <span style={{ minWidth: 0 }}>{opt.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <small style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.4, fontWeight: 400 }}>
                     {docModeSaving ? t.saving : t.idPhotoModeHint}
                   </small>
