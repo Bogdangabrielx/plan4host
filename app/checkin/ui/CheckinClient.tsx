@@ -1164,7 +1164,7 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
   function getOptionalUploadHint(propName: string) {
     switch (lang) {
       case "ro":
-        return `Daca preferati sa nu incarcati o poza, aceasta proprietate ${propName} permite acest lucru, dar este posibil sa vi se solicite prezentarea fizica a documentului in momentul cazarii.`;
+        return `Optional. Daca preferati sa nu incarcati o poza, ${propName} permite acest lucru, dar proprietatea poate solicita verificarea fizica a documentului la check-in.`;
       case "es":
         return `Si prefieres no subir una foto, esta propiedad ${propName} lo permite, pero es posible que te pidan presentar físicamente el documento al hacer el check-in.`;
       case "de":
@@ -1179,7 +1179,29 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
         return `Se preferires não carregar uma foto, a propriedade ${propName} permite isso, mas poderá pedir a apresentação física do documento no check-in.`;
       case "en":
       default:
-        return `If you prefer not to upload a photo, ${propName} allows this, but the property may ask to physically see your document at check-in.`;
+        return `Optional. If you prefer not to upload a photo, ${propName} allows this, but the property may ask to physically check your document at check-in.`;
+    }
+  }
+
+  function getUploadSectionTitle() {
+    if (docUploadRequired) return T("uploadId");
+    switch (lang) {
+      case "ro":
+        return "Incarca poza actului de identitate (optional)";
+      case "en":
+      default:
+        return "Upload ID photo (optional)";
+    }
+  }
+
+  function getUploadButtonLabel() {
+    if (docUploadRequired) return T("chooseFile");
+    switch (lang) {
+      case "ro":
+        return "Alege fisier (optional)...";
+      case "en":
+      default:
+        return "Choose file (optional)...";
     }
   }
 
@@ -2724,7 +2746,7 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
             <div className="ci-formBlock" style={{ marginTop: 16 }}>
               <div className="ci-sectionHead">
                 <span className="ci-sectionIcon" aria-hidden />
-                <div className="ci-sectionTitle">{docUploadRequired ? T('uploadId') : T('uploadId').replace('*', '')}</div>
+                <div className="ci-sectionTitle">{getUploadSectionTitle()}</div>
               </div>
 
               {!docUploadRequired && (
@@ -2747,7 +2769,7 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
                 htmlFor="p4h-id-upload"
                 onClick={(e) => { if (maybeShowIdUploadInfo(e)) return; }}
               >
-                {T("chooseFile")}
+                {getUploadButtonLabel()}
                 <input
                   type="file"
                   accept="image/*,application/pdf"
