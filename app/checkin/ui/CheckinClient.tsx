@@ -746,6 +746,7 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [validationIssues, setValidationIssues] = useState<string[]>([]);
+  const [validationOpen, setValidationOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Privacy Policy acknowledgement gate
@@ -1485,7 +1486,10 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
   const isSubmitting = submitState === "submitting";
 
   useEffect(() => {
-    if (canSubmit) setValidationIssues([]);
+    if (canSubmit) {
+      setValidationIssues([]);
+      setValidationOpen(false);
+    }
   }, [canSubmit]);
 
   // deschide PDF-ul (marchează vizualizat)
@@ -1568,6 +1572,7 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
     setSubmitState("submitting");
     setErrorMsg("");
     setValidationIssues([]);
+    setValidationOpen(false);
     // Show confirmation modal immediately to indicate progress
     setConfirmOpen(true);
     setConfirmStatus("sending");
@@ -1696,6 +1701,7 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
     e.preventDefault();
     if (!canSubmit) {
       setValidationIssues(getValidationIssues());
+      setValidationOpen(true);
       setErrorMsg("");
       setSubmitState("error");
       return;
@@ -3076,17 +3082,6 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
             )}
 
             {/* Error */}
-            {submitState === "error" && validationIssues.length > 0 && (
-              <div role="alert" style={{ padding: 12, borderRadius: 12, background: "var(--danger)", color: "#0c111b", fontWeight: 800 }}>
-                <div style={{ marginBottom: 8 }}>{getValidationTitle()}</div>
-                <ul style={{ margin: 0, paddingLeft: 18, fontWeight: 700 }}>
-                  {validationIssues.map((issue) => (
-                    <li key={issue}>{issue}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
             {submitState === "error" && !validationIssues.length && errorMsg && (
               <div role="alert" style={{ padding: 12, borderRadius: 12, background: "var(--danger)", color: "#0c111b", fontWeight: 800 }}>
                 {errorMsg}
@@ -3794,6 +3789,31 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
               >
                 {T("yesSend")}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {validationOpen && validationIssues.length > 0 && (
+        <div role="dialog" aria-modal="true" className="ci-modalOverlay" onClick={() => setValidationOpen(false)}>
+          <div onClick={(e) => e.stopPropagation()} className="sb-card ci-modalCard" style={{ position: "relative" }}>
+            <button
+              aria-label={T("close")}
+              onClick={() => setValidationOpen(false)}
+              className="ci-modalIconBtn"
+              style={{ position: "absolute", top: 10, right: 10 }}
+            >
+              ×
+            </button>
+            <div className="ci-modalHead" style={{ marginBottom: 10 }}>
+              <div className="ci-modalTitle">{getValidationTitle()}</div>
+            </div>
+            <div style={{ color: "#dc2626", fontSize: 13, lineHeight: 1.55, fontWeight: 400 }}>
+              <ul style={{ margin: 0, paddingLeft: 18 }}>
+                {validationIssues.map((issue) => (
+                  <li key={issue} style={{ marginBottom: 4 }}>{issue}</li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
