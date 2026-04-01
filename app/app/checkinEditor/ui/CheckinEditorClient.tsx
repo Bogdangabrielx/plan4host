@@ -2399,6 +2399,18 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
             animation: p4hHrScan 900ms ease both;
           }
         `}</style>
+        <style>{`
+          @media (max-width: 640px) {
+            .p4h-docmode-select {
+              width: 100%;
+              max-width: 100%;
+              min-width: 0;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+          }
+        `}</style>
 
         {contactsWizardLoading && (
           <div className={overlayStyles.overlay} role="status" aria-live="polite" aria-label={contactsWizardLoadingText} style={{ zIndex: 241 }}>
@@ -2459,40 +2471,38 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   {copied ? t.copied : t.copyCheckinLink}
                 </button>
                 {!isNarrow && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                    <label style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", color: "var(--text)", fontWeight: 700, whiteSpace: "nowrap" }}>
+                  <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
+                    <label style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", color: "var(--text)", fontWeight: 700 }}>
                       {t.idPhotoMode}
                     </label>
                     <select
-                      className="sb-select sb-cardglow"
+                      className="sb-select sb-cardglow p4h-docmode-select"
                       value={(prop.checkin_document_upload_mode || "required") as string}
                       onChange={(e) => {
                         const next = (e.currentTarget.value || "required") as "required" | "optional" | "disabled";
                         void saveCheckinDocumentUploadMode(next);
                       }}
                       disabled={docModeSaving}
-                      style={{ maxWidth: "100%", minWidth: 0, flex: 1 }}
+                      style={{ maxWidth: "100%", minWidth: 0 }}
                     >
                       <option value="required">{t.idPhotoModeRequired}</option>
                       <option value="optional">{t.idPhotoModeOptional}</option>
                       <option value="disabled">{t.idPhotoModeDisabled}</option>
                     </select>
+                    <small style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.4, fontWeight: 400 }}>
+                      {docModeSaving ? t.saving : t.idPhotoModeHint}
+                    </small>
                   </div>
                 )}
               </div>
               <small style={{ color: "var(--muted)" }}>{t.chooseSourceBeforeCopy}</small>
-              {!isNarrow && (
-                <small style={{ color: "var(--muted)" }}>
-                  {docModeSaving ? t.saving : t.idPhotoModeHint}
-                </small>
-              )}
               {isNarrow && (
                 <div style={{ display: "grid", gap: 6 }}>
                   <label style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", color: "var(--text)", fontWeight: 700 }}>
                     {t.idPhotoMode}
                   </label>
                   <select
-                    className="sb-select sb-cardglow"
+                    className="sb-select sb-cardglow p4h-docmode-select"
                     value={(prop.checkin_document_upload_mode || "required") as string}
                     onChange={(e) => {
                       const next = (e.currentTarget.value || "required") as "required" | "optional" | "disabled";
@@ -2505,7 +2515,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     <option value="optional">{t.idPhotoModeOptional}</option>
                     <option value="disabled">{t.idPhotoModeDisabled}</option>
                   </select>
-                  <small style={{ color: "var(--muted)" }}>
+                  <small style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.4, fontWeight: 400 }}>
                     {docModeSaving ? t.saving : t.idPhotoModeHint}
                   </small>
                 </div>
