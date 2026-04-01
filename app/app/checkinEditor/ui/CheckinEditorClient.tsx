@@ -2480,7 +2480,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     display: "grid",
                     gap: 10,
                     alignItems: "start",
-                    gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+                    gridTemplateColumns: "repeat(2, minmax(0, 260px))",
+                    justifyContent: "start",
                   }}
                 >
                   <label style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", color: "var(--text)", fontWeight: 700 }}>
