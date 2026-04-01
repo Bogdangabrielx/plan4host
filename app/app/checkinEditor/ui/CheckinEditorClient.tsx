@@ -354,6 +354,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [currentPlan, setCurrentPlan] = useState<"basic" | "standard" | "premium" | null>(null);
   const [aiPremiumPopupOpen, setAiPremiumPopupOpen] = useState(false);
   const [docModeSaving, setDocModeSaving] = useState(false);
+  const [docModeFeedback, setDocModeFeedback] = useState<"idle" | "saved">("idle");
   const [docModeOpen, setDocModeOpen] = useState(false);
   const docModeRef = useRef<HTMLDivElement | null>(null);
   const t = {
@@ -376,6 +377,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     idPhotoModeOptional: uiLang === "ro" ? "Poza documentului este optionala" : "Let guests skip the document photo",
     idPhotoModeDisabled: uiLang === "ro" ? "Nu solicita poza documentului" : "Do not request a document photo",
     saving: uiLang === "ro" ? "Se salveaza..." : "Saving...",
+    saved: uiLang === "ro" ? "Salvat." : "Saved.",
     houseRulesPdf: uiLang === "ro" ? "PDF regulament intern" : "House Rules PDF",
     noPdfUploaded: uiLang === "ro" ? "Nu exista PDF incarcat." : "No PDF uploaded.",
     uploadPdf: uiLang === "ro" ? "Incarca PDF" : "Upload PDF",
@@ -1011,6 +1013,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     if (!prop || docModeSaving) return;
     const prevMode = (prop.checkin_document_upload_mode || "required") as "required" | "optional" | "disabled";
     setProp((prev) => (prev ? { ...prev, checkin_document_upload_mode: nextMode } : prev));
+    setDocModeFeedback("idle");
     setDocModeSaving(true);
     try {
       const { error } = await supabase
@@ -1018,6 +1021,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
         .update({ checkin_document_upload_mode: nextMode })
         .eq("id", prop.id);
       if (error) throw error;
+      setDocModeFeedback("saved");
+      setTimeout(() => setDocModeFeedback("idle"), 1200);
     } catch (e: any) {
       setProp((prev) => (prev ? { ...prev, checkin_document_upload_mode: prevMode } : prev));
       alert(e?.message || (uiLang === "ro" ? "Nu am putut salva setarea." : "Could not save setting."));
@@ -2553,7 +2558,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       }}
                     >
                       <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                        <img src={currentDocModeOption.icon} alt="" width={18} height={18} style={{ display: "block", flex: "0 0 auto" }} />
+                        <MaskIcon src={currentDocModeOption.icon} size={18} color="var(--text)" />
                         <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {currentDocModeOption.label}
                         </span>
@@ -2566,7 +2571,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                         style={{
                           position: "absolute",
                           left: 0,
-                          right: 0,
                           top: "calc(100% + 6px)",
                           zIndex: 30,
                           background: "var(--panel)",
@@ -2576,6 +2580,9 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                           display: "grid",
                           gap: 4,
                           boxShadow: "0 12px 30px rgba(0,0,0,0.18)",
+                          width: "max-content",
+                          minWidth: "100%",
+                          maxWidth: "min(420px, calc(100vw - 32px))",
                         }}
                       >
                         {docModeOptions.map((opt) => (
@@ -2600,7 +2607,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                               minWidth: 0,
                             }}
                           >
-                            <img src={opt.icon} alt="" width={18} height={18} style={{ display: "block", flex: "0 0 auto" }} />
+                            <MaskIcon src={opt.icon} size={18} color={opt.value === currentDocMode ? "#0c111b" : "var(--text)"} />
                             <span style={{ minWidth: 0 }}>{opt.label}</span>
                           </button>
                         ))}
@@ -2612,7 +2619,12 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     {t.chooseSourceBeforeCopy}
                   </small>
                   <small style={HELPER_TEXT_STYLE}>
-                    {docModeSaving ? t.saving : t.idPhotoModeHint}
+                    {docModeSaving ? (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <LoadingPill variant="compact" title={t.saving} />
+                        <span>{t.saving}</span>
+                      </span>
+                    ) : docModeFeedback === "saved" ? t.saved : t.idPhotoModeHint}
                   </small>
                 </div>
               )}
@@ -2660,7 +2672,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       }}
                     >
                       <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                        <img src={currentDocModeOption.icon} alt="" width={18} height={18} style={{ display: "block", flex: "0 0 auto" }} />
+                        <MaskIcon src={currentDocModeOption.icon} size={18} color="var(--text)" />
                         <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {currentDocModeOption.label}
                         </span>
@@ -2673,7 +2685,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                         style={{
                           position: "absolute",
                           left: 0,
-                          right: 0,
                           top: "calc(100% + 6px)",
                           zIndex: 30,
                           background: "var(--panel)",
@@ -2683,6 +2694,9 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                           display: "grid",
                           gap: 4,
                           boxShadow: "0 12px 30px rgba(0,0,0,0.18)",
+                          width: "max-content",
+                          minWidth: "100%",
+                          maxWidth: "min(420px, calc(100vw - 32px))",
                         }}
                       >
                         {docModeOptions.map((opt) => (
@@ -2707,7 +2721,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                               minWidth: 0,
                             }}
                           >
-                            <img src={opt.icon} alt="" width={18} height={18} style={{ display: "block", flex: "0 0 auto" }} />
+                            <MaskIcon src={opt.icon} size={18} color={opt.value === currentDocMode ? "#0c111b" : "var(--text)"} />
                             <span style={{ minWidth: 0 }}>{opt.label}</span>
                           </button>
                         ))}
@@ -2715,7 +2729,12 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     )}
                   </div>
                   <small style={HELPER_TEXT_STYLE}>
-                    {docModeSaving ? t.saving : t.idPhotoModeHint}
+                    {docModeSaving ? (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <LoadingPill variant="compact" title={t.saving} />
+                        <span>{t.saving}</span>
+                      </span>
+                    ) : docModeFeedback === "saved" ? t.saved : t.idPhotoModeHint}
                   </small>
                 </div>
               )}
