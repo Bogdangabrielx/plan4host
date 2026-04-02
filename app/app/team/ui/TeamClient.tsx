@@ -879,42 +879,46 @@ export default function TeamClient() {
                     </div>
 
                     <div className="memberActions">
-                      <button
-                        className="sb-btn sb-btn--icon"
-                        style={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: 999,
-                          display: "grid",
-                          placeItems: "center",
-                          opacity: isAdmin ? 0.45 : 1,
-                          cursor: isAdmin ? "not-allowed" : "pointer",
-                        }}
-                        onClick={() => !isAdmin && setPasswordFor(u)}
-                        disabled={loading || isAdmin}
-                        title={isAdmin ? i18n.notAllowedForAdmin : i18n.setPassword}
-                        aria-label={i18n.setPassword}
-                      >
-                        <span aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>🔑</span>
-                      </button>
-                      <button
-                        className="sb-btn sb-btn--icon"
-                        style={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: 999,
-                          display: "grid",
-                          placeItems: "center",
-                          opacity: isAdmin ? 0.45 : 1,
-                          cursor: isAdmin ? "not-allowed" : "pointer",
-                        }}
-                        onClick={() => !isAdmin && openEditMember(u)}
-                        disabled={loading || isAdmin}
-                        title={isAdmin ? i18n.notAllowedForAdmin : i18n.editAccess}
-                        aria-label={i18n.editAccess}
-                      >
-                        <MaskIcon src="/svg_edit_icon.svg" size={18} color="var(--text)" opacity={0.92} />
-                      </button>
+                      {canManage ? (
+                        <>
+                          <button
+                            className="sb-btn sb-btn--icon"
+                            style={{
+                              width: 44,
+                              height: 44,
+                              borderRadius: 999,
+                              display: "grid",
+                              placeItems: "center",
+                              opacity: isAdmin ? 0.45 : 1,
+                              cursor: isAdmin ? "not-allowed" : "pointer",
+                            }}
+                            onClick={() => !isAdmin && setPasswordFor(u)}
+                            disabled={loading || isAdmin}
+                            title={isAdmin ? i18n.notAllowedForAdmin : i18n.setPassword}
+                            aria-label={i18n.setPassword}
+                          >
+                            <span aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>🔑</span>
+                          </button>
+                          <button
+                            className="sb-btn sb-btn--icon"
+                            style={{
+                              width: 44,
+                              height: 44,
+                              borderRadius: 999,
+                              display: "grid",
+                              placeItems: "center",
+                              opacity: isAdmin ? 0.45 : 1,
+                              cursor: isAdmin ? "not-allowed" : "pointer",
+                            }}
+                            onClick={() => !isAdmin && openEditMember(u)}
+                            disabled={loading || isAdmin}
+                            title={isAdmin ? i18n.notAllowedForAdmin : i18n.editAccess}
+                            aria-label={i18n.editAccess}
+                          >
+                            <MaskIcon src="/svg_edit_icon.svg" size={18} color="var(--text)" opacity={0.92} />
+                          </button>
+                        </>
+                      ) : null}
                   {false && (
                     <button
                       style={{ ...ghostBtn, opacity: isAdmin ? 0.5 : 1, cursor: isAdmin ? "not-allowed" : "pointer" }}
@@ -935,25 +939,27 @@ export default function TeamClient() {
                       {u.disabled ? "Enable" : "Disable"}
                     </button>
                   )}
-                      <button
-                        className="sb-btn sb-btn--icon"
-                        style={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: 999,
-                          display: "grid",
-                          placeItems: "center",
-                          opacity: isAdmin ? 0.45 : 1,
-                          cursor: isAdmin ? "not-allowed" : "pointer",
-                          color: "var(--danger)",
-                        }}
-                        onClick={() => !isAdmin && removeUser(u)}
-                        disabled={loading || isAdmin}
-                        title={isAdmin ? i18n.notAllowedForAdmin : i18n.remove}
-                        aria-label={i18n.remove}
-                      >
-                        <span aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>🗑</span>
-                      </button>
+                      {canManage ? (
+                        <button
+                          className="sb-btn sb-btn--icon"
+                          style={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: 999,
+                            display: "grid",
+                            placeItems: "center",
+                            opacity: isAdmin ? 0.45 : 1,
+                            cursor: isAdmin ? "not-allowed" : "pointer",
+                            color: "var(--danger)",
+                          }}
+                          onClick={() => !isAdmin && removeUser(u)}
+                          disabled={loading || isAdmin}
+                          title={isAdmin ? i18n.notAllowedForAdmin : i18n.remove}
+                          aria-label={i18n.remove}
+                        >
+                          <span aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>🗑</span>
+                        </button>
+                      ) : null}
                     </div>
                   </li>
                 );

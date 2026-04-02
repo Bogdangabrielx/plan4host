@@ -27,38 +27,6 @@ function planBadgeStyle(plan: Plan): React.CSSProperties {
   return base;
 }
 
-function titleIcon(title: string): string | null {
-  const key = title.trim().toLowerCase();
-  const map: Record<string, string> = {
-    "dashboard": "/svg_dashboard.svg",
-    "control": "/svg_dashboard.svg",
-    "calendar": "/svg_calendar.svg",
-    "property setup": "/svg_amenities.svg",
-    "setari proprietate": "/svg_amenities.svg",
-    "check-in editor": "/svg_checkin.svg",
-    "editor check-in": "/svg_checkin.svg",
-    "cleaning board": "/svg_cleaning.svg",
-    "curatenie": "/svg_cleaning.svg",
-    "sync calendars": "/svg_channels.svg",
-    "sincronizare calendare": "/svg_channels.svg",
-    "channels & ical": "/svg_channels.svg",
-    "canale si ical": "/svg_channels.svg",
-    "automatic messages": "/svg_send_demo.svg",
-    "mesaje automate": "/svg_send_demo.svg",
-    "guest overview": "/svg_guests.svg",
-    "oaspeti": "/svg_guests.svg",
-    "notifications": "/svg_notifications.svg",
-    "notificari": "/svg_notifications.svg",
-    "subscription": "/svg_subscription.svg",
-    "abonament": "/svg_subscription.svg",
-    "team": "/svg_team.svg",
-    "echipa": "/svg_team.svg",
-    "qr generator": "/svg_qr.svg",
-    "generator qr": "/svg_qr.svg",
-  };
-  return map[key] || null;
-}
-
 export default function PlanHeaderBadge({ title, slot = "below" }: { title: string; slot?: "below" | "header-right" | "under-title" }) {
   const supabase = useMemo(() => createClient(), []);
   const { setTitle, setRight } = useHeader();
@@ -108,7 +76,6 @@ export default function PlanHeaderBadge({ title, slot = "below" }: { title: stri
     };
     return map[key] || title;
   }, [title, lang]);
-  const iconSrc = useMemo(() => titleIcon(translatedTitle), [translatedTitle]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -170,56 +137,25 @@ export default function PlanHeaderBadge({ title, slot = "below" }: { title: stri
         <span style={{ display: 'grid', gap: 8, justifyItems: 'center' }}>
           <span
             style={{
-              maxWidth: "min(72vw, 520px)",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              minWidth: 0,
+              maxWidth: "min(66vw, 520px)",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: isAutomaticMessages ? "clip" : "ellipsis",
+              // For long titles like "Automatic Messages", shrink instead of ellipsis.
+              fontSize: isAutomaticMessages
+                ? (isTiny ? "clamp(11px, 3.2vw, 15px)" : "clamp(13px, 3.6vw, 18px)")
+                : undefined,
+              letterSpacing: isAutomaticMessages ? "0.06em" : undefined,
             }}
           >
-            {iconSrc ? (
-              <span
-                aria-hidden
-                style={{
-                  width: 16,
-                  height: 16,
-                  display: "inline-block",
-                  backgroundColor: "var(--text)",
-                  WebkitMaskImage: `url(${iconSrc})`,
-                  WebkitMaskRepeat: "no-repeat",
-                  WebkitMaskPosition: "center",
-                  WebkitMaskSize: "contain",
-                  maskImage: `url(${iconSrc})`,
-                  maskRepeat: "no-repeat",
-                  maskPosition: "center",
-                  maskSize: "contain",
-                  flex: "0 0 auto",
-                  opacity: 0.92,
-                }}
-              />
-            ) : null}
-            <span
-              style={{
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: isAutomaticMessages ? "clip" : "ellipsis",
-                // For long titles like "Automatic Messages", shrink instead of ellipsis.
-                fontSize: isAutomaticMessages
-                  ? (isTiny ? "clamp(11px, 3.2vw, 15px)" : "clamp(13px, 3.6vw, 18px)")
-                  : undefined,
-                letterSpacing: isAutomaticMessages ? "0.06em" : undefined,
-                minWidth: 0,
-              }}
-            >
-              {translatedTitle}
-            </span>
+            {translatedTitle}
           </span>
           {badge}
         </span>
       );
       setTitle(composed);
     }
-  }, [badge, iconSrc, isTiny, setRight, setTitle, slot, translatedTitle]);
+  }, [badge, isTiny, setRight, setTitle, slot, translatedTitle]);
 
   if (slot === "header-right" || slot === 'under-title') return null;
   if (!plan) return null;
