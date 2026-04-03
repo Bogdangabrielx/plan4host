@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createSSRClient } from '@/lib/supabase/server';
 import { createClient } from '@supabase/supabase-js';
-import { resolvePropertyAccountId } from "@/lib/push/account-subscribers";
+import { resolveTeamAccountContext } from "@/lib/auth/team-account";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -21,7 +21,6 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json().catch(() => ({}));
     const subscription = body?.subscription;
-    const property_id: string | null = (body?.property_id || null);
     const ua: string | null = body?.ua || null;
     const os: string | null = body?.os || null;
     if (!subscription || !subscription.endpoint || !subscription.keys) {
@@ -31,13 +30,8 @@ export async function POST(req: NextRequest) {
     const p256dh: string = subscription.keys.p256dh;
     const authKey: string = subscription.keys.auth;
 
-    // Derive account_id from property_id (if provided), for easier auditing/debug
-    let account_id: string | null = null;
-    if (property_id) {
-      try {
-        account_id = await resolvePropertyAccountId(admin, property_id);
-      } catch { /* ignore */ }
-    }
+    const ctx = await resolveTeamAccountContext(supa as any, String(user.id));
+    const account_id: string | null = ctx.accountId ? String(ctx.accountId) : String(user.id);
 
     // Upsert by endpoint (unique)
     const { error } = await admin
@@ -48,7 +42,7 @@ export async function POST(req: NextRequest) {
         auth: authKey,
         user_id: user.id,
         account_id: account_id,
-        property_id: property_id,
+        property_id: null,
         ua,
         os,
       }, { onConflict: 'endpoint' });

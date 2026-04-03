@@ -576,15 +576,11 @@ export default function AppShell({ title, currentPath, children }: Props) {
 
               const ua = navigator.userAgent || "";
               const os = document.documentElement.getAttribute("data-os") || "";
-              let property_id: string | null = null;
-              try {
-                property_id = localStorage.getItem("p4h:selectedPropertyId");
-              } catch {}
 
               await fetch("/api/push/subscribe", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ subscription: sub.toJSON(), property_id, ua, os }),
+                body: JSON.stringify({ subscription: sub.toJSON(), ua, os }),
               });
             }
           } finally {

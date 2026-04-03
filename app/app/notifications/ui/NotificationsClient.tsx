@@ -206,11 +206,11 @@ export default function NotificationsClient() {
     }
   }
 
-  async function subscribeInDB(sub: PushSubscription, property_id: string | null, ua: string, os: string) {
+  async function subscribeInDB(sub: PushSubscription, ua: string, os: string) {
     const res = await fetch('/api/push/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ subscription: sub.toJSON(), property_id, ua, os }),
+      body: JSON.stringify({ subscription: sub.toJSON(), ua, os }),
     });
     if (!res.ok) {
       throw new Error("subscribe_failed");
@@ -255,8 +255,7 @@ export default function NotificationsClient() {
 
       const ua = navigator.userAgent || '';
       const os = (document.documentElement.getAttribute('data-os') || '');
-      let property_id: string | null = null; try { property_id = localStorage.getItem('p4h:selectedPropertyId'); } catch {}
-      await subscribeInDB(sub, property_id, ua, os);
+      await subscribeInDB(sub, ua, os);
       await refreshActive(false);
     } finally {
       finalize();
