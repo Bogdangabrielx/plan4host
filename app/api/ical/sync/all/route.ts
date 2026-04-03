@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
+import { broadcastNewBookingPush } from "@/lib/push/new-booking";
 import { createClient as createRls } from "@/lib/supabase/server";
 import { parseIcsToEvents, toLocalDateTime, type ParsedEvent } from "@/lib/ical/parse";
 
@@ -312,6 +313,14 @@ async function createOrUpdateFromEvent(
         }
       }
     }
+
+    try {
+      await broadcastNewBookingPush(supa, {
+        propertyId: feed.property_id,
+        startDate: start_date,
+        endDate: end_date,
+      });
+    } catch {}
   }
 
   try {

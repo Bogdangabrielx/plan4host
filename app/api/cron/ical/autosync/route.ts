@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient as createSb } from "@supabase/supabase-js";
 import { parseIcsToEvents, toLocalDateTime, type ParsedEvent } from "@/lib/ical/parse";
+import { broadcastNewBookingPush } from "@/lib/push/new-booking";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -415,6 +416,14 @@ async function createOrUpdateFromEvent(
         }
       }
     }
+
+    try {
+      await broadcastNewBookingPush(supa, {
+        propertyId: feed.property_id,
+        startDate: start_date,
+        endDate: end_date,
+      });
+    } catch {}
   }
 
   // 4) Upsert UID map

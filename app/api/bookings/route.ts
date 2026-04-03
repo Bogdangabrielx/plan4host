@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 import { actorCanWrite, getApiActor, getPropertyForActor } from "@/lib/auth/api-access";
+import { broadcastNewBookingPush } from "@/lib/push/new-booking";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -105,6 +106,14 @@ export async function POST(req: Request) {
   if (ins.error) {
     return NextResponse.json({ error: ins.error.message }, { status: 400 });
   }
+
+  try {
+    await broadcastNewBookingPush(admin, {
+      propertyId: property_id,
+      startDate: start_date,
+      endDate: end_date,
+    });
+  } catch {}
 
   return NextResponse.json({ ok: true, booking: ins.data });
 }
