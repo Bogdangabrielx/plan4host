@@ -36,7 +36,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const id = params.id;
     const actorRes = await getApiActor();
     if (!actorRes.ok) return NextResponse.json({ error: actorRes.error }, { status: actorRes.status });
-    if (!actorCanWrite(actorRes.actor, ["calendar", "guest_overview"])) {
+    if (!actorCanWrite(actorRes.actor, ["calendar"])) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     const bookingRes = await getBookingForActor(actorRes.actor, id);
@@ -178,7 +178,7 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   const id = params.id;
   const actorRes = await getApiActor();
   if (!actorRes.ok) return NextResponse.json({ error: actorRes.error }, { status: actorRes.status });
-  if (!actorCanWrite(actorRes.actor, ["calendar", "guest_overview"])) {
+  if (!actorCanWrite(actorRes.actor, ["calendar"])) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const bookingRes = await getBookingForActor(actorRes.actor, id);
