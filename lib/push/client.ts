@@ -24,7 +24,7 @@ function isIosStandaloneWebApp(): boolean {
 }
 
 function getPushRegistrationTimeoutMs(): number {
-  return isIosStandaloneWebApp() ? 20000 : 8000;
+  return isIosStandaloneWebApp() ? 30000 : 8000;
 }
 
 function sleep(ms: number): Promise<void> {
@@ -71,7 +71,6 @@ export async function waitForActivePushRegistration(
   timeoutMs = getPushRegistrationTimeoutMs(),
 ): Promise<ServiceWorkerRegistration> {
   let registration = reg;
-  if (registration.active) return registration;
 
   const candidate = registration.installing || registration.waiting;
   if (candidate) {
@@ -100,13 +99,18 @@ export async function waitForActivePushRegistration(
       onStateChange();
     });
 
-    if (activated && registration.active) return registration;
+    if (activated) {
+      const activatedReady = await withTimeout<ServiceWorkerRegistration | null>(
+        navigator.serviceWorker.ready,
+        3000,
+        null,
+      );
+      if (activatedReady?.active) return activatedReady;
+    }
   }
 
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    if (registration.active) return registration;
-
     const readyReg = await withTimeout<ServiceWorkerRegistration | null>(
       navigator.serviceWorker.ready,
       1500,
@@ -117,18 +121,22 @@ export async function waitForActivePushRegistration(
     try {
       const direct = await navigator.serviceWorker.getRegistration();
       if (direct) registration = direct;
-      if (registration.active) return registration;
     } catch {}
 
     try {
       const regs = await navigator.serviceWorker.getRegistrations();
-      const firstActive = regs.find((item) => item.active);
-      if (firstActive?.active) return firstActive;
-      if (!registration && regs[0]) registration = regs[0];
+      if (regs[0]) registration = regs[0];
     } catch {}
 
     await sleep(500);
   }
+
+  const finalReady = await withTimeout<ServiceWorkerRegistration | null>(
+    navigator.serviceWorker.ready,
+    5000,
+    null,
+  );
+  if (finalReady?.active) return finalReady;
 
   throw new Error("service_worker_not_active");
 }
@@ -144,24 +152,7 @@ export async function getReadyPushRegistration(): Promise<ServiceWorkerRegistrat
   if (!reg) {
     reg = await navigator.serviceWorker.register("/sw.js");
   }
-
-  try {
-    return await waitForActivePushRegistration(reg);
-  } catch (error) {
-    if (!isIosStandaloneWebApp()) throw error;
-
-    try {
-      const direct = await navigator.serviceWorker.getRegistration();
-      if (direct) return direct;
-    } catch {}
-
-    try {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      if (regs[0]) return regs[0];
-    } catch {}
-
-    return reg;
-  }
+  return waitForActivePushRegistration(reg);
 }
 
 export async function getCurrentPushSubscription(): Promise<PushSubscription | null> {
@@ -222,8 +213,19 @@ export async function ensurePushSubscription(): Promise<PushSubscription> {
   } catch (error) {
     if (!isIosStandaloneWebApp()) throw error;
 
+    const invalidState =
+      (error as any)?.name === "InvalidStateError" ||
+      /active service worker/i.test(String((error as any)?.message || ""));
+    if (!invalidState) throw error;
+
+    const retryReg = await withTimeout<ServiceWorkerRegistration | null>(
+      navigator.serviceWorker.ready,
+      getPushRegistrationTimeoutMs(),
+      null,
+    );
+    if (!retryReg?.active) throw error;
+
     await sleep(1500);
-    const retryReg = await getReadyPushRegistration();
     sub = await retryReg.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(keyB64),
