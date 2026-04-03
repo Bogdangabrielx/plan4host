@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getServiceSupabase } from "@/lib/supabase/service";
+import { resolveTeamAccountContext } from "@/lib/auth/team-account";
 
 type ActorRole = "admin" | "editor" | "viewer";
 
@@ -51,22 +52,8 @@ export async function getApiActor(): Promise<
   }
 
   const userId = String(auth.user.id);
-  const admin = getServiceSupabase();
-
-  const { data: memberships, error: membershipError } = await admin
-    .from("account_users")
-    .select("account_id, role, scopes, disabled")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: true });
-
-  if (membershipError) {
-    return { ok: false, status: 500, error: membershipError.message };
-  }
-
-  const rows = (memberships ?? []) as MembershipRow[];
-  const activeAdmin = rows.find((row) => !row.disabled && row.role === "admin");
-  const activeMember = rows.find((row) => !row.disabled);
-  const picked = activeAdmin ?? activeMember ?? rows[0] ?? null;
+  const ctx = await resolveTeamAccountContext(supa as any, userId);
+  const picked = (ctx.membership as MembershipRow | null) ?? null;
 
   if (picked) {
     if (picked.disabled) {
@@ -85,6 +72,7 @@ export async function getApiActor(): Promise<
     };
   }
 
+  const admin = getServiceSupabase();
   const { data: ownAccount, error: ownAccountError } = await admin
     .from("accounts")
     .select("id")
