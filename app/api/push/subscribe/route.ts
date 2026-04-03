@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createSSRClient } from '@/lib/supabase/server';
 import { createClient } from '@supabase/supabase-js';
-import { resolveTeamAccountContext } from "@/lib/auth/team-account";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -30,9 +29,6 @@ export async function POST(req: NextRequest) {
     const p256dh: string = subscription.keys.p256dh;
     const authKey: string = subscription.keys.auth;
 
-    const ctx = await resolveTeamAccountContext(supa as any, String(user.id));
-    const account_id: string | null = ctx.accountId ? String(ctx.accountId) : String(user.id);
-
     // Upsert by endpoint (unique)
     const { error } = await admin
       .from('push_subscriptions')
@@ -41,7 +37,7 @@ export async function POST(req: NextRequest) {
         p256dh: p256dh,
         auth: authKey,
         user_id: user.id,
-        account_id: account_id,
+        account_id: null,
         property_id: null,
         ua,
         os,
