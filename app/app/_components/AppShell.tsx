@@ -543,7 +543,9 @@ export default function AppShell({ title, currentPath, children }: Props) {
           localStorage.setItem("p4h:push:endpoint", sub.endpoint);
         } catch {}
       })
-      .catch(() => {});
+      .catch((error) => {
+        console.error("[push] background sync failed", error);
+      });
   }, []);
 
   // Global one-time push prompt on first user gesture across /app
@@ -575,8 +577,12 @@ export default function AppShell({ title, currentPath, children }: Props) {
               } catch {}
             }
           }
+        }).catch((error) => {
+          console.error("[push] prompt flow failed", error);
         });
-      } catch {}
+      } catch (error) {
+        console.error("[push] prompt flow crashed", error);
+      }
     };
 
     window.addEventListener("pointerdown", handler, { once: true });

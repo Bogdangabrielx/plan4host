@@ -167,6 +167,8 @@ export async function syncPushSubscriptionToServer(sub: PushSubscription): Promi
   const res = await withTimeout(
     fetch("/api/push/subscribe", {
       method: "POST",
+      credentials: "include",
+      cache: "no-store",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ subscription: sub.toJSON(), ua, os }),
     }),
@@ -175,7 +177,10 @@ export async function syncPushSubscriptionToServer(sub: PushSubscription): Promi
   );
 
   if (!res) throw new Error("subscribe_timeout");
-  if (!res.ok) throw new Error("subscribe_failed");
+  if (!res.ok) {
+    const details = await res.text().catch(() => "");
+    throw new Error(details || "subscribe_failed");
+  }
 }
 
 export async function syncExistingPushSubscriptionToServer(): Promise<PushSubscription | null> {

@@ -187,7 +187,8 @@ export default function NotificationsClient() {
 
       await syncPushSubscriptionToServer(sub);
       await refreshActive(false);
-    } catch {
+    } catch (error) {
+      console.error("[push] turnOn failed", error);
       setActive(false);
     } finally {
       finalize();
@@ -210,7 +211,17 @@ export default function NotificationsClient() {
         try { epToRemove = localStorage.getItem('p4h:push:endpoint'); } catch {}
       }
       if (epToRemove) {
-        try { await fetch('/api/push/unsubscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: epToRemove }) }); } catch {}
+        try {
+          await fetch('/api/push/unsubscribe', {
+            method: 'POST',
+            credentials: 'include',
+            cache: 'no-store',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ endpoint: epToRemove }),
+          });
+        } catch (error) {
+          console.error("[push] turnOff unsubscribe failed", error);
+        }
       }
       try { localStorage.removeItem('p4h:push:endpoint'); } catch {}
       setEndpoint(null);
