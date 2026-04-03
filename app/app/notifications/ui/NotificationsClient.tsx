@@ -246,8 +246,6 @@ export default function NotificationsClient({ properties }: { properties: Proper
   }
 
   async function sendTestForProperty(propertyId: string) {
-    setStatus("loading");
-    setLoading(true);
     try {
       if (!pushCapable) return;
       const reg = await navigator.serviceWorker.ready;
@@ -255,11 +253,11 @@ export default function NotificationsClient({ properties }: { properties: Proper
         body: t.testNotification,
         icon: "/icons/icon-192.png",
         badge: "/icons/icon-192.png",
-        tag: `p4h-test-${propertyId}`,
+        tag: `p4h-test-${propertyId}-${Date.now()}`,
         data: { url: `/app/guest?property=${encodeURIComponent(propertyId)}` },
       });
-    } finally {
-      finalize();
+    } catch (error) {
+      console.error("[push] sendTest failed", error);
     }
   }
 
