@@ -6,7 +6,7 @@ type Lang = "en" | "ro";
 
 export default function NotificationsClient() {
   const { setPill } = useHeader();
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
   const [lang, setLang] = useState<Lang>("en");
   const [active, setActive] = useState<boolean>(false);
@@ -91,6 +91,32 @@ export default function NotificationsClient() {
     return () => setPill(null);
   }, [loading, setPill]);
 
+  function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+    return new Promise((resolve) => {
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          resolve(fallback);
+        }
+      }, ms);
+
+      promise
+        .then((value) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          resolve(value);
+        })
+        .catch(() => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          resolve(fallback);
+        });
+    });
+  }
+
   const getCurrentSubscription = useCallback(async (): Promise<PushSubscription | null> => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return null;
 
@@ -109,15 +135,19 @@ export default function NotificationsClient() {
     } catch {}
 
     try {
-      const ready = await navigator.serviceWorker.ready;
-      return (await ready.pushManager.getSubscription()) || null;
+      const ready = await withTimeout<ServiceWorkerRegistration | null>(
+        navigator.serviceWorker.ready,
+        2000,
+        null,
+      );
+      if (ready) return (await ready.pushManager.getSubscription()) || null;
     } catch {}
 
     return null;
   }, []);
 
-  const refreshActive = useCallback(async () => {
-    setLoading(true);
+  const refreshActive = useCallback(async (showSpinner = false) => {
+    if (showSpinner) setLoading(true);
     try {
       const cap = typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
       setPushCapable(cap);
@@ -135,26 +165,30 @@ export default function NotificationsClient() {
       if (ep) {
         // Check DB state for this device endpoint
         const url = `/api/push/status?endpoint=${encodeURIComponent(ep)}`;
-        const res = await fetch(url, { method: 'GET' });
+        const res = await withTimeout(fetch(url, { method: 'GET' }), 4000, null as Response | null);
+        if (!res) {
+          setActive(false);
+          return;
+        }
         const j = await res.json().catch(() => ({}));
         setActive(!!j?.active);
       } else {
         setActive(false);
       }
     } finally {
-      setLoading(false);
+      if (showSpinner) setLoading(false);
     }
   }, [getCurrentSubscription]);
 
   useEffect(() => {
-    refreshActive().catch(() => {});
+    refreshActive(false).catch(() => {});
   }, [refreshActive]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const onFocus = () => { refreshActive().catch(() => {}); };
+    const onFocus = () => { refreshActive(false).catch(() => {}); };
     const onVisibility = () => {
-      if (document.visibilityState === "visible") refreshActive().catch(() => {});
+      if (document.visibilityState === "visible") refreshActive(false).catch(() => {});
     };
     window.addEventListener("focus", onFocus);
     document.addEventListener("visibilitychange", onVisibility);
@@ -236,7 +270,7 @@ export default function NotificationsClient() {
       const os = (document.documentElement.getAttribute('data-os') || '');
       let property_id: string | null = null; try { property_id = localStorage.getItem('p4h:selectedPropertyId'); } catch {}
       await subscribeInDB(sub, property_id, ua, os);
-      await refreshActive();
+      await refreshActive(false);
     } finally {
       finalize();
     }
@@ -266,7 +300,7 @@ export default function NotificationsClient() {
       try { localStorage.removeItem('p4h:push:endpoint'); } catch {}
       setEndpoint(null);
       // Re-check DB status to be precise
-      await refreshActive();
+      await refreshActive(false);
     } finally {
       finalize();
     }
