@@ -80,11 +80,14 @@ export async function POST(req: NextRequest) {
     });
 
     let sent = 0;
+    const sentEndpoints = new Set<string>();
     for (const s of subs) {
+      if (sentEndpoints.has(s.endpoint)) continue;
       const subscription = { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } } as any;
       try {
         await webpush.sendNotification(subscription, payload);
         sent++;
+        sentEndpoints.add(s.endpoint);
       } catch (e: any) {
         if (e?.statusCode === 410 || e?.statusCode === 404) {
           try { await admin.from('push_subscriptions').delete().eq('endpoint', s.endpoint); } catch {}

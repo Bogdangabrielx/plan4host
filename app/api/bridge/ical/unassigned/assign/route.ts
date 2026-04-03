@@ -97,9 +97,14 @@ export async function POST(req: Request) {
       tag: `guest-${pid}`,
     });
     const subs = await listSubscriptionsForUsers(admin, userIds, pid);
+    const sentEndpoints = new Set<string>();
     for (const s of subs || []) {
+      if (sentEndpoints.has((s as any).endpoint)) continue;
       const subscription = { endpoint: (s as any).endpoint, keys: { p256dh: (s as any).p256dh, auth: (s as any).auth } } as any;
-      try { await webpush.sendNotification(subscription, payload); }
+      try {
+        await webpush.sendNotification(subscription, payload);
+        sentEndpoints.add((s as any).endpoint);
+      }
       catch (e: any) {
         if (e?.statusCode === 410 || e?.statusCode === 404) {
           try { await admin.from('push_subscriptions').delete().eq('endpoint', (s as any).endpoint); } catch {}

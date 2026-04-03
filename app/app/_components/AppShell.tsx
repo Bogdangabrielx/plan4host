@@ -7,10 +7,6 @@ import BottomNav from "../ui/BottomNav";
 import PullToRefresh from "./PullToRefresh";
 import { HeaderProvider } from "./HeaderContext";
 import AppLoadingOverlay from "./AppLoadingOverlay";
-import {
-  isPushCapable,
-  syncExistingPushSubscriptionToServer,
-} from "@/lib/push/client";
 
 type Props = {
   title?: React.ReactNode;
@@ -528,23 +524,6 @@ export default function AppShell({ title, currentPath, children }: Props) {
       setShowInstall(false);
     }
   }
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!isPushCapable()) return;
-    if (Notification.permission !== "granted") return;
-
-    void syncExistingPushSubscriptionToServer()
-      .then((sub) => {
-        if (!sub?.endpoint) return;
-        try {
-          localStorage.setItem("p4h:push:endpoint", sub.endpoint);
-        } catch {}
-      })
-      .catch((error) => {
-        console.error("[push] background sync failed", error);
-      });
-  }, []);
 
   return (
     <HeaderProvider initialTitle={title ?? ""}>

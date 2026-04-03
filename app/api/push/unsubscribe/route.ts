@@ -20,13 +20,17 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json().catch(() => ({}));
     const endpoint: string | undefined = body?.endpoint;
+    const propertyId: string | undefined = typeof body?.property_id === "string" ? body.property_id : undefined;
     if (!endpoint) return NextResponse.json({ error: 'endpoint required' }, { status: 400 });
 
-    const { error } = await admin
+    let q = admin
       .from('push_subscriptions')
       .delete()
       .eq('endpoint', endpoint)
       .eq('user_id', user.id);
+    if (propertyId) q = q.eq("property_id", propertyId);
+
+    const { error } = await q;
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     return NextResponse.json({ ok: true });
@@ -34,4 +38,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: e?.message || 'Unexpected error' }, { status: 500 });
   }
 }
-

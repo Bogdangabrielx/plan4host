@@ -43,9 +43,14 @@ async function broadcastNewGuestOverview(adminCli: any, property_id: string, sta
       tag: `guest-${property_id}`,
     });
 
+    const sentEndpoints = new Set<string>();
     for (const s of subs) {
+      if (sentEndpoints.has(s.endpoint)) continue;
       const subscription = { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } } as any;
-      try { await webpush.sendNotification(subscription, payload); }
+      try {
+        await webpush.sendNotification(subscription, payload);
+        sentEndpoints.add(s.endpoint);
+      }
       catch (e: any) {
         if (e?.statusCode === 410 || e?.statusCode === 404) {
           try { await adminCli.from("push_subscriptions").delete().eq("endpoint", s.endpoint); } catch {}

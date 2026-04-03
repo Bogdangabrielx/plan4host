@@ -27,13 +27,21 @@ export async function GET(req: NextRequest) {
         .select("endpoint,property_id")
         .eq("user_id", user.id)
         .eq("endpoint", endpoint)
-        .maybeSingle();
+        .order("created_at", { ascending: true });
       if (r.error) return NextResponse.json({ error: r.error.message }, { status: 500 });
+      const propertyIds = Array.from(
+        new Set(
+          (r.data || [])
+            .map((row: any) => (typeof row?.property_id === "string" ? row.property_id : null))
+            .filter(Boolean),
+        ),
+      );
       return NextResponse.json({
         ok: true,
-        active: !!r.data,
-        count: r.data ? 1 : 0,
-        property_id: (r.data as any)?.property_id || null,
+        active: (r.data?.length || 0) > 0,
+        count: r.data?.length || 0,
+        property_id: propertyIds[0] || null,
+        property_ids: propertyIds,
       });
     }
 
@@ -43,7 +51,7 @@ export async function GET(req: NextRequest) {
       .eq("user_id", user.id);
     if (r.error) return NextResponse.json({ error: r.error.message }, { status: 500 });
     const count: number = r.count ?? 0;
-    return NextResponse.json({ ok: true, active: count > 0, count, property_id: null });
+    return NextResponse.json({ ok: true, active: count > 0, count, property_id: null, property_ids: [] });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Unexpected error' }, { status: 500 });
   }

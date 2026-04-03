@@ -32,14 +32,8 @@ export async function POST(req: NextRequest) {
     const endpoint: string = subscription.endpoint;
     const p256dh: string = subscription.keys.p256dh;
     const authKey: string = subscription.keys.auth;
-    const existing = await admin
-      .from("push_subscriptions")
-      .select("property_id,account_id")
-      .eq("endpoint", endpoint)
-      .maybeSingle();
-
-    let property_id: string | null = requestedPropertyId ?? ((existing.data as any)?.property_id || null);
-    let account_id: string | null = ((existing.data as any)?.account_id || null) as string | null;
+    const property_id: string | null = requestedPropertyId;
+    let account_id: string | null = null;
 
     if (property_id) {
       const rProp = await admin
@@ -53,20 +47,44 @@ export async function POST(req: NextRequest) {
       account_id = ((rProp.data as any).account_id || (rProp.data as any).admin_id || null) as string | null;
     }
 
-    // Upsert by endpoint (unique)
-    const { error } = await admin
-      .from('push_subscriptions')
-      .upsert({
-        endpoint,
-        p256dh: p256dh,
-        auth: authKey,
-        user_id: user.id,
-        account_id,
-        property_id,
-        ua,
-        os,
-      }, { onConflict: 'endpoint' });
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    const existingLookup = admin
+      .from("push_subscriptions")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("endpoint", endpoint);
+    const existing = property_id
+      ? await existingLookup.eq("property_id", property_id).maybeSingle()
+      : await existingLookup.is("property_id", null).maybeSingle();
+    if (existing.error) return NextResponse.json({ error: existing.error.message }, { status: 500 });
+
+    if (existing.data?.id) {
+      const upd = await admin
+        .from("push_subscriptions")
+        .update({
+          p256dh,
+          auth: authKey,
+          account_id,
+          property_id,
+          ua,
+          os,
+        })
+        .eq("id", (existing.data as any).id);
+      if (upd.error) return NextResponse.json({ error: upd.error.message }, { status: 500 });
+    } else {
+      const ins = await admin
+        .from("push_subscriptions")
+        .insert({
+          endpoint,
+          p256dh,
+          auth: authKey,
+          user_id: user.id,
+          account_id,
+          property_id,
+          ua,
+          os,
+        });
+      if (ins.error) return NextResponse.json({ error: ins.error.message }, { status: 500 });
+    }
 
     return NextResponse.json({ ok: true, property_id });
   } catch (e: any) {

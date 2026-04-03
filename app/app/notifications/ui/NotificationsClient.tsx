@@ -16,15 +16,15 @@ export default function NotificationsClient({ properties }: { properties: Proper
   const [loading, setLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
   const [lang, setLang] = useState<Lang>("en");
-  const [active, setActive] = useState<boolean>(false);
   const [endpoint, setEndpoint] = useState<string | null>(null);
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
-  const [pickerOpen, setPickerOpen] = useState<boolean>(false);
+  const [activePropertyIds, setActivePropertyIds] = useState<string[]>([]);
+  const [pickerMode, setPickerMode] = useState<"on" | "off" | null>(null);
   const [isSmall, setIsSmall] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     return window.matchMedia?.("(max-width: 480px)")?.matches ?? false;
   });
   const [pushCapable, setPushCapable] = useState<boolean>(isPushCapable());
+
   const tr = {
     en: {
       notifications: "Notifications",
@@ -33,6 +33,7 @@ export default function NotificationsClient({ properties }: { properties: Proper
       getInstantOne: "Get instant one",
       chooseProperty: "Choose property",
       choosePropertyHint: "Select the property for this device.",
+      choosePropertyOffHint: "Select the property you want to disable.",
       noProperty: "No property available.",
       activeFor: "Active for",
       loading: "Loading...",
@@ -48,6 +49,7 @@ export default function NotificationsClient({ properties }: { properties: Proper
       getInstantOne: "Trimite una instant",
       chooseProperty: "Alege proprietatea",
       choosePropertyHint: "Selecteaza proprietatea pentru acest device.",
+      choosePropertyOffHint: "Selecteaza proprietatea pentru care opresti notificarile.",
       noProperty: "Nu exista proprietati disponibile.",
       activeFor: "Active pentru",
       loading: "Se incarca...",
@@ -65,7 +67,9 @@ export default function NotificationsClient({ properties }: { properties: Proper
     const on = (e: MediaQueryListEvent) => setIsSmall(e.matches);
     try { mq?.addEventListener("change", on); } catch { mq?.addListener?.(on as any); }
     setIsSmall(mq?.matches ?? false);
-    return () => { try { mq?.removeEventListener("change", on); } catch { mq?.removeListener?.(on as any); } };
+    return () => {
+      try { mq?.removeEventListener("change", on); } catch { mq?.removeListener?.(on as any); }
+    };
   }, []);
 
   useEffect(() => {
@@ -90,7 +94,6 @@ export default function NotificationsClient({ properties }: { properties: Proper
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  // Trigger the global loading overlay while this page is busy.
   useEffect(() => {
     setPill(loading ? "Loading…" : null);
     return () => setPill(null);
@@ -128,31 +131,37 @@ export default function NotificationsClient({ properties }: { properties: Proper
       const cap = isPushCapable();
       setPushCapable(cap);
       if (!cap) {
-        setActive(false);
         setEndpoint(null);
+        setActivePropertyIds([]);
         setStatus("idle");
         return;
       }
+
       const sub = await getCurrentPushSubscription();
       const ep = sub?.endpoint || null;
       setEndpoint(ep);
-      try { if (ep) localStorage.setItem('p4h:push:endpoint', ep); } catch {}
+      try {
+        if (ep) localStorage.setItem("p4h:push:endpoint", ep);
+      } catch {}
 
-      if (ep) {
-        // Check DB state for this device endpoint
-        const url = `/api/push/status?endpoint=${encodeURIComponent(ep)}`;
-        const res = await withTimeout(fetch(url, { method: 'GET' }), 4000, null as Response | null);
-        if (!res) {
-          setActive(false);
-          return;
-        }
-        const j = await res.json().catch(() => ({}));
-        setActive(!!j?.active);
-        setSelectedPropertyId(typeof j?.property_id === "string" ? j.property_id : null);
-      } else {
-        setActive(false);
-        setSelectedPropertyId(null);
+      if (!ep) {
+        setActivePropertyIds([]);
+        return;
       }
+
+      const url = `/api/push/status?endpoint=${encodeURIComponent(ep)}`;
+      const res = await withTimeout(fetch(url, { method: "GET" }), 4000, null as Response | null);
+      if (!res) {
+        setActivePropertyIds([]);
+        return;
+      }
+
+      const j = await res.json().catch(() => ({}));
+      setActivePropertyIds(
+        Array.isArray(j?.property_ids)
+          ? j.property_ids.filter((value: unknown): value is string => typeof value === "string")
+          : [],
+      );
     } finally {
       if (showSpinner) setLoading(false);
     }
@@ -179,85 +188,78 @@ export default function NotificationsClient({ properties }: { properties: Proper
   async function turnOnForProperty(propertyId: string) {
     setStatus("loading");
     setLoading(true);
-    setPickerOpen(false);
+    setPickerMode(null);
     try {
       if (!pushCapable) {
-        setActive(false);
+        setActivePropertyIds([]);
         return;
       }
-      if (!('Notification' in window)) return finalize();
+      if (!("Notification" in window)) return finalize();
       const perm = Notification.permission;
-      if (perm !== 'granted') {
+      if (perm !== "granted") {
         const p = await Notification.requestPermission();
-        if (p !== 'granted') return finalize();
+        if (p !== "granted") return finalize();
       }
 
       const sub = await ensurePushSubscription();
-
-      // Immediately reflect device state
       setEndpoint(sub.endpoint || null);
-      try { if (sub?.endpoint) localStorage.setItem('p4h:push:endpoint', sub.endpoint); } catch {}
-      setActive(true);
-      setSelectedPropertyId(propertyId);
+      try {
+        if (sub?.endpoint) localStorage.setItem("p4h:push:endpoint", sub.endpoint);
+      } catch {}
 
       await syncPushSubscriptionToServer(sub, { propertyId });
       await refreshActive(false);
     } catch (error) {
       console.error("[push] turnOn failed", error);
-      setActive(false);
+      setActivePropertyIds([]);
     } finally {
       finalize();
     }
   }
 
   function turnOn() {
-    if (properties.length === 0) {
+    const inactiveProperties = properties.filter((property) => !activePropertyIds.includes(property.id));
+    if (inactiveProperties.length === 0) {
       console.error("[push] no property available for subscription");
       return;
     }
-    if (properties.length === 1) {
-      void turnOnForProperty(properties[0].id);
+    if (inactiveProperties.length === 1) {
+      void turnOnForProperty(inactiveProperties[0].id);
       return;
     }
-    setPickerOpen(true);
+    setPickerMode("on");
   }
 
-  async function turnOff() {
+  async function turnOffForProperty(propertyId: string) {
     setStatus("loading");
     setLoading(true);
     try {
-      if (!pushCapable) {
-        return;
+      if (!endpoint) return;
+      try {
+        await fetch("/api/push/unsubscribe", {
+          method: "POST",
+          credentials: "include",
+          cache: "no-store",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ endpoint, property_id: propertyId }),
+        });
+      } catch (error) {
+        console.error("[push] turnOff unsubscribe failed", error);
       }
-      const sub = await getCurrentPushSubscription();
-      let epToRemove: string | null = null;
-      if (sub) {
-        epToRemove = sub.endpoint || null;
-        try { await sub.unsubscribe(); } catch {}
-      } else {
-        try { epToRemove = localStorage.getItem('p4h:push:endpoint'); } catch {}
-      }
-      if (epToRemove) {
-        try {
-          await fetch('/api/push/unsubscribe', {
-            method: 'POST',
-            credentials: 'include',
-            cache: 'no-store',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ endpoint: epToRemove }),
-          });
-        } catch (error) {
-          console.error("[push] turnOff unsubscribe failed", error);
-        }
-      }
-      try { localStorage.removeItem('p4h:push:endpoint'); } catch {}
-      setEndpoint(null);
-      setSelectedPropertyId(null);
-      // Re-check DB status to be precise
+      setPickerMode(null);
       await refreshActive(false);
     } finally {
       finalize();
     }
+  }
+
+  function turnOff() {
+    if (activePropertyIds.length === 0) return;
+    if (activePropertyIds.length === 1) {
+      void turnOffForProperty(activePropertyIds[0]);
+      return;
+    }
+    setPickerMode("off");
   }
 
   function finalize() {
@@ -269,26 +271,30 @@ export default function NotificationsClient({ properties }: { properties: Proper
     setStatus("loading");
     setLoading(true);
     try {
-      if (!pushCapable || !active) return;
+      if (!pushCapable || activePropertyIds.length === 0) return;
       const reg = await navigator.serviceWorker.ready;
+      const testPropertyId = activePropertyIds[0] || null;
       await reg.showNotification(t.testTitle, {
         body: t.testNotification,
-        icon: '/icons/icon-192.png',
-        badge: '/icons/icon-192.png',
-        tag: 'p4h-test',
-        data: { url: selectedPropertyId ? `/app/guest?property=${encodeURIComponent(selectedPropertyId)}` : '/app/notifications' },
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
+        tag: "p4h-test",
+        data: { url: testPropertyId ? `/app/guest?property=${encodeURIComponent(testPropertyId)}` : "/app/notifications" },
       });
     } finally {
       finalize();
     }
   }
 
-  const selectedProperty = selectedPropertyId
-    ? properties.find((property) => property.id === selectedPropertyId) || null
-    : null;
-
+  const active = activePropertyIds.length > 0;
+  const activeProperties = properties.filter((property) => activePropertyIds.includes(property.id));
+  const pickerProperties = pickerMode === "on"
+    ? properties.filter((property) => !activePropertyIds.includes(property.id))
+    : activeProperties;
   const onActive = active;
   const offActive = !active;
+  const onLabel = onActive ? "On" : t.turnOn;
+  const offLabel = offActive ? "Off" : t.turnOff;
 
   function renderNotifIcon(src: string, isCurrent: boolean) {
     return (
@@ -327,11 +333,11 @@ export default function NotificationsClient({ properties }: { properties: Proper
   return (
     <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
       <div style={{ padding: isSmall ? "10px 12px 16px" : "16px" }}>
-        <div className="sb-cardglow" style={{ padding: 16, display: 'grid', gap: 12, borderRadius: 13 }}>
-          <div style={{ display: 'grid', gap: 6 }}>
+        <div className="sb-cardglow" style={{ padding: 16, display: "grid", gap: 12, borderRadius: 13 }}>
+          <div style={{ display: "grid", gap: 6 }}>
             <strong>{t.notifications}</strong>
           </div>
-          <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button
               className="sb-btn sb-cardglow"
               onClick={turnOn}
@@ -339,30 +345,30 @@ export default function NotificationsClient({ properties }: { properties: Proper
               style={buttonTone(onActive)}
             >
               {renderNotifIcon("/svg_notifications_page.svg", onActive)}
-              <span>{t.turnOn}</span>
+              <span>{onLabel}</span>
             </button>
             <button
               className="sb-btn sb-cardglow"
               onClick={turnOff}
-              disabled={loading}
+              disabled={loading || activePropertyIds.length === 0}
               style={buttonTone(offActive)}
             >
               {renderNotifIcon("/svg_notifications_off_page.svg", offActive)}
-              <span>{t.turnOff}</span>
+              <span>{offLabel}</span>
             </button>
             {active && (
               <button
                 className="sb-btn"
                 onClick={sendTest}
                 disabled={loading}
-                style={{ color: 'var(--muted)', background: "var(--panel)", border: 'var(--muted)' }}
+                style={{ color: "var(--muted)", background: "var(--panel)", border: "var(--muted)" }}
               >
                 {t.getInstantOne}
               </button>
             )}
           </div>
-          <div style={{ display: 'grid', gap: 4 }}>
-            <small style={{ color:'var(--muted)' }}>
+          <div style={{ display: "grid", gap: 4 }}>
+            <small style={{ color: "var(--muted)" }}>
               {status === "loading"
                 ? t.loading
                 : active
@@ -372,55 +378,64 @@ export default function NotificationsClient({ properties }: { properties: Proper
           </div>
         </div>
 
-        {selectedProperty && active && (
+        {activeProperties.map((property) => (
           <div
+            key={property.id}
             className="sb-cardglow"
             style={{
               marginTop: 14,
               padding: isSmall ? 16 : 18,
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
               borderRadius: 18,
               border: "1px solid color-mix(in srgb, var(--primary) 28%, var(--border))",
               background:
                 "linear-gradient(135deg, color-mix(in srgb, var(--primary) 14%, var(--panel)) 0%, color-mix(in srgb, var(--primary) 8%, var(--card)) 100%)",
             }}
           >
-            <div
-              aria-hidden
-              style={{
-                width: isSmall ? 52 : 64,
-                height: isSmall ? 52 : 64,
-                flex: "0 0 auto",
-                backgroundColor: "var(--primary)",
-                WebkitMaskImage: "url(/svg_notifications_page.svg)",
-                maskImage: "url(/svg_notifications_page.svg)",
-                WebkitMaskRepeat: "no-repeat",
-                maskRepeat: "no-repeat",
-                WebkitMaskPosition: "center",
-                maskPosition: "center",
-                WebkitMaskSize: "contain",
-                maskSize: "contain",
-              }}
-            />
             <div style={{ display: "grid", gap: 6 }}>
-              <span style={{ color: "var(--muted)", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.22em" }}>
-                {t.activeFor}
-              </span>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  color: "var(--muted)",
+                  fontSize: 12,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.22em",
+                }}
+              >
+                <span
+                  aria-hidden
+                  style={{
+                    width: 16,
+                    height: 16,
+                    display: "inline-block",
+                    flex: "0 0 16px",
+                    backgroundColor: "var(--primary)",
+                    WebkitMaskImage: "url(/svg_notifications_page.svg)",
+                    maskImage: "url(/svg_notifications_page.svg)",
+                    WebkitMaskRepeat: "no-repeat",
+                    maskRepeat: "no-repeat",
+                    WebkitMaskPosition: "center",
+                    maskPosition: "center",
+                    WebkitMaskSize: "contain",
+                    maskSize: "contain",
+                  }}
+                />
+                <span>{t.activeFor}</span>
+              </div>
               <strong style={{ fontSize: isSmall ? 18 : 20, letterSpacing: "0.18em", textTransform: "uppercase" }}>
-                {selectedProperty.name}
+                {property.name}
               </strong>
             </div>
           </div>
-        )}
+        ))}
 
-        {pickerOpen && (
+        {pickerMode && (
           <div
             role="dialog"
             aria-modal="true"
             aria-label={t.chooseProperty}
-            onClick={() => !loading && setPickerOpen(false)}
+            onClick={() => !loading && setPickerMode(null)}
             style={{
               position: "fixed",
               inset: 0,
@@ -448,19 +463,25 @@ export default function NotificationsClient({ properties }: { properties: Proper
             >
               <div style={{ display: "grid", gap: 4 }}>
                 <strong>{t.chooseProperty}</strong>
-                <small style={{ color: "var(--muted)" }}>{t.choosePropertyHint}</small>
+                <small style={{ color: "var(--muted)" }}>
+                  {pickerMode === "on" ? t.choosePropertyHint : t.choosePropertyOffHint}
+                </small>
               </div>
 
               <div style={{ display: "grid", gap: 8 }}>
-                {properties.length === 0 && (
+                {pickerProperties.length === 0 && (
                   <div style={{ color: "var(--muted)" }}>{t.noProperty}</div>
                 )}
-                {properties.map((property) => (
+                {pickerProperties.map((property) => (
                   <button
                     key={property.id}
                     className="sb-btn sb-cardglow"
                     disabled={loading}
-                    onClick={() => void turnOnForProperty(property.id)}
+                    onClick={() =>
+                      pickerMode === "on"
+                        ? void turnOnForProperty(property.id)
+                        : void turnOffForProperty(property.id)
+                    }
                     style={{
                       width: "100%",
                       minHeight: 48,
