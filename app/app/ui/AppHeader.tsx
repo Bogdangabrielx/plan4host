@@ -470,8 +470,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     icons.forEach((href) => {
       if (preloadedRef.current.has(href)) return;
       const link = document.createElement("link");
-      link.rel = "preload";
-      link.as = "image";
+      link.rel = "prefetch";
       link.href = href;
       document.head.appendChild(link);
       preloadedRef.current.add(href);
