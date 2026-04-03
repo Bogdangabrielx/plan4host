@@ -33,6 +33,7 @@ export default function NotificationsClient({ properties }: { properties: Proper
       turnOn: "Turn On",
       turnOff: "Turn Off",
       getInstantOne: "Get instant one",
+      testNotification: "Instant notification simulation",
       noProperty: "No property available.",
       loading: "Loading...",
       notificationsOn: "Your notifications are currently ON.",
@@ -44,6 +45,7 @@ export default function NotificationsClient({ properties }: { properties: Proper
       turnOn: "Activeaza",
       turnOff: "Dezactiveaza",
       getInstantOne: "Trimite una instant",
+      testNotification: "Instant notification simulation",
       noProperty: "Nu exista proprietati disponibile.",
       loading: "Se incarca...",
       notificationsOn: "Notificarile tale sunt in prezent ACTIVE.",
@@ -250,7 +252,7 @@ export default function NotificationsClient({ properties }: { properties: Proper
       if (!pushCapable) return;
       const reg = await navigator.serviceWorker.ready;
       await reg.showNotification("Plan4Host", {
-        body: t.getInstantOne,
+        body: t.testNotification,
         icon: "/icons/icon-192.png",
         badge: "/icons/icon-192.png",
         tag: `p4h-test-${propertyId}`,
