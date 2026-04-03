@@ -7,6 +7,12 @@ import BottomNav from "../ui/BottomNav";
 import PullToRefresh from "./PullToRefresh";
 import { HeaderProvider } from "./HeaderContext";
 import AppLoadingOverlay from "./AppLoadingOverlay";
+import {
+  ensurePushSubscription,
+  isPushCapable,
+  syncExistingPushSubscriptionToServer,
+  syncPushSubscriptionToServer,
+} from "@/lib/push/client";
 
 type Props = {
   title?: React.ReactNode;
@@ -525,6 +531,21 @@ export default function AppShell({ title, currentPath, children }: Props) {
     }
   }
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!isPushCapable()) return;
+    if (Notification.permission !== "granted") return;
+
+    void syncExistingPushSubscriptionToServer()
+      .then((sub) => {
+        if (!sub?.endpoint) return;
+        try {
+          localStorage.setItem("p4h:push:endpoint", sub.endpoint);
+        } catch {}
+      })
+      .catch(() => {});
+  }, []);
+
   // Global one-time push prompt on first user gesture across /app
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -540,112 +561,12 @@ export default function AppShell({ title, currentPath, children }: Props) {
         Notification.requestPermission().then(async (perm) => {
           try {
             if (perm === "granted") {
-              if (!("serviceWorker" in navigator)) return;
-              const withTimeout = <T,>(promise: Promise<T>, ms: number, fallback: T): Promise<T> =>
-                new Promise((resolve) => {
-                  let settled = false;
-                  const timer = setTimeout(() => {
-                    if (!settled) {
-                      settled = true;
-                      resolve(fallback);
-                    }
-                  }, ms);
-                  promise
-                    .then((value) => {
-                      if (settled) return;
-                      settled = true;
-                      clearTimeout(timer);
-                      resolve(value);
-                    })
-                    .catch(() => {
-                      if (settled) return;
-                      settled = true;
-                      clearTimeout(timer);
-                      resolve(fallback);
-                    });
-                });
-
-              const waitForActiveRegistration = async (
-                initialReg: ServiceWorkerRegistration,
-                timeoutMs = 5000,
-              ) => {
-                if (initialReg.active) return initialReg;
-                const candidate = initialReg.installing || initialReg.waiting;
-                if (candidate) {
-                  const activated = await new Promise<boolean>((resolve) => {
-                    let settled = false;
-                    const timer = setTimeout(() => {
-                      if (!settled) {
-                        settled = true;
-                        resolve(false);
-                      }
-                    }, timeoutMs);
-                    const finish = (ok: boolean) => {
-                      if (settled) return;
-                      settled = true;
-                      clearTimeout(timer);
-                      resolve(ok);
-                    };
-                    const onStateChange = () => {
-                      if (candidate.state === "activated") finish(true);
-                      if (candidate.state === "redundant") finish(false);
-                    };
-                    candidate.addEventListener("statechange", onStateChange);
-                    onStateChange();
-                  });
-                  if (activated && initialReg.active) return initialReg;
-                }
-                const readyReg = await withTimeout<ServiceWorkerRegistration | null>(
-                  navigator.serviceWorker.ready,
-                  timeoutMs,
-                  null,
-                );
-                if (readyReg?.active) return readyReg;
-                throw new Error("service_worker_not_active");
-              };
-
-              let reg = await navigator.serviceWorker.getRegistration();
-              if (!reg) {
-                try {
-                  const regs = await navigator.serviceWorker.getRegistrations();
-                  reg = regs[0];
-                } catch {}
-              }
-              if (!reg) {
-                reg = await navigator.serviceWorker.register("/sw.js");
-              }
-              reg = await waitForActiveRegistration(reg);
-              const keyB64 = (
-                process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
-                (window as any).NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
-                ""
-              ).toString();
-
-              const urlBase64ToUint8Array = (base64: string) => {
-                const padding = "=".repeat((4 - (base64.length % 4)) % 4);
-                const safe = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
-                const raw = atob(safe);
-                const out = new Uint8Array(raw.length);
-                for (let i = 0; i < raw.length; ++i) out[i] = raw.charCodeAt(i);
-                return out;
-              };
-
-              let sub = await reg.pushManager.getSubscription();
-              if (!sub) {
-                sub = await reg.pushManager.subscribe({
-                  userVisibleOnly: true,
-                  applicationServerKey: urlBase64ToUint8Array(keyB64),
-                });
-              }
-
-              const ua = navigator.userAgent || "";
-              const os = document.documentElement.getAttribute("data-os") || "";
-
-              await fetch("/api/push/subscribe", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ subscription: sub.toJSON(), ua, os }),
-              });
+              if (!isPushCapable()) return;
+              const sub = await ensurePushSubscription();
+              await syncPushSubscriptionToServer(sub);
+              try {
+                localStorage.setItem("p4h:push:endpoint", sub.endpoint);
+              } catch {}
             }
           } finally {
             if (perm !== "default") {

@@ -1,6 +1,12 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { useHeader } from "@/app/app/_components/HeaderContext";
+import {
+  ensurePushSubscription,
+  getCurrentPushSubscription,
+  isPushCapable,
+  syncPushSubscriptionToServer,
+} from "@/lib/push/client";
 
 type Lang = "en" | "ro";
 
@@ -15,9 +21,7 @@ export default function NotificationsClient() {
     if (typeof window === "undefined") return false;
     return window.matchMedia?.("(max-width: 480px)")?.matches ?? false;
   });
-  const [pushCapable, setPushCapable] = useState<boolean>(
-    typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window
-  );
+  const [pushCapable, setPushCapable] = useState<boolean>(isPushCapable());
   const tr = {
     en: {
       notifications: "Notifications",
@@ -107,85 +111,10 @@ export default function NotificationsClient() {
     });
   }
 
-  async function waitForActiveRegistration(
-    reg: ServiceWorkerRegistration,
-    timeoutMs = 5000,
-  ): Promise<ServiceWorkerRegistration> {
-    if (reg.active) return reg;
-
-    const candidate = reg.installing || reg.waiting;
-    if (candidate) {
-      const activated = await new Promise<boolean>((resolve) => {
-        let settled = false;
-        const timer = setTimeout(() => {
-          if (!settled) {
-            settled = true;
-            resolve(false);
-          }
-        }, timeoutMs);
-
-        const finish = (ok: boolean) => {
-          if (settled) return;
-          settled = true;
-          clearTimeout(timer);
-          resolve(ok);
-        };
-
-        const onStateChange = () => {
-          if (candidate.state === "activated") finish(true);
-          if (candidate.state === "redundant") finish(false);
-        };
-
-        candidate.addEventListener("statechange", onStateChange);
-        onStateChange();
-      });
-
-      if (activated && reg.active) return reg;
-    }
-
-    const readyReg = await withTimeout<ServiceWorkerRegistration | null>(
-      navigator.serviceWorker.ready,
-      timeoutMs,
-      null,
-    );
-
-    if (readyReg?.active) return readyReg;
-    throw new Error("service_worker_not_active");
-  }
-
-  const getCurrentSubscription = useCallback(async (): Promise<PushSubscription | null> => {
-    if (typeof window === "undefined" || !("serviceWorker" in navigator)) return null;
-
-    try {
-      const direct = await navigator.serviceWorker.getRegistration();
-      const directSub = await direct?.pushManager.getSubscription();
-      if (directSub) return directSub;
-    } catch {}
-
-    try {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      for (const reg of regs) {
-        const sub = await reg.pushManager.getSubscription();
-        if (sub) return sub;
-      }
-    } catch {}
-
-    try {
-      const ready = await withTimeout<ServiceWorkerRegistration | null>(
-        navigator.serviceWorker.ready,
-        2000,
-        null,
-      );
-      if (ready) return (await ready.pushManager.getSubscription()) || null;
-    } catch {}
-
-    return null;
-  }, []);
-
   const refreshActive = useCallback(async (showSpinner = false) => {
     if (showSpinner) setLoading(true);
     try {
-      const cap = typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+      const cap = isPushCapable();
       setPushCapable(cap);
       if (!cap) {
         setActive(false);
@@ -193,7 +122,7 @@ export default function NotificationsClient() {
         setStatus("idle");
         return;
       }
-      const sub = await getCurrentSubscription();
+      const sub = await getCurrentPushSubscription();
       const ep = sub?.endpoint || null;
       setEndpoint(ep);
       try { if (ep) localStorage.setItem('p4h:push:endpoint', ep); } catch {}
@@ -214,7 +143,7 @@ export default function NotificationsClient() {
     } finally {
       if (showSpinner) setLoading(false);
     }
-  }, [getCurrentSubscription]);
+  }, []);
 
   useEffect(() => {
     refreshActive(false).catch(() => {});
@@ -234,38 +163,6 @@ export default function NotificationsClient() {
     };
   }, [refreshActive]);
 
-  async function getReadyRegistration(): Promise<ServiceWorkerRegistration> {
-    let reg = await navigator.serviceWorker.getRegistration();
-    if (!reg) {
-      try {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        reg = regs[0];
-      } catch {}
-    }
-    if (!reg) {
-      reg = await navigator.serviceWorker.register('/sw.js');
-    }
-    return await waitForActiveRegistration(reg);
-  }
-
-  async function subscribeInDB(sub: PushSubscription, ua: string, os: string) {
-    const res = await withTimeout(
-      fetch('/api/push/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscription: sub.toJSON(), ua, os }),
-      }),
-      6000,
-      null as Response | null,
-    );
-    if (!res) {
-      throw new Error("subscribe_timeout");
-    }
-    if (!res.ok) {
-      throw new Error("subscribe_failed");
-    }
-  }
-
   async function turnOn() {
     setStatus("loading");
     setLoading(true);
@@ -281,30 +178,14 @@ export default function NotificationsClient() {
         if (p !== 'granted') return finalize();
       }
 
-      const reg = await getReadyRegistration();
-
-      let sub = await reg.pushManager.getSubscription();
-      if (!sub) {
-        const keyB64 = (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || (window as any).NEXT_PUBLIC_VAPID_PUBLIC_KEY || '').toString();
-        const urlBase64ToUint8Array = (base64: string) => {
-          const padding = '='.repeat((4 - (base64.length % 4)) % 4);
-          const base64Safe = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/');
-          const raw = atob(base64Safe);
-          const out = new Uint8Array(raw.length);
-          for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
-          return out;
-        };
-        sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(keyB64) });
-      }
+      const sub = await ensurePushSubscription();
 
       // Immediately reflect device state
       setEndpoint(sub.endpoint || null);
       try { if (sub?.endpoint) localStorage.setItem('p4h:push:endpoint', sub.endpoint); } catch {}
       setActive(true);
 
-      const ua = navigator.userAgent || '';
-      const os = (document.documentElement.getAttribute('data-os') || '');
-      await subscribeInDB(sub, ua, os);
+      await syncPushSubscriptionToServer(sub);
       await refreshActive(false);
     } catch {
       setActive(false);
@@ -320,7 +201,7 @@ export default function NotificationsClient() {
       if (!pushCapable) {
         return;
       }
-      const sub = await getCurrentSubscription();
+      const sub = await getCurrentPushSubscription();
       let epToRemove: string | null = null;
       if (sub) {
         epToRemove = sub.endpoint || null;
@@ -350,7 +231,7 @@ export default function NotificationsClient() {
     setLoading(true);
     try {
       if (!pushCapable || !active) return;
-      const reg = await getReadyRegistration();
+      const reg = await navigator.serviceWorker.ready;
       await reg.showNotification(t.testTitle, {
         body: t.testNotification,
         icon: '/icons/icon-192.png',
