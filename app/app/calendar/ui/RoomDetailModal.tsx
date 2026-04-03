@@ -567,7 +567,13 @@ export default function RoomDetailModal({
       await fetch('/api/push/broadcast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ property_id: PID, title: 'New reservation', body: `From ${startDate} to ${endDate}` })
+        body: JSON.stringify({
+          property_id: PID,
+          title: 'New reservation on calendar',
+          body: [property?.name || null, 'Manual', `${startDate.split('-').reverse().join('-')} - ${endDate.split('-').reverse().join('-')}`]
+            .filter(Boolean)
+            .join('\n'),
+        })
       });
     } catch { /* ignore push errors */ }
       setPill(overlayMessageNode(lang === "ro" ? "Rezervare confirmata" : "Reservation confirmed"));

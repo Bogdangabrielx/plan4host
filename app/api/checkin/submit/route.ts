@@ -25,8 +25,26 @@ const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY!;
 const VAPID_SUBJECT = process.env.VAPID_SUBJECT || "mailto:office@plan4host.com";
 try { webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY); } catch {}
 
-async function broadcastNewGuestOverview(adminCli: any, property_id: string, start_date: string, end_date: string) {
+function formatDateDMY(value: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || "").trim());
+  if (!m) return String(value || "");
+  return `${m[3]}-${m[2]}-${m[1]}`;
+}
+
+async function broadcastNewGuestOverview(
+  adminCli: any,
+  opts: {
+    property_id: string;
+    property_name?: string | null;
+    start_date: string;
+    end_date: string;
+    guest_first_name?: string | null;
+    guest_last_name?: string | null;
+    source?: string | null;
+  },
+) {
   try {
+    const { property_id, property_name, start_date, end_date, guest_first_name, guest_last_name, source } = opts;
     const account_id = await resolvePropertyAccountId(adminCli, property_id);
     if (!account_id) return;
 
@@ -36,9 +54,16 @@ async function broadcastNewGuestOverview(adminCli: any, property_id: string, sta
     const subs = await listSubscriptionsForUsers(adminCli, userIds, property_id);
     if (subs.length === 0) return;
 
+    const guestName = [guest_first_name, guest_last_name]
+      .map((value) => String(value || "").trim())
+      .filter(Boolean)
+      .join(" ");
+
     const payload = JSON.stringify({
-      title: "New reservation",
-      body: `From ${start_date} to ${end_date}`,
+      title: "New form submitted",
+      body: [guestName || null, source || null, property_name || null, `${formatDateDMY(start_date)} - ${formatDateDMY(end_date)}`]
+        .filter(Boolean)
+        .join("\n"),
       url: `/app/guestOverview?property=${encodeURIComponent(property_id)}`,
       tag: `guest-${property_id}-${Date.now()}`,
     });
@@ -524,7 +549,17 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    try { broadcastNewGuestOverview(admin, property_id, start_date, end_date); } catch {}
+    try {
+      broadcastNewGuestOverview(admin, {
+        property_id,
+        property_name: ((rProp.data as any)?.name || "").toString() || null,
+        start_date,
+        end_date,
+        guest_first_name: guest_first_name ?? null,
+        guest_last_name: guest_last_name ?? null,
+        source: mapProviderLabel((body as any)?.ota_provider_hint),
+      });
+    } catch {}
 
     // Email admin + all active team members with Guest Overview access.
     try {

@@ -7,6 +7,42 @@ import {
 
 let vapidConfigured = false;
 
+function formatDateDMY(value: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || "").trim());
+  if (!m) return String(value || "");
+  return `${m[3]}-${m[2]}-${m[1]}`;
+}
+
+function normalizeSourceLabel(source?: string | null): string | null {
+  const s = String(source || "").trim();
+  if (!s) return null;
+  const low = s.toLowerCase();
+  if (low === "manual") return "Manual";
+  if (low === "ical") return "iCal";
+  if (low.includes("booking")) return "Booking.com";
+  if (low.includes("airbnb")) return "Airbnb";
+  if (low.includes("expedia")) return "Expedia";
+  if (low.includes("trivago")) return "Trivago";
+  if (low.includes("lastminute")) return "Lastminute";
+  if (low.includes("travelminit")) return "Travelminit";
+  return s;
+}
+
+async function resolvePropertyName(admin: any, propertyId: string): Promise<string | null> {
+  try {
+    const { data, error } = await admin
+      .from("properties")
+      .select("name")
+      .eq("id", propertyId)
+      .maybeSingle();
+    if (error || !data) return null;
+    const name = String((data as any)?.name || "").trim();
+    return name || null;
+  } catch {
+    return null;
+  }
+}
+
 function ensureVapidConfigured() {
   if (vapidConfigured) return;
   const pub = process.env.VAPID_PUBLIC_KEY;
@@ -23,6 +59,7 @@ export async function broadcastNewBookingPush(
     propertyId: string;
     startDate: string;
     endDate: string;
+    source?: string | null;
     title?: string;
     body?: string;
     tag?: string;
@@ -43,9 +80,18 @@ export async function broadcastNewBookingPush(
   const subs = await listSubscriptionsForUsers(admin, userIds, propertyId);
   if (!subs.length) return 0;
 
+  const propertyName = await resolvePropertyName(admin, propertyId);
+  const sourceLabel = normalizeSourceLabel(opts.source);
+  const title = opts.title || "New reservation on calendar";
+  const body =
+    opts.body ||
+    [propertyName, sourceLabel, `${formatDateDMY(opts.startDate)} - ${formatDateDMY(opts.endDate)}`]
+      .filter(Boolean)
+      .join("\n");
+
   const payload = JSON.stringify({
-    title: opts.title || "New reservation",
-    body: opts.body || `From ${opts.startDate} to ${opts.endDate}`,
+    title,
+    body,
     url: opts.url || `/app/guest?property=${encodeURIComponent(propertyId)}`,
     tag: opts.tag || `guest-${propertyId}-${opts.startDate}-${opts.endDate}-${Date.now()}`,
   });

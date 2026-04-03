@@ -38,9 +38,11 @@ export async function POST(req: Request) {
 
   // property CI/CO
   let CI = '14:00', CO = '11:00';
+  let propertyName: string | null = null;
   try {
-    const rProp = await supabase.from('properties').select('check_in_time,check_out_time').eq('id', ev.data.property_id).maybeSingle();
+    const rProp = await supabase.from('properties').select('name,check_in_time,check_out_time').eq('id', ev.data.property_id).maybeSingle();
     if (!rProp.error && rProp.data) {
+      propertyName = ((rProp.data as any).name || '').toString().trim() || null;
       CI = (rProp.data as any).check_in_time || CI;
       CO = (rProp.data as any).check_out_time || CO;
     }
@@ -91,8 +93,10 @@ export async function POST(req: Request) {
     const userIds = await listActiveAccountUserIds(admin, account_id);
     if (userIds.length === 0) return NextResponse.json({ ok: true, booking_id: ins.data.id });
     const payload = JSON.stringify({
-      title: 'New reservation',
-      body: `From ${ev.data.start_date} to ${ev.data.end_date}`,
+      title: 'New reservation on calendar',
+      body: [propertyName, provider || 'iCal', `${String(ev.data.start_date).split('-').reverse().join('-')} - ${String(ev.data.end_date).split('-').reverse().join('-')}`]
+        .filter(Boolean)
+        .join('\n'),
       url: `/app/guest?property=${encodeURIComponent(pid)}`,
       tag: `guest-${pid}-${Date.now()}`,
     });

@@ -319,6 +319,7 @@ async function createOrUpdateFromEvent(
         propertyId: feed.property_id,
         startDate: start_date,
         endDate: end_date,
+        source: feed.provider || "ical",
       });
     } catch {}
   }
