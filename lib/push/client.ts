@@ -145,7 +145,23 @@ export async function getReadyPushRegistration(): Promise<ServiceWorkerRegistrat
     reg = await navigator.serviceWorker.register("/sw.js");
   }
 
-  return waitForActivePushRegistration(reg);
+  try {
+    return await waitForActivePushRegistration(reg);
+  } catch (error) {
+    if (!isIosStandaloneWebApp()) throw error;
+
+    try {
+      const direct = await navigator.serviceWorker.getRegistration();
+      if (direct) return direct;
+    } catch {}
+
+    try {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      if (regs[0]) return regs[0];
+    } catch {}
+
+    return reg;
+  }
 }
 
 export async function getCurrentPushSubscription(): Promise<PushSubscription | null> {
@@ -183,7 +199,10 @@ export async function ensurePushSubscription(): Promise<PushSubscription> {
   }
 
   const reg = await getReadyPushRegistration();
-  let sub = await reg.pushManager.getSubscription();
+  let sub: PushSubscription | null = null;
+  try {
+    sub = await reg.pushManager.getSubscription();
+  } catch {}
   if (sub) return sub;
 
   const keyB64 = (
@@ -195,10 +214,21 @@ export async function ensurePushSubscription(): Promise<PushSubscription> {
     throw new Error("missing_vapid_public_key");
   }
 
-  sub = await reg.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(keyB64),
-  });
+  try {
+    sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(keyB64),
+    });
+  } catch (error) {
+    if (!isIosStandaloneWebApp()) throw error;
+
+    await sleep(1500);
+    const retryReg = await getReadyPushRegistration();
+    sub = await retryReg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(keyB64),
+    });
+  }
   return sub;
 }
 
