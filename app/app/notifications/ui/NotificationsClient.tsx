@@ -21,8 +21,6 @@ export default function NotificationsClient() {
   const tr = {
     en: {
       notifications: "Notifications",
-      pushNotSupported:
-        "Push notifications are not supported in this browser.",
       turnOn: "Turn On",
       turnOff: "Turn Off",
       getInstantOne: "Get instant one",
@@ -34,8 +32,6 @@ export default function NotificationsClient() {
     },
     ro: {
       notifications: "Notificari",
-      pushNotSupported:
-        "Notificarile push nu sunt suportate in acest browser.",
       turnOn: "Activeaza",
       turnOff: "Dezactiveaza",
       getInstantOne: "Trimite una instant",
@@ -326,11 +322,6 @@ export default function NotificationsClient() {
         <div className="sb-cardglow" style={{ padding: 16, display: 'grid', gap: 12, borderRadius: 13 }}>
           <div style={{ display: 'grid', gap: 6 }}>
             <strong>{t.notifications}</strong>
-            {!pushCapable && (
-              <small style={{ color:'var(--muted)' }}>
-                {t.pushNotSupported}
-              </small>
-            )}
           </div>
           <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
             <button
