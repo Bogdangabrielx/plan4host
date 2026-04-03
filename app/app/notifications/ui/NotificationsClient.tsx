@@ -107,6 +107,52 @@ export default function NotificationsClient() {
     });
   }
 
+  async function waitForActiveRegistration(
+    reg: ServiceWorkerRegistration,
+    timeoutMs = 5000,
+  ): Promise<ServiceWorkerRegistration> {
+    if (reg.active) return reg;
+
+    const candidate = reg.installing || reg.waiting;
+    if (candidate) {
+      const activated = await new Promise<boolean>((resolve) => {
+        let settled = false;
+        const timer = setTimeout(() => {
+          if (!settled) {
+            settled = true;
+            resolve(false);
+          }
+        }, timeoutMs);
+
+        const finish = (ok: boolean) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          resolve(ok);
+        };
+
+        const onStateChange = () => {
+          if (candidate.state === "activated") finish(true);
+          if (candidate.state === "redundant") finish(false);
+        };
+
+        candidate.addEventListener("statechange", onStateChange);
+        onStateChange();
+      });
+
+      if (activated && reg.active) return reg;
+    }
+
+    const readyReg = await withTimeout<ServiceWorkerRegistration | null>(
+      navigator.serviceWorker.ready,
+      timeoutMs,
+      null,
+    );
+
+    if (readyReg?.active) return readyReg;
+    throw new Error("service_worker_not_active");
+  }
+
   const getCurrentSubscription = useCallback(async (): Promise<PushSubscription | null> => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return null;
 
@@ -199,22 +245,22 @@ export default function NotificationsClient() {
     if (!reg) {
       reg = await navigator.serviceWorker.register('/sw.js');
     }
-
-    if (reg.active) return reg;
-
-    try {
-      return await navigator.serviceWorker.ready;
-    } catch {
-      return reg;
-    }
+    return await waitForActiveRegistration(reg);
   }
 
   async function subscribeInDB(sub: PushSubscription, ua: string, os: string) {
-    const res = await fetch('/api/push/subscribe', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ subscription: sub.toJSON(), ua, os }),
-    });
+    const res = await withTimeout(
+      fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscription: sub.toJSON(), ua, os }),
+      }),
+      6000,
+      null as Response | null,
+    );
+    if (!res) {
+      throw new Error("subscribe_timeout");
+    }
     if (!res.ok) {
       throw new Error("subscribe_failed");
     }
@@ -260,6 +306,8 @@ export default function NotificationsClient() {
       const os = (document.documentElement.getAttribute('data-os') || '');
       await subscribeInDB(sub, ua, os);
       await refreshActive(false);
+    } catch {
+      setActive(false);
     } finally {
       finalize();
     }

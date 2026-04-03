@@ -541,6 +541,69 @@ export default function AppShell({ title, currentPath, children }: Props) {
           try {
             if (perm === "granted") {
               if (!("serviceWorker" in navigator)) return;
+              const withTimeout = <T,>(promise: Promise<T>, ms: number, fallback: T): Promise<T> =>
+                new Promise((resolve) => {
+                  let settled = false;
+                  const timer = setTimeout(() => {
+                    if (!settled) {
+                      settled = true;
+                      resolve(fallback);
+                    }
+                  }, ms);
+                  promise
+                    .then((value) => {
+                      if (settled) return;
+                      settled = true;
+                      clearTimeout(timer);
+                      resolve(value);
+                    })
+                    .catch(() => {
+                      if (settled) return;
+                      settled = true;
+                      clearTimeout(timer);
+                      resolve(fallback);
+                    });
+                });
+
+              const waitForActiveRegistration = async (
+                initialReg: ServiceWorkerRegistration,
+                timeoutMs = 5000,
+              ) => {
+                if (initialReg.active) return initialReg;
+                const candidate = initialReg.installing || initialReg.waiting;
+                if (candidate) {
+                  const activated = await new Promise<boolean>((resolve) => {
+                    let settled = false;
+                    const timer = setTimeout(() => {
+                      if (!settled) {
+                        settled = true;
+                        resolve(false);
+                      }
+                    }, timeoutMs);
+                    const finish = (ok: boolean) => {
+                      if (settled) return;
+                      settled = true;
+                      clearTimeout(timer);
+                      resolve(ok);
+                    };
+                    const onStateChange = () => {
+                      if (candidate.state === "activated") finish(true);
+                      if (candidate.state === "redundant") finish(false);
+                    };
+                    candidate.addEventListener("statechange", onStateChange);
+                    onStateChange();
+                  });
+                  if (activated && initialReg.active) return initialReg;
+                }
+                const readyReg = await withTimeout<ServiceWorkerRegistration | null>(
+                  navigator.serviceWorker.ready,
+                  timeoutMs,
+                  null,
+                );
+                if (readyReg?.active) return readyReg;
+                throw new Error("service_worker_not_active");
+              };
+
               let reg = await navigator.serviceWorker.getRegistration();
               if (!reg) {
                 try {
@@ -551,9 +614,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
               if (!reg) {
                 reg = await navigator.serviceWorker.register("/sw.js");
               }
-              if (!reg.active) {
-                reg = await navigator.serviceWorker.ready;
-              }
+              reg = await waitForActiveRegistration(reg);
               const keyB64 = (
                 process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
                 (window as any).NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
