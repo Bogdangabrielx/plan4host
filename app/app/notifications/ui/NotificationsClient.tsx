@@ -197,7 +197,7 @@ export default function NotificationsClient({ properties }: { properties: Proper
       await refreshActive(false);
     } catch (error) {
       console.error("[push] turnOn failed", error);
-      setActivePropertyIds([]);
+      await refreshActive(false);
     } finally {
       finalize();
     }
