@@ -551,6 +551,9 @@ export default function AppShell({ title, currentPath, children }: Props) {
               if (!reg) {
                 reg = await navigator.serviceWorker.register("/sw.js");
               }
+              if (!reg.active) {
+                reg = await navigator.serviceWorker.ready;
+              }
               const keyB64 = (
                 process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
                 (window as any).NEXT_PUBLIC_VAPID_PUBLIC_KEY ||

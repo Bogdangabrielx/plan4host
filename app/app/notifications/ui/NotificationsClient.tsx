@@ -189,20 +189,23 @@ export default function NotificationsClient() {
   }, [refreshActive]);
 
   async function getReadyRegistration(): Promise<ServiceWorkerRegistration> {
-    // Prefer a non-blocking registration; avoid waiting for full activation on first load
     let reg = await navigator.serviceWorker.getRegistration();
-    if (reg) return reg;
+    if (!reg) {
+      try {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        reg = regs[0];
+      } catch {}
+    }
+    if (!reg) {
+      reg = await navigator.serviceWorker.register('/sw.js');
+    }
+
+    if (reg.active) return reg;
+
     try {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      if (regs[0]) return regs[0];
-    } catch {}
-    try {
-      return await navigator.serviceWorker.register('/sw.js');
-    } catch {
-      // fallback: try to fetch existing or, as last resort, wait for ready
-      reg = (await navigator.serviceWorker.getRegistration()) as ServiceWorkerRegistration | undefined;
-      if (reg) return reg;
       return await navigator.serviceWorker.ready;
+    } catch {
+      return reg;
     }
   }
 
