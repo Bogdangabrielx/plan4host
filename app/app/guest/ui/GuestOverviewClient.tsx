@@ -1885,7 +1885,7 @@ function EditFormBookingModal({
       ? "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + var(--app-header-h, 64px) + var(--nav-h, 0px) + 24px))"
       : "calc(100dvh - 32px)",
     display: "grid",
-    gridTemplateRows: "auto minmax(0, 1fr)",
+    gridTemplateRows: "auto minmax(0, 1fr) auto",
     overflow: "hidden",
     padding: 16,
     borderRadius: 16,
@@ -2137,7 +2137,7 @@ function EditFormBookingModal({
         </div>
 
         {/* Scrollable content */}
-        <div style={{ overflowY:"auto", WebkitOverflowScrolling:"touch", minHeight: 0 }}>
+        <div style={{ overflowY:"auto", WebkitOverflowScrolling:"touch", minHeight: 0, paddingBottom: 18 }}>
           {loading ? (
             <div style={{ color:"var(--muted)" }}>{lang === "ro" ? "Se incarca…" : "Loading…"}</div>
           ) : error ? (
@@ -2398,7 +2398,33 @@ function EditFormBookingModal({
               </div>
             </div>
 
-            {/* Actions */}
+            {(!valid() && startDate && endDate && endDate < startDate) && (
+              <div style={{ color:"var(--danger)" }}>{lang === "ro" ? "Data de sfarsit nu poate fi inaintea datei de inceput." : "End date cannot be before start date."}</div>
+            )}
+          </div>
+          )}
+        </div>
+        {!loading && !error && (
+          <div
+            style={{
+              position: "sticky",
+              bottom: 0,
+              zIndex: 2,
+              marginTop: 8,
+              paddingTop: 12,
+              borderTop: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
+              background:
+                "linear-gradient(180deg, color-mix(in srgb, var(--panel) 82%, transparent), color-mix(in srgb, var(--panel) 92%, transparent))",
+              boxShadow: "0 -10px 24px rgba(0,0,0,0.16)",
+              display: "grid",
+              gap: 10,
+            }}
+          >
+            {(!valid() && startDate && endDate && endDate < startDate) && (
+              <div style={{ color:"var(--danger)" }}>
+                {lang === "ro" ? "Data de sfarsit nu poate fi inaintea datei de inceput." : "End date cannot be before start date."}
+              </div>
+            )}
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, flexWrap:"wrap" }}>
               <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                 {(hasChanges || justSaved || saving) && (
@@ -2447,14 +2473,8 @@ function EditFormBookingModal({
                 )}
               </div>
             </div>
-
-            {(!valid() && startDate && endDate && endDate < startDate) && (
-              <div style={{ color:"var(--danger)" }}>{lang === "ro" ? "Data de sfarsit nu poate fi inaintea datei de inceput." : "End date cannot be before start date."}</div>
-            )}
-            <div style={{ height: 64 }} aria-hidden />
           </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
