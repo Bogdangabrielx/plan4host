@@ -110,7 +110,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   window.matchMedia('(display-mode: fullscreen)').matches;
               }
               // iOS legacy
-              if (!isStandalone && 'standalone' in navigator && (navigator as any).standalone) {
+              if (!isStandalone && 'standalone' in navigator && navigator.standalone) {
                 isStandalone = true;
               }
               if (isStandalone) {
