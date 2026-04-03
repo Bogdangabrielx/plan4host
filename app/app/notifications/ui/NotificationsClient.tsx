@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { useHeader } from "@/app/app/_components/HeaderContext";
+import LoadingPill from "@/app/app/_components/LoadingPill";
 import {
   ensurePushSubscription,
   getCurrentPushSubscription,
@@ -18,6 +19,7 @@ export default function NotificationsClient({ properties }: { properties: Proper
   const [lang, setLang] = useState<Lang>("en");
   const [endpoint, setEndpoint] = useState<string | null>(null);
   const [activePropertyIds, setActivePropertyIds] = useState<string[]>([]);
+  const [bootstrapping, setBootstrapping] = useState<boolean>(true);
   const [isSmall, setIsSmall] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     return window.matchMedia?.("(max-width: 480px)")?.matches ?? false;
@@ -30,6 +32,7 @@ export default function NotificationsClient({ properties }: { properties: Proper
       notificationsFor: "Notifications for",
       turnOn: "Turn On",
       turnOff: "Turn Off",
+      getInstantOne: "Get instant one",
       noProperty: "No property available.",
       loading: "Loading...",
       notificationsOn: "Your notifications are currently ON.",
@@ -40,6 +43,7 @@ export default function NotificationsClient({ properties }: { properties: Proper
       notificationsFor: "Notificari pentru",
       turnOn: "Activeaza",
       turnOff: "Dezactiveaza",
+      getInstantOne: "Trimite una instant",
       noProperty: "Nu exista proprietati disponibile.",
       loading: "Se incarca...",
       notificationsOn: "Notificarile tale sunt in prezent ACTIVE.",
@@ -82,9 +86,9 @@ export default function NotificationsClient({ properties }: { properties: Proper
   }, []);
 
   useEffect(() => {
-    setPill(loading ? "Loading…" : null);
+    setPill(loading || bootstrapping ? "Loading…" : null);
     return () => setPill(null);
-  }, [loading, setPill]);
+  }, [bootstrapping, loading, setPill]);
 
   function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
     return new Promise((resolve) => {
@@ -155,7 +159,16 @@ export default function NotificationsClient({ properties }: { properties: Proper
   }, []);
 
   useEffect(() => {
-    refreshActive(false).catch(() => {});
+    let cancelled = false;
+    setBootstrapping(true);
+    refreshActive(false)
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setBootstrapping(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [refreshActive]);
 
   useEffect(() => {
@@ -228,6 +241,24 @@ export default function NotificationsClient({ properties }: { properties: Proper
   function finalize() {
     setStatus("done");
     setLoading(false);
+  }
+
+  async function sendTestForProperty(propertyId: string) {
+    setStatus("loading");
+    setLoading(true);
+    try {
+      if (!pushCapable) return;
+      const reg = await navigator.serviceWorker.ready;
+      await reg.showNotification("Plan4Host", {
+        body: t.getInstantOne,
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
+        tag: `p4h-test-${propertyId}`,
+        data: { url: `/app/guest?property=${encodeURIComponent(propertyId)}` },
+      });
+    } finally {
+      finalize();
+    }
   }
 
   function renderNotifIcon(src: string, isCurrent: boolean) {
@@ -311,34 +342,52 @@ export default function NotificationsClient({ properties }: { properties: Proper
                 >
                   {property.name}
                 </div>
-                <small style={{ color: "var(--muted)" }}>
-                  {status === "loading"
+                {!bootstrapping && (
+                  <small style={{ color: "var(--muted)" }}>
+                    {status === "loading"
                     ? t.loading
                     : propertyActive
                       ? t.notificationsOn
                       : t.notificationsOff}
-                </small>
+                  </small>
+                )}
               </div>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button
-                  className="sb-btn sb-cardglow"
-                  onClick={() => void turnOnForProperty(property.id)}
-                  disabled={loading}
-                  style={buttonTone(propertyActive)}
-                >
-                  {renderNotifIcon("/svg_notifications_page.svg", propertyActive)}
-                  <span>{onLabel}</span>
-                </button>
-                <button
-                  className="sb-btn sb-cardglow"
-                  onClick={() => void turnOffForProperty(property.id)}
-                  disabled={loading || !propertyActive}
-                  style={buttonTone(!propertyActive)}
-                >
-                  {renderNotifIcon("/svg_notifications_off_page.svg", !propertyActive)}
-                  <span>{offLabel}</span>
-                </button>
-              </div>
+              {bootstrapping ? (
+                <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                  <LoadingPill variant="compact" title={t.loading} />
+                </div>
+              ) : (
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button
+                    className="sb-btn sb-cardglow"
+                    onClick={() => void turnOnForProperty(property.id)}
+                    disabled={loading}
+                    style={buttonTone(propertyActive)}
+                  >
+                    {renderNotifIcon("/svg_notifications_page.svg", propertyActive)}
+                    <span>{onLabel}</span>
+                  </button>
+                  <button
+                    className="sb-btn sb-cardglow"
+                    onClick={() => void turnOffForProperty(property.id)}
+                    disabled={loading || !propertyActive}
+                    style={buttonTone(!propertyActive)}
+                  >
+                    {renderNotifIcon("/svg_notifications_off_page.svg", !propertyActive)}
+                    <span>{offLabel}</span>
+                  </button>
+                  {propertyActive && (
+                    <button
+                      className="sb-btn"
+                      onClick={() => void sendTestForProperty(property.id)}
+                      disabled={loading}
+                      style={{ color: "var(--muted)", background: "var(--panel)", border: "var(--muted)" }}
+                    >
+                      {t.getInstantOne}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}
