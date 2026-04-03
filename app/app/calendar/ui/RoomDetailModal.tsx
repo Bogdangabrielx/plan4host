@@ -991,6 +991,7 @@ export default function RoomDetailModal({
           data-roomdetail-scroll
           style={{
             padding: isMobile ? 14 : 18,
+            paddingBottom: isMobile ? 18 : 22,
             overflowY: "auto",
           }}
         >
@@ -1574,10 +1575,14 @@ export default function RoomDetailModal({
         {/* Sticky footer actions (always reachable; avoids "scroll under header" on mobile) */}
         <div
           style={{
+            position: "sticky",
+            bottom: 0,
+            zIndex: 2,
             padding: isMobile ? "12px 14px calc(var(--safe-bottom) + 12px)" : "14px 18px 14px",
             borderTop: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
             background:
               "linear-gradient(180deg, color-mix(in srgb, var(--panel) 82%, transparent), color-mix(in srgb, var(--panel) 92%, transparent))",
+            boxShadow: "0 -10px 24px rgba(0,0,0,0.16)",
             display: "flex",
             gap: 10,
             flexWrap: "wrap",
