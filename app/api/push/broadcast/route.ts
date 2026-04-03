@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
       title,
       body: bodyText,
       url: `/app/guest?property=${encodeURIComponent(property_id)}`,
-      tag: `guest-${property_id}`,
+      tag: `guest-${property_id}-${Date.now()}`,
     });
 
     let sent = 0;

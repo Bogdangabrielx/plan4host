@@ -94,7 +94,7 @@ export async function POST(req: Request) {
       title: 'New reservation',
       body: `From ${ev.data.start_date} to ${ev.data.end_date}`,
       url: `/app/guest?property=${encodeURIComponent(pid)}`,
-      tag: `guest-${pid}`,
+      tag: `guest-${pid}-${Date.now()}`,
     });
     const subs = await listSubscriptionsForUsers(admin, userIds, pid);
     const sentEndpoints = new Set<string>();

@@ -47,7 +47,7 @@ export async function broadcastNewBookingPush(
     title: opts.title || "New reservation",
     body: opts.body || `From ${opts.startDate} to ${opts.endDate}`,
     url: opts.url || `/app/guest?property=${encodeURIComponent(propertyId)}`,
-    tag: opts.tag || `guest-${propertyId}`,
+    tag: opts.tag || `guest-${propertyId}-${opts.startDate}-${opts.endDate}-${Date.now()}`,
   });
 
   let sent = 0;

@@ -40,7 +40,7 @@ async function broadcastNewGuestOverview(adminCli: any, property_id: string, sta
       title: "New reservation",
       body: `From ${start_date} to ${end_date}`,
       url: `/app/guestOverview?property=${encodeURIComponent(property_id)}`,
-      tag: `guest-${property_id}`,
+      tag: `guest-${property_id}-${Date.now()}`,
     });
 
     const sentEndpoints = new Set<string>();
