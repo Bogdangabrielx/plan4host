@@ -7,6 +7,30 @@ export function isPushCapable(): boolean {
   );
 }
 
+function isIosStandaloneWebApp(): boolean {
+  if (typeof window === "undefined") return false;
+  const ua = typeof navigator !== "undefined" ? navigator.userAgent || "" : "";
+  const isIOS = /iP(hone|ad|od)/.test(ua);
+  if (!isIOS) return false;
+
+  const standaloneMatch =
+    !!window.matchMedia &&
+    (
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.matchMedia("(display-mode: fullscreen)").matches
+    );
+
+  return standaloneMatch || (!!("standalone" in navigator) && !!(navigator as any).standalone);
+}
+
+function getPushRegistrationTimeoutMs(): number {
+  return isIosStandaloneWebApp() ? 20000 : 8000;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
   return new Promise((resolve) => {
     let settled = false;
@@ -44,11 +68,12 @@ function urlBase64ToUint8Array(base64: string) {
 
 export async function waitForActivePushRegistration(
   reg: ServiceWorkerRegistration,
-  timeoutMs = 5000,
+  timeoutMs = getPushRegistrationTimeoutMs(),
 ): Promise<ServiceWorkerRegistration> {
-  if (reg.active) return reg;
+  let registration = reg;
+  if (registration.active) return registration;
 
-  const candidate = reg.installing || reg.waiting;
+  const candidate = registration.installing || registration.waiting;
   if (candidate) {
     const activated = await new Promise<boolean>((resolve) => {
       let settled = false;
@@ -75,15 +100,35 @@ export async function waitForActivePushRegistration(
       onStateChange();
     });
 
-    if (activated && reg.active) return reg;
+    if (activated && registration.active) return registration;
   }
 
-  const readyReg = await withTimeout<ServiceWorkerRegistration | null>(
-    navigator.serviceWorker.ready,
-    timeoutMs,
-    null,
-  );
-  if (readyReg?.active) return readyReg;
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (registration.active) return registration;
+
+    const readyReg = await withTimeout<ServiceWorkerRegistration | null>(
+      navigator.serviceWorker.ready,
+      1500,
+      null,
+    );
+    if (readyReg?.active) return readyReg;
+
+    try {
+      const direct = await navigator.serviceWorker.getRegistration();
+      if (direct) registration = direct;
+      if (registration.active) return registration;
+    } catch {}
+
+    try {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      const firstActive = regs.find((item) => item.active);
+      if (firstActive?.active) return firstActive;
+      if (!registration && regs[0]) registration = regs[0];
+    } catch {}
+
+    await sleep(500);
+  }
 
   throw new Error("service_worker_not_active");
 }
