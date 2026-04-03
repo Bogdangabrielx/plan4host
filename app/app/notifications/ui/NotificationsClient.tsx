@@ -5,12 +5,16 @@ import LoadingPill from "@/app/app/_components/LoadingPill";
 import {
   ensurePushSubscription,
   getCurrentPushSubscription,
+  isIosStandaloneWebApp,
   isPushCapable,
   syncPushSubscriptionToServer,
 } from "@/lib/push/client";
 
 type Lang = "en" | "ro";
 type Property = { id: string; name: string };
+
+const PUSH_RESUME_PROPERTY_KEY = "p4h:push:resumePropertyId";
+const PUSH_RELOAD_ONCE_KEY = "p4h:push:reloadOnce";
 
 export default function NotificationsClient({ properties }: { properties: Property[] }) {
   const { setPill } = useHeader();
@@ -187,6 +191,20 @@ export default function NotificationsClient({ properties }: { properties: Proper
     };
   }, [refreshActive]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (bootstrapping) return;
+
+    let resumePropertyId: string | null = null;
+    try {
+      resumePropertyId = sessionStorage.getItem(PUSH_RESUME_PROPERTY_KEY);
+      if (resumePropertyId) sessionStorage.removeItem(PUSH_RESUME_PROPERTY_KEY);
+    } catch {}
+
+    if (!resumePropertyId) return;
+    void turnOnForProperty(resumePropertyId);
+  }, [bootstrapping]);
+
   async function turnOnForProperty(propertyId: string) {
     setStatus("loading");
     setLoading(true);
@@ -209,9 +227,29 @@ export default function NotificationsClient({ properties }: { properties: Proper
       } catch {}
 
       await syncPushSubscriptionToServer(sub, { propertyId });
+      try {
+        sessionStorage.removeItem(PUSH_RELOAD_ONCE_KEY);
+        sessionStorage.removeItem(PUSH_RESUME_PROPERTY_KEY);
+      } catch {}
       await refreshActive(false);
     } catch (error) {
       console.error("[push] turnOn failed", error);
+      const message = String((error as any)?.message || "");
+      if (
+        typeof window !== "undefined" &&
+        isIosStandaloneWebApp() &&
+        /service_worker_not_active/i.test(message)
+      ) {
+        try {
+          const alreadyReloaded = sessionStorage.getItem(PUSH_RELOAD_ONCE_KEY) === "1";
+          if (!alreadyReloaded) {
+            sessionStorage.setItem(PUSH_RELOAD_ONCE_KEY, "1");
+            sessionStorage.setItem(PUSH_RESUME_PROPERTY_KEY, propertyId);
+            window.location.reload();
+            return;
+          }
+        } catch {}
+      }
       await refreshActive(false);
     } finally {
       finalize();

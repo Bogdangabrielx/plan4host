@@ -7,7 +7,7 @@ export function isPushCapable(): boolean {
   );
 }
 
-function isIosStandaloneWebApp(): boolean {
+export function isIosStandaloneWebApp(): boolean {
   if (typeof window === "undefined") return false;
   const ua = typeof navigator !== "undefined" ? navigator.userAgent || "" : "";
   const isIOS = /iP(hone|ad|od)/.test(ua);
