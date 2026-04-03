@@ -541,7 +541,16 @@ export default function AppShell({ title, currentPath, children }: Props) {
           try {
             if (perm === "granted") {
               if (!("serviceWorker" in navigator)) return;
-              const reg = await navigator.serviceWorker.register("/sw.js");
+              let reg = await navigator.serviceWorker.getRegistration();
+              if (!reg) {
+                try {
+                  const regs = await navigator.serviceWorker.getRegistrations();
+                  reg = regs[0];
+                } catch {}
+              }
+              if (!reg) {
+                reg = await navigator.serviceWorker.register("/sw.js");
+              }
               const keyB64 = (
                 process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
                 (window as any).NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
@@ -557,10 +566,13 @@ export default function AppShell({ title, currentPath, children }: Props) {
                 return out;
               };
 
-              const sub = await reg.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(keyB64),
-              });
+              let sub = await reg.pushManager.getSubscription();
+              if (!sub) {
+                sub = await reg.pushManager.subscribe({
+                  userVisibleOnly: true,
+                  applicationServerKey: urlBase64ToUint8Array(keyB64),
+                });
+              }
 
               const ua = navigator.userAgent || "";
               const os = document.documentElement.getAttribute("data-os") || "";

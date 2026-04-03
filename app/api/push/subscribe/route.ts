@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createSSRClient } from '@/lib/supabase/server';
 import { createClient } from '@supabase/supabase-js';
+import { resolvePropertyAccountId } from "@/lib/push/account-subscribers";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -34,12 +35,7 @@ export async function POST(req: NextRequest) {
     let account_id: string | null = null;
     if (property_id) {
       try {
-        const r = await admin
-          .from('properties')
-          .select('account_id')
-          .eq('id', property_id)
-          .maybeSingle();
-        if (!r.error && r.data) account_id = ((r.data as any).account_id || null) as string | null;
+        account_id = await resolvePropertyAccountId(admin, property_id);
       } catch { /* ignore */ }
     }
 

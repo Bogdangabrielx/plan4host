@@ -3,6 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import webpush from 'web-push';
 import { createClient as createSSRClient } from '@/lib/supabase/server';
 import { createClient } from '@supabase/supabase-js';
+import {
+  listActiveAccountUserIds,
+  listSubscriptionsForUsers,
+  resolvePropertyAccountId,
+} from "@/lib/push/account-subscribers";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -45,29 +50,26 @@ export async function POST(req: NextRequest) {
     const bodyText: string = body?.body || 'A new reservation has appeared in Guest Overview.';
     if (!property_id) return NextResponse.json({ error: 'property_id required' }, { status: 400 });
 
-    // Fetch account_id for this property
-    const rProp = await admin.from('properties').select('account_id').eq('id', property_id).maybeSingle();
-    if (rProp.error || !rProp.data) return NextResponse.json({ error: 'Property not found' }, { status: 404 });
-    const account_id = (rProp.data as any).account_id as string;
+    const account_id = await resolvePropertyAccountId(admin, property_id);
+    if (!account_id) return NextResponse.json({ error: 'Property not found' }, { status: 404 });
 
-    // Fetch admin users for account
-    const rUsers = await admin
-      .from('account_users')
-      .select('user_id,role,disabled')
-      .eq('account_id', account_id)
-      .eq('disabled', false)
-      .eq('role', 'admin');
-    if (rUsers.error) return NextResponse.json({ error: rUsers.error.message }, { status: 500 });
-    const userIds = (rUsers.data || []).map((u: any) => String(u.user_id));
+    const membership = await admin
+      .from("account_users")
+      .select("user_id")
+      .eq("account_id", account_id)
+      .eq("user_id", user.id)
+      .eq("disabled", false)
+      .eq("disabled_by_billing", false)
+      .maybeSingle();
+
+    if (membership.error || !membership.data) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const userIds = await listActiveAccountUserIds(admin, account_id);
     if (userIds.length === 0) return NextResponse.json({ ok: true, sent: 0 });
 
-    // Select subscriptions for these users (all devices)
-    const { data, error } = await admin
-      .from('push_subscriptions')
-      .select('endpoint,p256dh,auth,user_id')
-      .in('user_id', userIds);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    const subs = (data || []) as Array<{ endpoint: string; p256dh: string; auth: string; user_id: string }>;
+    const subs = await listSubscriptionsForUsers(admin, userIds);
     if (subs.length === 0) return NextResponse.json({ ok: true, sent: 0 });
 
     const payload = JSON.stringify({

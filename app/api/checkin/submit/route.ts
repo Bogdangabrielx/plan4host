@@ -4,6 +4,11 @@ import { createClient } from "@supabase/supabase-js";
 import { createTransport } from "nodemailer";
 import webpush from "web-push";
 import { getCheckinTokenFromRequest, verifyCheckinPublicToken } from "@/lib/checkin/public-token";
+import {
+  listActiveAccountUserIds,
+  listSubscriptionsForUsers,
+  resolvePropertyAccountId,
+} from "@/lib/push/account-subscribers";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -22,28 +27,13 @@ try { webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY
 
 async function broadcastNewGuestOverview(adminCli: any, property_id: string, start_date: string, end_date: string) {
   try {
-    const rProp = await adminCli.from("properties").select("account_id").eq("id", property_id).maybeSingle();
-    if (rProp.error || !rProp.data) return;
-    const account_id = (rProp.data as any).account_id as string;
+    const account_id = await resolvePropertyAccountId(adminCli, property_id);
+    if (!account_id) return;
 
-    const rUsers = await adminCli
-      .from("account_users")
-      .select("user_id,role,disabled")
-      .eq("account_id", account_id)
-      .eq("disabled", false)
-      .eq("role", "admin");
-    if (rUsers.error) return;
-
-    const userIds = (rUsers.data || []).map((u: any) => String(u.user_id));
+    const userIds = await listActiveAccountUserIds(adminCli, account_id);
     if (userIds.length === 0) return;
 
-    const { data, error } = await adminCli
-      .from("push_subscriptions")
-      .select("endpoint,p256dh,auth,user_id")
-      .in("user_id", userIds);
-    if (error) return;
-
-    const subs = (data || []) as Array<{ endpoint: string; p256dh: string; auth: string; user_id: string }>;
+    const subs = await listSubscriptionsForUsers(adminCli, userIds);
     if (subs.length === 0) return;
 
     const payload = JSON.stringify({

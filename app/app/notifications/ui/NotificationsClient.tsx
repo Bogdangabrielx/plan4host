@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 
 type Lang = "en" | "ro";
@@ -31,8 +31,8 @@ export default function NotificationsClient() {
       loading: "Loading...",
       fallbackOnly: "Fallback: in-app only while this tab is open",
       fallbackActive: "Fallback active: in-app only while this tab is open.",
-      notificationsOn: "Your notifications are currently ON.",
-      notificationsOff: "Your notifications are currently OFF.",
+      notificationsOn: "Notifications are ON for this browser/device.",
+      notificationsOff: "Notifications are OFF for this browser/device.",
       fallbackListTitle: "In-app notifications (only while this tab is open):",
       testNotification: "Test notification (in-app only while open)",
     },
@@ -46,8 +46,8 @@ export default function NotificationsClient() {
       loading: "Se incarca...",
       fallbackOnly: "Fallback: doar in aplicatie cat timp acest tab este deschis",
       fallbackActive: "Fallback activ: doar in aplicatie cat timp acest tab este deschis.",
-      notificationsOn: "Notificarile tale sunt in prezent ACTIVE.",
-      notificationsOff: "Notificarile tale sunt in prezent OPRITE.",
+      notificationsOn: "Notificarile sunt ACTIVE pentru acest browser/dispozitiv.",
+      notificationsOff: "Notificarile sunt OPRITE pentru acest browser/dispozitiv.",
       fallbackListTitle: "Notificari in aplicatie (doar cat timp acest tab este deschis):",
       testNotification: "Notificare test (doar in aplicatie cat timp este deschis)",
     },
@@ -85,18 +85,38 @@ export default function NotificationsClient() {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  useEffect(() => {
-    refreshActive();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // Trigger the global loading overlay while this page is busy.
   useEffect(() => {
     setPill(loading ? "Loading…" : null);
     return () => setPill(null);
   }, [loading, setPill]);
 
-  async function refreshActive() {
+  const getCurrentSubscription = useCallback(async (): Promise<PushSubscription | null> => {
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) return null;
+
+    try {
+      const direct = await navigator.serviceWorker.getRegistration();
+      const directSub = await direct?.pushManager.getSubscription();
+      if (directSub) return directSub;
+    } catch {}
+
+    try {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const reg of regs) {
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) return sub;
+      }
+    } catch {}
+
+    try {
+      const ready = await navigator.serviceWorker.ready;
+      return (await ready.pushManager.getSubscription()) || null;
+    } catch {}
+
+    return null;
+  }, []);
+
+  const refreshActive = useCallback(async () => {
     setLoading(true);
     try {
       const cap = typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
@@ -107,18 +127,8 @@ export default function NotificationsClient() {
         setStatus("idle");
         return;
       }
-      if (!pushCapable) {
-        setActive(false);
-        setEndpoint(null);
-        setStatus("idle");
-        return;
-      }
-      let ep: string | null = null;
-      try {
-        const reg = await navigator.serviceWorker.getRegistration();
-        const sub = await reg?.pushManager.getSubscription();
-        ep = sub?.endpoint || null;
-      } catch {}
+      const sub = await getCurrentSubscription();
+      const ep = sub?.endpoint || null;
       setEndpoint(ep);
       try { if (ep) localStorage.setItem('p4h:push:endpoint', ep); } catch {}
 
@@ -134,12 +144,34 @@ export default function NotificationsClient() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [getCurrentSubscription]);
+
+  useEffect(() => {
+    refreshActive().catch(() => {});
+  }, [refreshActive]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onFocus = () => { refreshActive().catch(() => {}); };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") refreshActive().catch(() => {});
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [refreshActive]);
 
   async function getReadyRegistration(): Promise<ServiceWorkerRegistration> {
     // Prefer a non-blocking registration; avoid waiting for full activation on first load
     let reg = await navigator.serviceWorker.getRegistration();
     if (reg) return reg;
+    try {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      if (regs[0]) return regs[0];
+    } catch {}
     try {
       return await navigator.serviceWorker.register('/sw.js');
     } catch {
@@ -151,14 +183,13 @@ export default function NotificationsClient() {
   }
 
   async function subscribeInDB(sub: PushSubscription, property_id: string | null, ua: string, os: string) {
-    try {
-      await fetch('/api/push/subscribe', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscription: sub.toJSON(), property_id, ua, os }),
-      });
-    } catch {
-      // Retry once after a short delay without blocking UI
-      try { setTimeout(() => { fetch('/api/push/subscribe', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ subscription: sub.toJSON(), property_id, ua, os }) }).catch(() => {}); }, 3000); } catch {}
+    const res = await fetch('/api/push/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscription: sub.toJSON(), property_id, ua, os }),
+    });
+    if (!res.ok) {
+      throw new Error("subscribe_failed");
     }
   }
 
@@ -201,13 +232,11 @@ export default function NotificationsClient() {
       try { if (sub?.endpoint) localStorage.setItem('p4h:push:endpoint', sub.endpoint); } catch {}
       setActive(true);
 
-      // Fire-and-forget DB sync to avoid blocking UI
       const ua = navigator.userAgent || '';
       const os = (document.documentElement.getAttribute('data-os') || '');
       let property_id: string | null = null; try { property_id = localStorage.getItem('p4h:selectedPropertyId'); } catch {}
-      subscribeInDB(sub, property_id, ua, os);
-      // Re-check DB status shortly after subscribing (non-blocking)
-      try { setTimeout(() => { refreshActive().catch(()=>{}); }, 500); } catch {}
+      await subscribeInDB(sub, property_id, ua, os);
+      await refreshActive();
     } finally {
       finalize();
     }
