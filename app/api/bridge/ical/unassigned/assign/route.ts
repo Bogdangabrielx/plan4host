@@ -96,7 +96,7 @@ export async function POST(req: Request) {
       url: `/app/guest?property=${encodeURIComponent(pid)}`,
       tag: `guest-${pid}`,
     });
-    const subs = await listSubscriptionsForUsers(admin, userIds);
+    const subs = await listSubscriptionsForUsers(admin, userIds, pid);
     for (const s of subs || []) {
       const subscription = { endpoint: (s as any).endpoint, keys: { p256dh: (s as any).p256dh, auth: (s as any).auth } } as any;
       try { await webpush.sendNotification(subscription, payload); }

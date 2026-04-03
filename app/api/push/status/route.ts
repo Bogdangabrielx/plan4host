@@ -21,13 +21,29 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const endpoint = searchParams.get('endpoint');
 
-    let q = admin.from('push_subscriptions').select('endpoint', { count: 'exact', head: true }).eq('user_id', user.id);
-    if (endpoint) (q as any).eq('endpoint', endpoint);
+    if (endpoint) {
+      const r = await admin
+        .from("push_subscriptions")
+        .select("endpoint,property_id")
+        .eq("user_id", user.id)
+        .eq("endpoint", endpoint)
+        .maybeSingle();
+      if (r.error) return NextResponse.json({ error: r.error.message }, { status: 500 });
+      return NextResponse.json({
+        ok: true,
+        active: !!r.data,
+        count: r.data ? 1 : 0,
+        property_id: (r.data as any)?.property_id || null,
+      });
+    }
 
-    const r: any = await q;
+    const r: any = await admin
+      .from("push_subscriptions")
+      .select("endpoint", { count: "exact", head: true })
+      .eq("user_id", user.id);
     if (r.error) return NextResponse.json({ error: r.error.message }, { status: 500 });
     const count: number = r.count ?? 0;
-    return NextResponse.json({ ok: true, active: count > 0, count });
+    return NextResponse.json({ ok: true, active: count > 0, count, property_id: null });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Unexpected error' }, { status: 500 });
   }

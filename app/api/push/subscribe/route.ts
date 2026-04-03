@@ -20,6 +20,10 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json().catch(() => ({}));
     const subscription = body?.subscription;
+    const requestedPropertyId: string | null =
+      typeof body?.property_id === "string" && body.property_id.trim()
+        ? body.property_id.trim()
+        : null;
     const ua: string | null = body?.ua || null;
     const os: string | null = body?.os || null;
     if (!subscription || !subscription.endpoint || !subscription.keys) {
@@ -28,6 +32,26 @@ export async function POST(req: NextRequest) {
     const endpoint: string = subscription.endpoint;
     const p256dh: string = subscription.keys.p256dh;
     const authKey: string = subscription.keys.auth;
+    const existing = await admin
+      .from("push_subscriptions")
+      .select("property_id,account_id")
+      .eq("endpoint", endpoint)
+      .maybeSingle();
+
+    let property_id: string | null = requestedPropertyId ?? ((existing.data as any)?.property_id || null);
+    let account_id: string | null = ((existing.data as any)?.account_id || null) as string | null;
+
+    if (property_id) {
+      const rProp = await admin
+        .from("properties")
+        .select("account_id,admin_id")
+        .eq("id", property_id)
+        .maybeSingle();
+      if (rProp.error || !rProp.data) {
+        return NextResponse.json({ error: "Invalid property" }, { status: 400 });
+      }
+      account_id = ((rProp.data as any).account_id || (rProp.data as any).admin_id || null) as string | null;
+    }
 
     // Upsert by endpoint (unique)
     const { error } = await admin
@@ -37,14 +61,14 @@ export async function POST(req: NextRequest) {
         p256dh: p256dh,
         auth: authKey,
         user_id: user.id,
-        account_id: null,
-        property_id: null,
+        account_id,
+        property_id,
         ua,
         os,
       }, { onConflict: 'endpoint' });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, property_id });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Unexpected error' }, { status: 500 });
   }

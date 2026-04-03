@@ -9,14 +9,17 @@ import {
 } from "@/lib/push/client";
 
 type Lang = "en" | "ro";
+type Property = { id: string; name: string };
 
-export default function NotificationsClient() {
+export default function NotificationsClient({ properties }: { properties: Property[] }) {
   const { setPill } = useHeader();
   const [loading, setLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
   const [lang, setLang] = useState<Lang>("en");
   const [active, setActive] = useState<boolean>(false);
   const [endpoint, setEndpoint] = useState<string | null>(null);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  const [pickerOpen, setPickerOpen] = useState<boolean>(false);
   const [isSmall, setIsSmall] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     return window.matchMedia?.("(max-width: 480px)")?.matches ?? false;
@@ -28,6 +31,10 @@ export default function NotificationsClient() {
       turnOn: "Turn On",
       turnOff: "Turn Off",
       getInstantOne: "Get instant one",
+      chooseProperty: "Choose property",
+      choosePropertyHint: "Select the property for this device.",
+      noProperty: "No property available.",
+      activeFor: "Active for",
       loading: "Loading...",
       notificationsOn: "Your notifications are currently ON.",
       notificationsOff: "Your notifications are currently OFF.",
@@ -39,6 +46,10 @@ export default function NotificationsClient() {
       turnOn: "Activeaza",
       turnOff: "Dezactiveaza",
       getInstantOne: "Trimite una instant",
+      chooseProperty: "Alege proprietatea",
+      choosePropertyHint: "Selecteaza proprietatea pentru acest device.",
+      noProperty: "Nu exista proprietati disponibile.",
+      activeFor: "Active pentru",
       loading: "Se incarca...",
       notificationsOn: "Notificarile tale sunt in prezent ACTIVE.",
       notificationsOff: "Notificarile tale sunt in prezent OPRITE.",
@@ -137,8 +148,10 @@ export default function NotificationsClient() {
         }
         const j = await res.json().catch(() => ({}));
         setActive(!!j?.active);
+        setSelectedPropertyId(typeof j?.property_id === "string" ? j.property_id : null);
       } else {
         setActive(false);
+        setSelectedPropertyId(null);
       }
     } finally {
       if (showSpinner) setLoading(false);
@@ -163,9 +176,10 @@ export default function NotificationsClient() {
     };
   }, [refreshActive]);
 
-  async function turnOn() {
+  async function turnOnForProperty(propertyId: string) {
     setStatus("loading");
     setLoading(true);
+    setPickerOpen(false);
     try {
       if (!pushCapable) {
         setActive(false);
@@ -184,8 +198,9 @@ export default function NotificationsClient() {
       setEndpoint(sub.endpoint || null);
       try { if (sub?.endpoint) localStorage.setItem('p4h:push:endpoint', sub.endpoint); } catch {}
       setActive(true);
+      setSelectedPropertyId(propertyId);
 
-      await syncPushSubscriptionToServer(sub);
+      await syncPushSubscriptionToServer(sub, { propertyId });
       await refreshActive(false);
     } catch (error) {
       console.error("[push] turnOn failed", error);
@@ -193,6 +208,18 @@ export default function NotificationsClient() {
     } finally {
       finalize();
     }
+  }
+
+  function turnOn() {
+    if (properties.length === 0) {
+      console.error("[push] no property available for subscription");
+      return;
+    }
+    if (properties.length === 1) {
+      void turnOnForProperty(properties[0].id);
+      return;
+    }
+    setPickerOpen(true);
   }
 
   async function turnOff() {
@@ -225,6 +252,7 @@ export default function NotificationsClient() {
       }
       try { localStorage.removeItem('p4h:push:endpoint'); } catch {}
       setEndpoint(null);
+      setSelectedPropertyId(null);
       // Re-check DB status to be precise
       await refreshActive(false);
     } finally {
@@ -248,15 +276,53 @@ export default function NotificationsClient() {
         icon: '/icons/icon-192.png',
         badge: '/icons/icon-192.png',
         tag: 'p4h-test',
-        data: { url: '/app/notifications' },
+        data: { url: selectedPropertyId ? `/app/guest?property=${encodeURIComponent(selectedPropertyId)}` : '/app/notifications' },
       });
     } finally {
       finalize();
     }
   }
 
-  const onClass = `sb-btn sb-cardglow ${active ? 'sb-btn--primary' : ''}`.trim();
-  const offClass = `sb-btn sb-cardglow ${!active ? 'sb-btn--primary' : ''}`.trim();
+  const selectedProperty = selectedPropertyId
+    ? properties.find((property) => property.id === selectedPropertyId) || null
+    : null;
+
+  const onActive = active;
+  const offActive = !active;
+
+  function renderNotifIcon(src: string, isCurrent: boolean) {
+    return (
+      <span
+        aria-hidden
+        style={{
+          width: 18,
+          height: 18,
+          display: "inline-block",
+          flex: "0 0 18px",
+          backgroundColor: isCurrent ? "var(--primary)" : "var(--muted)",
+          WebkitMaskImage: `url(${src})`,
+          maskImage: `url(${src})`,
+          WebkitMaskRepeat: "no-repeat",
+          maskRepeat: "no-repeat",
+          WebkitMaskPosition: "center",
+          maskPosition: "center",
+          WebkitMaskSize: "contain",
+          maskSize: "contain",
+        }}
+      />
+    );
+  }
+
+  function buttonTone(isCurrent: boolean) {
+    return {
+      color: isCurrent ? "var(--primary)" : "var(--muted)",
+      border: `1px solid ${isCurrent ? "color-mix(in srgb, var(--primary) 42%, var(--border))" : "var(--border)"}`,
+      background: "var(--panel)",
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 8,
+    } as const;
+  }
 
   return (
     <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
@@ -267,20 +333,22 @@ export default function NotificationsClient() {
           </div>
           <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
             <button
-              className={onClass}
+              className="sb-btn sb-cardglow"
               onClick={turnOn}
               disabled={loading}
-              style={{ color: 'var(--muted)', border: active ? '1px solid var(--primary)' as const : undefined }}
+              style={buttonTone(onActive)}
             >
-              {t.turnOn}
+              {renderNotifIcon("/svg_notifications_page.svg", onActive)}
+              <span>{t.turnOn}</span>
             </button>
             <button
-              className={offClass}
+              className="sb-btn sb-cardglow"
               onClick={turnOff}
               disabled={loading}
-              style={{ color: 'var(--muted)', border: !active ? '1px solid var(--danger)' as const : undefined }}
+              style={buttonTone(offActive)}
             >
-              {t.turnOff}
+              {renderNotifIcon("/svg_notifications_off_page.svg", offActive)}
+              <span>{t.turnOff}</span>
             </button>
             {active && (
               <button
@@ -303,6 +371,114 @@ export default function NotificationsClient() {
             </small>
           </div>
         </div>
+
+        {selectedProperty && active && (
+          <div
+            className="sb-cardglow"
+            style={{
+              marginTop: 14,
+              padding: isSmall ? 16 : 18,
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              borderRadius: 18,
+              border: "1px solid color-mix(in srgb, var(--primary) 28%, var(--border))",
+              background:
+                "linear-gradient(135deg, color-mix(in srgb, var(--primary) 14%, var(--panel)) 0%, color-mix(in srgb, var(--primary) 8%, var(--card)) 100%)",
+            }}
+          >
+            <div
+              aria-hidden
+              style={{
+                width: isSmall ? 52 : 64,
+                height: isSmall ? 52 : 64,
+                flex: "0 0 auto",
+                backgroundColor: "var(--primary)",
+                WebkitMaskImage: "url(/svg_notifications_page.svg)",
+                maskImage: "url(/svg_notifications_page.svg)",
+                WebkitMaskRepeat: "no-repeat",
+                maskRepeat: "no-repeat",
+                WebkitMaskPosition: "center",
+                maskPosition: "center",
+                WebkitMaskSize: "contain",
+                maskSize: "contain",
+              }}
+            />
+            <div style={{ display: "grid", gap: 6 }}>
+              <span style={{ color: "var(--muted)", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.22em" }}>
+                {t.activeFor}
+              </span>
+              <strong style={{ fontSize: isSmall ? 18 : 20, letterSpacing: "0.18em", textTransform: "uppercase" }}>
+                {selectedProperty.name}
+              </strong>
+            </div>
+          </div>
+        )}
+
+        {pickerOpen && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={t.chooseProperty}
+            onClick={() => !loading && setPickerOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 240,
+              background: "color-mix(in srgb, var(--bg) 62%, transparent)",
+              backdropFilter: "blur(4px)",
+              WebkitBackdropFilter: "blur(4px)",
+              display: "grid",
+              placeItems: "center",
+              padding: 16,
+            }}
+          >
+            <div
+              onClick={(event) => event.stopPropagation()}
+              className="sb-cardglow"
+              style={{
+                width: "min(460px, 100%)",
+                background: "var(--panel)",
+                border: "1px solid var(--border)",
+                borderRadius: 20,
+                padding: 18,
+                display: "grid",
+                gap: 14,
+              }}
+            >
+              <div style={{ display: "grid", gap: 4 }}>
+                <strong>{t.chooseProperty}</strong>
+                <small style={{ color: "var(--muted)" }}>{t.choosePropertyHint}</small>
+              </div>
+
+              <div style={{ display: "grid", gap: 8 }}>
+                {properties.length === 0 && (
+                  <div style={{ color: "var(--muted)" }}>{t.noProperty}</div>
+                )}
+                {properties.map((property) => (
+                  <button
+                    key={property.id}
+                    className="sb-btn sb-cardglow"
+                    disabled={loading}
+                    onClick={() => void turnOnForProperty(property.id)}
+                    style={{
+                      width: "100%",
+                      minHeight: 48,
+                      justifyContent: "space-between",
+                      background: "var(--card)",
+                      color: "var(--text)",
+                      border: "1px solid var(--border)",
+                    }}
+                  >
+                    <span style={{ textTransform: "uppercase", letterSpacing: "0.14em", fontWeight: 800 }}>
+                      {property.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

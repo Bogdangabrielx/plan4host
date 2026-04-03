@@ -33,7 +33,7 @@ async function broadcastNewGuestOverview(adminCli: any, property_id: string, sta
     const userIds = await listActiveAccountUserIds(adminCli, account_id);
     if (userIds.length === 0) return;
 
-    const subs = await listSubscriptionsForUsers(adminCli, userIds);
+    const subs = await listSubscriptionsForUsers(adminCli, userIds, property_id);
     if (subs.length === 0) return;
 
     const payload = JSON.stringify({

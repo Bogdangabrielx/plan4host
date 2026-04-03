@@ -157,7 +157,10 @@ export async function ensurePushSubscription(): Promise<PushSubscription> {
   return sub;
 }
 
-export async function syncPushSubscriptionToServer(sub: PushSubscription): Promise<void> {
+export async function syncPushSubscriptionToServer(
+  sub: PushSubscription,
+  opts?: { propertyId?: string | null },
+): Promise<void> {
   const ua = typeof navigator !== "undefined" ? navigator.userAgent || "" : "";
   const os =
     typeof document !== "undefined"
@@ -170,7 +173,12 @@ export async function syncPushSubscriptionToServer(sub: PushSubscription): Promi
       credentials: "include",
       cache: "no-store",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ subscription: sub.toJSON(), ua, os }),
+      body: JSON.stringify({
+        subscription: sub.toJSON(),
+        property_id: opts?.propertyId || null,
+        ua,
+        os,
+      }),
     }),
     6000,
     null as Response | null,

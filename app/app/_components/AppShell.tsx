@@ -8,10 +8,8 @@ import PullToRefresh from "./PullToRefresh";
 import { HeaderProvider } from "./HeaderContext";
 import AppLoadingOverlay from "./AppLoadingOverlay";
 import {
-  ensurePushSubscription,
   isPushCapable,
   syncExistingPushSubscriptionToServer,
-  syncPushSubscriptionToServer,
 } from "@/lib/push/client";
 
 type Props = {
@@ -546,51 +544,6 @@ export default function AppShell({ title, currentPath, children }: Props) {
       .catch((error) => {
         console.error("[push] background sync failed", error);
       });
-  }, []);
-
-  // Global one-time push prompt on first user gesture across /app
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    let asked = false;
-    try {
-      asked = localStorage.getItem("p4h:push:asked") === "1";
-    } catch {}
-    if (asked) return;
-
-    const handler = () => {
-      try {
-        if (!("Notification" in window)) return;
-        Notification.requestPermission().then(async (perm) => {
-          try {
-            if (perm === "granted") {
-              if (!isPushCapable()) return;
-              const sub = await ensurePushSubscription();
-              await syncPushSubscriptionToServer(sub);
-              try {
-                localStorage.setItem("p4h:push:endpoint", sub.endpoint);
-              } catch {}
-            }
-          } finally {
-            if (perm !== "default") {
-              try {
-                localStorage.setItem("p4h:push:asked", "1");
-              } catch {}
-            }
-          }
-        }).catch((error) => {
-          console.error("[push] prompt flow failed", error);
-        });
-      } catch (error) {
-        console.error("[push] prompt flow crashed", error);
-      }
-    };
-
-    window.addEventListener("pointerdown", handler, { once: true });
-    window.addEventListener("keydown", handler, { once: true });
-    return () => {
-      window.removeEventListener("pointerdown", handler as any);
-      window.removeEventListener("keydown", handler as any);
-    };
   }, []);
 
   return (

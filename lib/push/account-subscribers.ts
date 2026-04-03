@@ -31,13 +31,20 @@ export async function listActiveAccountUserIds(admin: any, accountId: string): P
 export async function listSubscriptionsForUsers(
   admin: any,
   userIds: string[],
+  propertyId?: string | null,
 ): Promise<Array<{ endpoint: string; p256dh: string; auth: string; user_id: string }>> {
   if (!userIds.length) return [];
 
-  const { data, error } = await admin
+  let q = admin
     .from("push_subscriptions")
     .select("endpoint,p256dh,auth,user_id")
     .in("user_id", userIds);
+
+  if (propertyId) {
+    q = q.or(`property_id.eq.${propertyId},property_id.is.null`);
+  }
+
+  const { data, error } = await q;
 
   if (error) return [];
 

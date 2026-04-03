@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     const userIds = await listActiveAccountUserIds(admin, account_id);
     if (userIds.length === 0) return NextResponse.json({ ok: true, sent: 0 });
 
-    const subs = await listSubscriptionsForUsers(admin, userIds);
+    const subs = await listSubscriptionsForUsers(admin, userIds, property_id);
     if (subs.length === 0) return NextResponse.json({ ok: true, sent: 0 });
 
     const payload = JSON.stringify({
