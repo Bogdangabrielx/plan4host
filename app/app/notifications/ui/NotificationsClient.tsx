@@ -18,38 +18,32 @@ export default function NotificationsClient() {
   const [pushCapable, setPushCapable] = useState<boolean>(
     typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window
   );
-  const [fallbackActive, setFallbackActive] = useState<boolean>(false);
-  const [fallbackFeed, setFallbackFeed] = useState<Array<{ ts: string; text: string }>>([]);
   const tr = {
     en: {
       notifications: "Notifications",
       pushNotSupported:
-        "Push API not supported in this browser. You can enable an in-app fallback that only works while this tab is open.",
+        "Push notifications are not supported in this browser.",
       turnOn: "Turn On",
       turnOff: "Turn Off",
       getInstantOne: "Get instant one",
       loading: "Loading...",
-      fallbackOnly: "Fallback: in-app only while this tab is open",
-      fallbackActive: "Fallback active: in-app only while this tab is open.",
-      notificationsOn: "Notifications are ON for this browser/device.",
-      notificationsOff: "Notifications are OFF for this browser/device.",
-      fallbackListTitle: "In-app notifications (only while this tab is open):",
-      testNotification: "Test notification (in-app only while open)",
+      notificationsOn: "Your notifications are currently ON.",
+      notificationsOff: "Your notifications are currently OFF.",
+      testTitle: "Plan4Host",
+      testNotification: "This is a test notification.",
     },
     ro: {
       notifications: "Notificari",
       pushNotSupported:
-        "Push API nu este suportat in acest browser. Poti activa un fallback in aplicatie care functioneaza doar cat timp acest tab este deschis.",
+        "Notificarile push nu sunt suportate in acest browser.",
       turnOn: "Activeaza",
       turnOff: "Dezactiveaza",
       getInstantOne: "Trimite una instant",
       loading: "Se incarca...",
-      fallbackOnly: "Fallback: doar in aplicatie cat timp acest tab este deschis",
-      fallbackActive: "Fallback activ: doar in aplicatie cat timp acest tab este deschis.",
-      notificationsOn: "Notificarile sunt ACTIVE pentru acest browser/dispozitiv.",
-      notificationsOff: "Notificarile sunt OPRITE pentru acest browser/dispozitiv.",
-      fallbackListTitle: "Notificari in aplicatie (doar cat timp acest tab este deschis):",
-      testNotification: "Notificare test (doar in aplicatie cat timp este deschis)",
+      notificationsOn: "Notificarile tale sunt in prezent ACTIVE.",
+      notificationsOff: "Notificarile tale sunt in prezent OPRITE.",
+      testTitle: "Plan4Host",
+      testNotification: "Aceasta este o notificare de test.",
     },
   } as const;
   const t = tr[lang];
@@ -232,10 +226,7 @@ export default function NotificationsClient() {
     setLoading(true);
     try {
       if (!pushCapable) {
-        setFallbackActive(true);
         setActive(false);
-        setLoading(false);
-        setStatus("done");
         return;
       }
       if (!('Notification' in window)) return finalize();
@@ -281,12 +272,9 @@ export default function NotificationsClient() {
     setLoading(true);
     try {
       if (!pushCapable) {
-        setFallbackActive(false);
-        setStatus("done");
         return;
       }
-      const reg = await navigator.serviceWorker.getRegistration();
-      const sub = await reg?.pushManager.getSubscription();
+      const sub = await getCurrentSubscription();
       let epToRemove: string | null = null;
       if (sub) {
         epToRemove = sub.endpoint || null;
@@ -315,12 +303,15 @@ export default function NotificationsClient() {
     setStatus("loading");
     setLoading(true);
     try {
-      if (pushCapable && active) {
-        await fetch('/api/push/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
-      } else {
-        const now = new Date().toISOString();
-        setFallbackFeed((prev) => [{ ts: now, text: t.testNotification }, ...prev].slice(0, 5));
-      }
+      if (!pushCapable || !active) return;
+      const reg = await getReadyRegistration();
+      await reg.showNotification(t.testTitle, {
+        body: t.testNotification,
+        icon: '/icons/icon-192.png',
+        badge: '/icons/icon-192.png',
+        tag: 'p4h-test',
+        data: { url: '/app/notifications' },
+      });
     } finally {
       finalize();
     }
@@ -358,7 +349,7 @@ export default function NotificationsClient() {
             >
               {t.turnOff}
             </button>
-            {(active || fallbackActive) && (
+            {active && (
               <button
                 className="sb-btn"
                 onClick={sendTest}
@@ -373,24 +364,10 @@ export default function NotificationsClient() {
             <small style={{ color:'var(--muted)' }}>
               {status === "loading"
                 ? t.loading
-                : fallbackActive
-                  ? t.fallbackActive
-                  : active
-                    ? t.notificationsOn
-                    : t.notificationsOff}
+                : active
+                  ? t.notificationsOn
+                  : t.notificationsOff}
             </small>
-            {fallbackActive && fallbackFeed.length > 0 && (
-              <div style={{ display:'grid', gap:6, padding:10, border:'1px dashed var(--border)', borderRadius:10, background:'color-mix(in srgb, var(--panel) 70%, transparent)' }}>
-                <small style={{ color:'var(--muted)' }}>{t.fallbackListTitle}</small>
-                <ul style={{ margin:0, paddingLeft:16, display:'grid', gap:4 }}>
-                  {fallbackFeed.map((m, i) => (
-                    <li key={`${m.ts}-${i}`} style={{ color:'var(--text)', fontSize:13 }}>
-                      {new Date(m.ts).toLocaleString()} - {m.text}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
         </div>
       </div>
