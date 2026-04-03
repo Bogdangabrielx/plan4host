@@ -361,6 +361,7 @@ export default function NotificationsClient({ properties }: { properties: Proper
               ) : (
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <button
+                    type="button"
                     className="sb-btn sb-cardglow"
                     onClick={() => void turnOnForProperty(property.id)}
                     disabled={loading}
@@ -370,6 +371,7 @@ export default function NotificationsClient({ properties }: { properties: Proper
                     <span>{onLabel}</span>
                   </button>
                   <button
+                    type="button"
                     className="sb-btn sb-cardglow"
                     onClick={() => void turnOffForProperty(property.id)}
                     disabled={loading || !propertyActive}
@@ -380,6 +382,7 @@ export default function NotificationsClient({ properties }: { properties: Proper
                   </button>
                   {propertyActive && (
                     <button
+                      type="button"
                       className="sb-btn"
                       onClick={() => void sendTestForProperty(property.id)}
                       disabled={loading}
