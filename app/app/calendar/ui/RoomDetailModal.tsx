@@ -791,7 +791,9 @@ export default function RoomDetailModal({
         fontFamily: "inherit",
         /* Always keep the modal below the fixed app header (desktop + mobile). */
         paddingTop: "calc(var(--safe-top) + var(--p4h-fixed-header-h, 56px) + 12px)",
-        paddingBottom: "calc(var(--safe-bottom) + 12px)",
+        paddingBottom: isMobile
+          ? "calc(var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)"
+          : "calc(var(--safe-bottom, 0px) + 12px)",
         paddingLeft: "12px",
         paddingRight: "12px",
         overflow: "hidden",
@@ -875,7 +877,9 @@ export default function RoomDetailModal({
         style={{
           width: "min(1000px, 100%)",
           maxHeight:
-            "calc(100dvh - (var(--safe-top) + var(--p4h-fixed-header-h, 56px) + var(--safe-bottom) + 28px))",
+            isMobile
+              ? "calc(100dvh - (var(--safe-top, 0px) + var(--p4h-fixed-header-h, 56px) + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 28px))"
+              : "calc(100dvh - (var(--safe-top, 0px) + var(--p4h-fixed-header-h, 56px) + var(--safe-bottom, 0px) + 28px))",
           background:
             "radial-gradient(120% 160% at 18% 0%, color-mix(in srgb, var(--card) 18%, transparent), transparent 62%), var(--panel)",
           color: "var(--text)",
