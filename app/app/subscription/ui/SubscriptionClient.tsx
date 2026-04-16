@@ -136,6 +136,7 @@ export default function SubscriptionClient({
   const [upgradeBusy, setUpgradeBusy] = useState<boolean>(false);
   const [scheduleBusy, setScheduleBusy] = useState<boolean>(false);
   const [initializing, setInitializing] = useState<boolean>(true);
+  const [expiredPromptDismissed, setExpiredPromptDismissed] = useState<boolean>(false);
   const t = {
     en: {
       stillActiveUntil: "Still active until:",
@@ -152,6 +153,10 @@ export default function SubscriptionClient({
       syncEvery: "Automatic sync of reservations between platforms",
       everyMin: "every",
       min: "min",
+      expiredPromptTitle: "Your subscription has expired",
+      expiredPromptBody: "To continue using Plan4Host, please choose one of the available plans below.",
+      expiredPromptChoose: "Choose",
+      close: "Close",
     },
     ro: {
       stillActiveUntil: "Activ pana la:",
@@ -168,6 +173,10 @@ export default function SubscriptionClient({
       syncEvery: "Sincronizare automata a rezervarilor intre platforme",
       everyMin: "la fiecare",
       min: "min",
+      expiredPromptTitle: "Abonamentul tau a expirat",
+      expiredPromptBody: "Pentru a continua sa folosesti Plan4Host, te rugam sa alegi unul dintre planurile disponibile mai jos.",
+      expiredPromptChoose: "Alege",
+      close: "Inchide",
     },
   } as const;
   const i18n = t[lang];
@@ -414,13 +423,30 @@ export default function SubscriptionClient({
     } catch { setTrialActive(false); }
   }, [currentPlan, basePlan, validUntil]);
 
+  // Is current plan active (validity in the future)?
+  const isActive = useMemo(() => {
+    try {
+      const ms = validUntilISO ? Date.parse(validUntilISO) : NaN;
+      return Number.isFinite(ms) && ms > Date.now();
+    } catch { return false; }
+  }, [validUntilISO]);
+
+  const hasExpiredValidity = useMemo(() => {
+    try {
+      const ms = validUntilISO ? Date.parse(validUntilISO) : NaN;
+      return Number.isFinite(ms) && ms <= Date.now();
+    } catch { return false; }
+  }, [validUntilISO]);
+
+  const showExpiredPrompt = !initializing && hasExpiredValidity && !expiredPromptDismissed;
+
   // Lock scroll when modal open
   useEffect(() => {
-    if (!pendingSelect) return;
+    if (!(pendingSelect || showExpiredPrompt)) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
-  }, [pendingSelect]);
+  }, [pendingSelect, showExpiredPrompt]);
 
   // Lock scroll for demo billing modals as well
   useEffect(() => {
@@ -429,14 +455,6 @@ export default function SubscriptionClient({
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
   }, [buyerTypeOpen, billingFormOpen, manageOpen]);
-
-  // Is current plan active (validity in the future)?
-  const isActive = useMemo(() => {
-    try {
-      const ms = validUntilISO ? Date.parse(validUntilISO) : NaN;
-      return Number.isFinite(ms) && ms > Date.now();
-    } catch { return false; }
-  }, [validUntilISO]);
 
   function choosePlan(slug: Plan["slug"]) {
     if (role !== "admin") return;
@@ -728,6 +746,108 @@ export default function SubscriptionClient({
 
   return (
     <div className={styles.container}>
+      {showExpiredPrompt && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="expired-subscription-title"
+          onClick={() => setExpiredPromptDismissed(true)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 320,
+            display: "grid",
+            placeItems: "center",
+            padding: isMobileNav
+              ? "calc(var(--safe-top, 0px) + var(--app-header-h, 64px) + 12px) 12px calc(var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)"
+              : 16,
+            background: "rgba(0,0,0,.58)",
+          }}
+        >
+          <div
+            className="modalCard sb-cardglow"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "min(560px, 100%)",
+              position: "relative",
+              display: "grid",
+              gap: 16,
+              padding: "22px 18px 18px",
+              border: "1px solid color-mix(in srgb, var(--primary) 38%, var(--border))",
+              borderRadius: 18,
+              background: "var(--panel)",
+              color: "var(--text)",
+              boxShadow: "0 24px 70px rgba(0,0,0,.34)",
+            }}
+          >
+            <button
+              type="button"
+              aria-label={i18n.close}
+              title={i18n.close}
+              onClick={() => setExpiredPromptDismissed(true)}
+              className={`sb-cardglow ${styles.btn}`}
+              style={{
+                position: "absolute",
+                top: 10,
+                right: 10,
+                width: 34,
+                height: 34,
+                padding: 0,
+                borderRadius: 999,
+                border: "1px solid var(--border)",
+                background: "transparent",
+                color: "var(--text)",
+                display: "grid",
+                placeItems: "center",
+                fontSize: 18,
+                lineHeight: 1,
+              }}
+            >
+              ×
+            </button>
+            <div style={{ display: "grid", gap: 8, paddingRight: 36 }}>
+              <h2
+                id="expired-subscription-title"
+                style={{ margin: 0, fontSize: 22, lineHeight: 1.15, fontWeight: 900 }}
+              >
+                {i18n.expiredPromptTitle}
+              </h2>
+              <p style={{ margin: 0, color: "var(--muted)", fontSize: 14, lineHeight: 1.55 }}>
+                {i18n.expiredPromptBody}
+              </p>
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: isMobileNav ? "1fr" : "repeat(3, 1fr)",
+                gap: 10,
+              }}
+            >
+              {PLANS.map((plan) => (
+                <button
+                  key={plan.slug}
+                  type="button"
+                  className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+                  disabled={!!saving || role !== "admin"}
+                  onClick={() => {
+                    setExpiredPromptDismissed(true);
+                    choosePlan(plan.slug);
+                  }}
+                  style={{
+                    minHeight: 46,
+                    borderRadius: 14,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {saving === plan.slug ? i18n.applying : `${i18n.expiredPromptChoose} ${planLabel(plan.slug)}`}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header bar: current plan */}
       <div className={styles.headerRow}>
         {isActive ? (
