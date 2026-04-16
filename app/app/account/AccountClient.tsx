@@ -36,8 +36,9 @@ const translations = {
     deleteBlockedTitle: "Account deactivation failed",
     deleteBlockedMessage:
       "Account deactivation could not be completed because there are active reservations in the calendar.",
-    deleteBlockedSupport:
-      "Please contact support by email at Office@plan4host.com or on WhatsApp: +40 721 759 329.",
+    deleteBlockedSupportIntro: "Please contact support:",
+    deleteBlockedEmailLabel: "Email",
+    deleteBlockedWhatsappLabel: "WhatsApp",
     close: "Close",
   },
   ro: {
@@ -66,8 +67,9 @@ const translations = {
     deleteBlockedTitle: "Dezactivarea contului a eșuat",
     deleteBlockedMessage:
       "Dezactivarea contului nu s-a putut realiza deoarece există rezervări active în calendar.",
-    deleteBlockedSupport:
-      "Vă rugăm luați legătura pentru suport, pe email la Office@plan4host.com sau pe WhatsApp: +40 721 759 329.",
+    deleteBlockedSupportIntro: "Vă rugăm luați legătura pentru suport:",
+    deleteBlockedEmailLabel: "Email",
+    deleteBlockedWhatsappLabel: "WhatsApp",
     close: "Închide",
   },
 } as const;
@@ -457,14 +459,22 @@ export default function AccountClient() {
                   boxShadow: "0 22px 60px rgba(0,0,0,.28)",
                 }}
               >
-                <div style={{ display: "grid", gap: 10 }}>
-                  <strong style={{ fontSize: 18 }}>{t.deleteBlockedTitle}</strong>
-                  <p style={{ margin: 0, color: "var(--text)", lineHeight: 1.55 }}>
+                <div style={{ display: "grid", gap: 12 }}>
+                  <strong style={{ fontSize: 19, lineHeight: 1.2 }}>{t.deleteBlockedTitle}</strong>
+                  <p style={{ margin: 0, color: "var(--muted)", fontSize: 14, lineHeight: 1.55 }}>
                     {t.deleteBlockedMessage}
                   </p>
-                  <p style={{ margin: 0, color: "var(--muted)", lineHeight: 1.55 }}>
-                    {t.deleteBlockedSupport}
-                  </p>
+                  <div style={{ display: "grid", gap: 7, color: "var(--muted)", fontSize: 14, lineHeight: 1.45 }}>
+                    <span>{t.deleteBlockedSupportIntro}</span>
+                    <span>
+                      {t.deleteBlockedEmailLabel}:{" "}
+                      <span style={{ color: "var(--text)", fontWeight: 600 }}>Office@plan4host.com</span>
+                    </span>
+                    <span>
+                      {t.deleteBlockedWhatsappLabel}:{" "}
+                      <span style={{ color: "var(--text)", fontWeight: 600 }}>+40 721 759 329</span>
+                    </span>
+                  </div>
                   <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
                     <button
                       type="button"
