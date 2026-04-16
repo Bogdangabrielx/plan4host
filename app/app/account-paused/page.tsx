@@ -19,8 +19,9 @@ export default async function AccountPausedPage() {
         style={{
           minHeight: "calc(100dvh - var(--app-header-h, 64px))",
           display: "grid",
-          placeItems: "center",
-          padding: 18,
+          alignItems: "start",
+          justifyItems: "center",
+          padding: "clamp(28px, 8vh, 72px) 18px 18px",
           color: "var(--text)",
         }}
       >
@@ -41,6 +42,8 @@ export default async function AccountPausedPage() {
               width: "100%",
               height: "auto",
               display: "block",
+              borderRadius: 24,
+              overflow: "hidden",
             }}
           />
         </section>
