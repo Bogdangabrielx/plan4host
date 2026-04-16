@@ -1,6 +1,7 @@
 import AppShell from "../_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { redirectForBillingOnly } from "@/lib/billing/access";
 import ReservationMessageClient from "./ui/ReservationMessageClient";
 import { cookies } from "next/headers";
 import { resolveTeamAccountContext } from "@/lib/auth/team-account";
@@ -20,8 +21,7 @@ export default async function ReservationMessagePage() {
   if (!user) redirect("/auth/login");
 
   // Billing-only guard: redirect to Subscription if plan is not active
-  const mode = await supabase.rpc("account_access_mode");
-  if ((mode.data as string | null) === "billing_only") redirect("/app/subscription");
+  await redirectForBillingOnly(supabase, user.id);
 
   await ensureScope("reservation_message", supabase, user.id);
 

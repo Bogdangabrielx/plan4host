@@ -2,6 +2,7 @@
 import AppShell from "../_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { redirectForBillingOnly } from "@/lib/billing/access";
 import ChannelsClient from "./ui/ChannelsClient";
 import { ensureScope } from "@/lib/auth/scopes";
 import { cookies } from "next/headers";
@@ -15,8 +16,7 @@ export default async function ChannelsPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
-  const mode = await supabase.rpc("account_access_mode");
-  if ((mode.data as string | null) === 'billing_only') redirect('/app/subscription');
+  await redirectForBillingOnly(supabase, user.id);
   await ensureScope("channels", supabase, user.id);
 
   const { data: props = [] } = await supabase

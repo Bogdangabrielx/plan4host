@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { redirectForBillingOnly } from "@/lib/billing/access";
 import AddRoomForm from "./add-room-form";
 
 type Room = {
@@ -23,8 +24,7 @@ export default async function RoomsPage({ params }: { params: { propertyId: stri
   if (!user) redirect("/auth/login");
 
   // Guard: if account requires billing, route to Subscription area
-  const mode = await supabase.rpc("account_access_mode");
-  if ((mode.data as string | null) === "billing_only") redirect("/app/subscription");
+  await redirectForBillingOnly(supabase, user.id);
 
   const propertyId = params.propertyId;
 

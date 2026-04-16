@@ -1,6 +1,7 @@
 import AppShell from "../_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { redirectForBillingOnly } from "@/lib/billing/access";
 import CalendarClient from "./ui/CalendarClient";
 import { ensureScope } from "@/lib/auth/scopes";
 
@@ -20,8 +21,7 @@ export default async function CalendarPage({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  const mode = await supabase.rpc("account_access_mode");
-  if ((mode.data as string | null) === "billing_only") redirect("/app/subscription");
+  await redirectForBillingOnly(supabase, user.id);
   await ensureScope("calendar", supabase, user.id);
 
   const { data: props = [] } = await supabase

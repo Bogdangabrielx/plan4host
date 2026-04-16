@@ -2,6 +2,7 @@
 import AppShell from "../_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { redirectForBillingOnly } from "@/lib/billing/access";
 import CleaningClient from "./ui/CleaningClient";
 import { cookies } from "next/headers";
 
@@ -14,8 +15,7 @@ export default async function CleaningPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
-  const mode = await supabase.rpc("account_access_mode");
-  if ((mode.data as string | null) === 'billing_only') redirect('/app/subscription');
+  await redirectForBillingOnly(supabase, user.id);
   // Allow any member to view Cleaning Board (read-only for non-admin/editor).
   // RLS will still enforce write permissions.
 

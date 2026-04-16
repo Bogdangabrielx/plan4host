@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { redirectForBillingOnly } from "@/lib/billing/access";
 import { ensureScope } from "@/lib/auth/scopes";
 
 export const dynamic = "force-dynamic";
@@ -12,11 +13,7 @@ export default async function AppEntryPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  // Billing-only guard: admin can access Subscription only
-  const mode = await supabase.rpc("account_access_mode");
-  if ((mode.data as string | null) === "billing_only") {
-    redirect("/app/subscription");
-  }
+  await redirectForBillingOnly(supabase, user.id);
 
   // If user has no properties yet, land on Dashboard (onboarding)
   try {

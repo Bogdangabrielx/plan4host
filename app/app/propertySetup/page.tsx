@@ -2,6 +2,7 @@
 import AppShell from "../_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { redirectForBillingOnly } from "@/lib/billing/access";
 import { ensureScope } from "@/lib/auth/scopes";
 import { cookies } from "next/headers";
 import propertySetupClient from "./ui/PropertySetupClient";
@@ -16,8 +17,7 @@ export default async function propertySetupPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
-  const mode = await supabase.rpc("account_access_mode");
-  if ((mode.data as string | null) === 'billing_only') redirect('/app/subscription');
+  await redirectForBillingOnly(supabase, user.id);
   // Nou token: property_setup (compat handled in ensureScope)
   await ensureScope("property_setup", supabase, user.id);
 

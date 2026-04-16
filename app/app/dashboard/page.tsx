@@ -1,6 +1,7 @@
 import AppShell from "../_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { redirectForBillingOnly } from "@/lib/billing/access";
 import DashboardClient from "../ui/DashboardClient";
 
 export const dynamic = "force-dynamic";
@@ -13,11 +14,7 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  // Billing-only guard: admin can access Subscription only
-  const mode = await supabase.rpc("account_access_mode");
-  if ((mode.data as string | null) === "billing_only") {
-    redirect("/app/subscription");
-  }
+  await redirectForBillingOnly(supabase, user.id);
 
   // Sub-users without 'dashboard' → redirect to first allowed section
   const { data: acc } = await supabase

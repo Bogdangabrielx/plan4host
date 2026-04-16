@@ -2,6 +2,7 @@
 import AppShell from "@/app/app/_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { redirectForBillingOnly } from "@/lib/billing/access";
 import TeamClient from "./ui/TeamClient";
 import { cookies } from "next/headers";
 import { resolveTeamAccountContext } from "@/lib/auth/team-account";
@@ -16,9 +17,7 @@ export default async function TeamPage() {
   const { data: { user } } = await supa.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  // dacă e doar billing, nu lăsăm acces la team
-  const mode = await supa.rpc("account_access_mode");
-  if ((mode.data as string | null) === "billing_only") redirect("/app/subscription");
+  await redirectForBillingOnly(supa, user.id);
 
   const ctx = await resolveTeamAccountContext(supa as any, String(user.id));
   if (!ctx.membership || ctx.membership.disabled) redirect("/app");

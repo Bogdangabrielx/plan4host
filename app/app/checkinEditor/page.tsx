@@ -1,6 +1,7 @@
 import AppShell from "../_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { redirectForBillingOnly } from "@/lib/billing/access";
 import { cookies } from "next/headers";
 import CheckinEditorClient from "./ui/CheckinEditorClient";
 import { ensureScope } from "@/lib/auth/scopes";
@@ -18,8 +19,7 @@ export default async function CheckinEditorPage() {
   if (!user) redirect("/auth/login");
 
   // Block app access when billing is required; allow only Subscription page
-  const mode = await supabase.rpc("account_access_mode");
-  if ((mode.data as string | null) === "billing_only") redirect("/app/subscription");
+  await redirectForBillingOnly(supabase, user.id);
   await ensureScope("property_setup", supabase, user.id);
 
   // Load properties for selector
