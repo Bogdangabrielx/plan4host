@@ -1,6 +1,7 @@
 import AppShell from "../_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -24,45 +25,24 @@ export default async function AccountPausedPage() {
         }}
       >
         <section
-          className="sb-cardglow"
           style={{
             width: "min(560px, 100%)",
             display: "grid",
-            gap: 14,
-            padding: 24,
-            borderRadius: 22,
-            border: "1px solid color-mix(in srgb, var(--primary) 30%, var(--border))",
-            background: "var(--panel)",
-            boxShadow: "0 22px 60px rgba(0,0,0,.22)",
+            placeItems: "center",
           }}
         >
-          <div
+          <Image
+            src="/renewal.png"
+            alt="Account access is paused until the subscription is renewed"
+            width={960}
+            height={720}
+            priority
             style={{
-              width: 52,
-              height: 52,
-              borderRadius: 18,
-              display: "grid",
-              placeItems: "center",
-              background: "color-mix(in srgb, var(--primary) 16%, transparent)",
-              color: "var(--primary)",
-              fontWeight: 900,
-              fontSize: 22,
+              width: "100%",
+              height: "auto",
+              display: "block",
             }}
-            aria-hidden="true"
-          >
-            !
-          </div>
-          <div style={{ display: "grid", gap: 8 }}>
-            <h1 style={{ margin: 0, fontSize: 28, lineHeight: 1.08, letterSpacing: -0.4 }}>
-              Account access is paused
-            </h1>
-            <p style={{ margin: 0, color: "var(--muted)", lineHeight: 1.6 }}>
-              Your organization&apos;s subscription has expired. Access to Plan4Host is currently paused until an account administrator reactivates the subscription.
-            </p>
-            <p style={{ margin: 0, color: "var(--muted)", lineHeight: 1.6 }}>
-              Please contact your account administrator and ask them to choose a plan from the billing page.
-            </p>
-          </div>
+          />
         </section>
       </main>
     </AppShell>
