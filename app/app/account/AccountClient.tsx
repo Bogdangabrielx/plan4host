@@ -33,6 +33,12 @@ const translations = {
     deleteAccountPrompt:
       "Type delete to confirm account deletion. This removes ALL your data.",
     deleteAccountFailed: "Could not delete account.",
+    deleteBlockedTitle: "Account deactivation failed",
+    deleteBlockedMessage:
+      "Account deactivation could not be completed because there are active reservations in the calendar.",
+    deleteBlockedSupport:
+      "Please contact support by email at Office@plan4host.com or on WhatsApp: +40 721 759 329.",
+    close: "Close",
   },
   ro: {
     pageTitle: "Contul meu",
@@ -57,6 +63,12 @@ const translations = {
     deleteAccountPrompt:
       "Scrie delete pentru a confirma ștergerea contului. Această acțiune șterge TOATE datele.",
     deleteAccountFailed: "Contul nu a putut fi șters.",
+    deleteBlockedTitle: "Dezactivarea contului a eșuat",
+    deleteBlockedMessage:
+      "Dezactivarea contului nu s-a putut realiza deoarece există rezervări active în calendar.",
+    deleteBlockedSupport:
+      "Vă rugăm luați legătura pentru suport, pe email la Office@plan4host.com sau pe WhatsApp: +40 721 759 329.",
+    close: "Închide",
   },
 } as const;
 
@@ -117,6 +129,7 @@ export default function AccountClient() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [loadedProfile, setLoadedProfile] = useState(false);
   const [loadedAccount, setLoadedAccount] = useState(false);
+  const [deleteBlockedOpen, setDeleteBlockedOpen] = useState(false);
 
   // Ascunde scrollbar-ul pe ecrane mari doar pe această pagină (desktop)
   useEffect(() => {
@@ -416,6 +429,55 @@ export default function AccountClient() {
         </div>
       ) : (
         <>
+          {deleteBlockedOpen && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              onClick={() => setDeleteBlockedOpen(false)}
+              style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 300,
+                display: "grid",
+                placeItems: "center",
+                padding: 16,
+                background: "rgba(0,0,0,.55)",
+              }}
+            >
+              <div
+                className="sb-card"
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  width: "min(480px, 100%)",
+                  padding: 20,
+                  borderRadius: 18,
+                  border: "1px solid color-mix(in srgb, var(--danger, #ef4444) 28%, var(--border))",
+                  background: "var(--panel)",
+                  color: "var(--text)",
+                  boxShadow: "0 22px 60px rgba(0,0,0,.28)",
+                }}
+              >
+                <div style={{ display: "grid", gap: 10 }}>
+                  <strong style={{ fontSize: 18 }}>{t.deleteBlockedTitle}</strong>
+                  <p style={{ margin: 0, color: "var(--text)", lineHeight: 1.55 }}>
+                    {t.deleteBlockedMessage}
+                  </p>
+                  <p style={{ margin: 0, color: "var(--muted)", lineHeight: 1.55 }}>
+                    {t.deleteBlockedSupport}
+                  </p>
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+                    <button
+                      type="button"
+                      className="sb-btn sb-btn--primary"
+                      onClick={() => setDeleteBlockedOpen(false)}
+                    >
+                      {t.close}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -703,6 +765,10 @@ export default function AccountClient() {
                     if ((conf || "").trim().toLowerCase() !== "delete") return;
                     try {
                       const res = await fetch("/api/account/delete", { method: "POST" });
+                      if (res.status === 400) {
+                        setDeleteBlockedOpen(true);
+                        return;
+                      }
                       if (!res.ok) throw new Error(await res.text());
                       window.location.assign("/auth/logout");
                     } catch (e: any) {
