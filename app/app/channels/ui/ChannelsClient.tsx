@@ -55,11 +55,11 @@ function CopyUrlButton({ url, lang }: { url: string; lang: Lang }) {
     } catch {}
   }
   return (
-    <button className="sb-btn" onClick={onCopy} aria-live="polite" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+    <button className="sb-btn" onClick={onCopy} aria-live="polite" style={{ display:'inline-flex', alignItems:'center', gap:6, minWidth: 0, maxWidth: "100%" }}>
       {!copied && (
-        <img src={isDark ? '/copy_fordark.png' : '/copy_forlight.png'} alt="" width={14} height={14} style={{ opacity:.95 }} />
+        <img src={isDark ? '/copy_fordark.png' : '/copy_forlight.png'} alt="" width={14} height={14} style={{ opacity:.95, flex: "0 0 auto" }} />
       )}
-      <span>{copied ? (lang === "ro" ? "Copiat!" : "Copied!") : (lang === "ro" ? "Copiaza link" : "Copy link")}</span>
+      <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{copied ? (lang === "ro" ? "Copiat!" : "Copied!") : (lang === "ro" ? "Copiaza link" : "Copy link")}</span>
     </button>
   );
 }
@@ -1135,7 +1135,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
         </div>
       )}
 
-      <div style={{ padding: isSmall ? "10px 12px 16px" : "16px" }}>
+      <div style={{ padding: isSmall ? "10px 12px calc(var(--nav-h, 88px) + var(--safe-bottom, 0px) + 40px)" : "16px" }}>
       {/* Toolbar minimalistă */}
       <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, marginBottom: 12, alignItems: 'center', flexWrap: 'wrap' }}>
         <div
@@ -2304,9 +2304,11 @@ function TargetFeedCard({
         gap: 10,
         background: "var(--panel)",
         border: "1px solid var(--border)",
+        minWidth: 0,
+        overflow: "hidden",
       }}
     >
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, minWidth: 0 }}>
         <div style={{ minWidth: 0 }}>
           <div style={{ fontWeight: 900, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</div>
           <div style={{ color: "var(--muted)", fontSize: 12 }}>
@@ -2337,7 +2339,7 @@ function TargetFeedCard({
                   background: "color-mix(in srgb, var(--card) 86%, transparent)",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                     <span
                       aria-hidden
@@ -2401,7 +2403,7 @@ function TargetFeedCard({
                   {f.url}
                 </div>
 
-                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <div style={{ display: "flex", gap: 10, alignItems: "center", minWidth: 0, flexWrap: isSmall ? "wrap" : "nowrap" }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     {(f.last_sync || isSmall) ? (
                       <div
@@ -2426,7 +2428,7 @@ function TargetFeedCard({
                     ) : null}
                   </div>
 
-                  <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "flex-end", flex: "0 0 auto" }}>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "flex-end", flex: "0 0 auto", maxWidth: "100%", flexWrap: "wrap" }}>
                     <button
                       className="sb-btn sb-btn--icon"
                       type="button"
@@ -2435,6 +2437,8 @@ function TargetFeedCard({
                       title={lang === "ro" ? "Activeaza / dezactiveaza" : "Toggle active"}
                       style={{
                         width: 44,
+                        minWidth: 44,
+                        flex: "0 0 44px",
                         height: 44,
                         borderRadius: 999,
                         opacity: canWrite ? 1 : 0.55,
@@ -2455,6 +2459,8 @@ function TargetFeedCard({
                       title={lang === "ro" ? "Editeaza feed" : "Edit feed"}
                       style={{
                         width: 44,
+                        minWidth: 44,
+                        flex: "0 0 44px",
                         height: 44,
                         borderRadius: 999,
                         opacity: canWrite ? 1 : 0.55,
@@ -2493,6 +2499,8 @@ function TargetFeedCard({
                       title={lang === "ro" ? "Sterge feed" : "Delete feed"}
                       style={{
                         width: 44,
+                        minWidth: 44,
+                        flex: "0 0 44px",
                         height: 44,
                         borderRadius: 999,
                         opacity: canWrite ? 1 : 0.55,
@@ -2520,11 +2528,12 @@ function TargetFeedCard({
         <div style={{ fontWeight: 900, fontSize: 13 }}>
           {lang === "ro" ? "Export (Plan4Host → platforme)" : "Export (Plan4Host → platforms)"}
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center" }}>
+        <div style={{ display: "grid", gridTemplateColumns: isSmall ? "minmax(0, 1fr)" : "minmax(0, 1fr) auto", gap: 10, alignItems: "center", minWidth: 0 }}>
           <input
             readOnly
             value={exportUrl}
             style={{
+              minWidth: 0,
               width: "100%",
               padding: "10px 12px",
               background: "var(--card)",
