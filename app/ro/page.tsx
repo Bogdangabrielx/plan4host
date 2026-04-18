@@ -976,7 +976,7 @@ export default function HomePageRO() {
             className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}
           >
             <span className={styles.ctaDesktopText}>{offerLabelActiveRo ? "90 de zile GRATIS" : "Încearcă"}</span>
-            <span className={styles.ctaMobileText}>Creează cont</span>
+            <span className={styles.ctaMobileText}>Începe gratuit</span>
           </CtaLink>
           <button
             type="button"
@@ -1061,7 +1061,7 @@ export default function HomePageRO() {
 	              onMouseLeave={() => setHeroPill(null)}
 	            >
 	              <span
-	                className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleMore}`}
+	                className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleMore} ${styles.heroHeadlineTagRoLong}`}
 	                data-alt="Mai mult"
 	                data-swap={heroPill === "mesaje" ? "1" : undefined}
 	              >

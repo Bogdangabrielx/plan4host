@@ -1145,7 +1145,7 @@ export default function HomePage() {
             className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}
           >
             <span className={styles.ctaDesktopText}>{offerLabelActive ? "90 days FREE" : "Get started"}</span>
-            <span className={styles.ctaMobileText}>Create account</span>
+            <span className={styles.ctaMobileText}>Start free</span>
           </CtaLink>
 
           <button

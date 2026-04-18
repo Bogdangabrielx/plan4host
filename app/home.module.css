@@ -248,7 +248,7 @@ will-change: transform;
 @media (max-width: 900px) {
   /* Keep header fixed on phones */
   .landing { padding-top: calc(var(--landing-nav-h, 72px) + var(--safe-top)); }
-  .nav { position: fixed; top: var(--safe-top); left: 0; right: 0; z-index: 60; }
+  .nav { position: fixed; top: var(--safe-top); left: 0; right: 0; z-index: 60; grid-template-columns: auto minmax(0, 1fr) auto; }
   .menu { display: none; }
   .menuToggle {
     display: inline-flex;
@@ -309,17 +309,20 @@ will-change: transform;
 
 /* Ultra small / tall phones: tighten further */
 @media (max-width: 430px) {
-  .nav { gap: 16px; padding: 16px 0 16px 16px; }
+  .nav { gap: 8px; padding: 12px 8px 12px 10px; }
+  .brandWrap { flex: 0 0 auto; gap: 4px; min-width: max-content; }
   .actions { gap: 4px; }
+  .actions :global(a[href="/auth/login"]) { display: none; }
   .nav .actions .btn {
-    padding: 8px 12px;
+    padding: 8px 10px;
     min-height: 32px;
     min-width: 0;
-    font-size: 14px;
+    font-size: 13px;
     line-height: 1;
     white-space: nowrap;
   }
-  .menuToggle { padding: 8px 16px; min-height: 32px; margin-right: calc(-1 * (var(--safe-right, 0px) + 8px)); }
+  .btnLang { padding: 6px; min-height: 32px; border-radius: 999px; }
+  .menuToggle { padding: 8px 10px; min-height: 32px; margin-right: 0; }
   .menuIcon { width: 18px; height: 12px; }
   .menuIcon svg { width: 18px; height: 12px; }
 }
@@ -1540,6 +1543,20 @@ will-change: transform;
   /* Make header buttons a bit smaller for better balance with the logo */
   .nav .actions .btn { padding: 8px 16px; min-height: 40px; }
   .menuToggle { padding: 8px 16px; min-height: 40px; }
+}
+
+@media (max-width: 430px){
+  .nav .brand img {
+    width: 44px;
+    height: 44px;
+  }
+  .btnLang { padding: 6px; min-height: 32px; border-radius: 999px; }
+  .nav .actions .btn { padding: 8px 10px; min-height: 32px; }
+  .menuToggle { padding: 8px 10px; min-height: 32px; }
+  .heroHeadlineTagRoLong {
+    font-size: 0.78em;
+    padding-inline: 9px;
+  }
 }
 
 /* Responsive media: prevent lateral overflow (scoped) */
