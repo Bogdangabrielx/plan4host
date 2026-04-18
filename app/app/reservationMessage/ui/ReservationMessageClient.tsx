@@ -1350,6 +1350,8 @@ export default function ReservationMessageClient({
   const btn: React.CSSProperties = { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 700, cursor: "pointer" };
   const iconBtn: React.CSSProperties = {
     width: 38,
+    minWidth: 38,
+    flex: "0 0 38px",
     height: 38,
     padding: 0,
     borderRadius: 999,
@@ -1421,7 +1423,7 @@ export default function ReservationMessageClient({
   return (
     <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
       <PlanHeaderBadge title={t.automaticMessages} slot="under-title" />
-      <div style={{ padding: isSmall ? "10px 12px 16px" : "16px", display: "grid", gap: 12 }}>
+      <div style={{ padding: isSmall ? "10px 12px calc(var(--nav-h, 88px) + var(--safe-bottom, 0px) + 40px)" : "16px", display: "grid", gap: 12 }}>
 
       {/* Property selector (pill with avatar) — align like Calendar (sb-toolbar) */}
 	      <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 16, alignItems: 'stretch', flexWrap: 'wrap', marginBottom: 12 }}>
@@ -1799,7 +1801,7 @@ export default function ReservationMessageClient({
         ) : (
           <>
             {/* Make cards wider so status pill never overflows */}
-            <div style={{ display: "grid", gap: 10, gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}>
+            <div style={{ display: "grid", gap: 10, gridTemplateColumns: "repeat(auto-fill, minmax(min(320px, 100%), 1fr))" }}>
               {templates.map((tplItem) => (
                 <div
                   key={tplItem.id}
@@ -1855,7 +1857,7 @@ export default function ReservationMessageClient({
                       <span>{tplItem.status === "published" ? t.active : t.draft}</span>
                     </span>
 
-                    <div style={{ display: "flex", gap: 6, flex: "0 0 auto" }}>
+                    <div style={{ display: "flex", gap: 6, flex: "0 0 auto", maxWidth: "100%", flexWrap: "wrap" }}>
                       <button
                         className="sb-btn"
                         style={{ ...iconBtn, touchAction: "manipulation" }}
