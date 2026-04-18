@@ -2242,7 +2242,7 @@ function EditFormBookingModal({
             <div style={{ color:"var(--danger)" }}>{error}</div>
           ) : (
             <div style={{ display:"grid", gap:12 }}>
-            {isSmall && bookingFieldsCard(true)}
+            {bookingFieldsCard(true)}
 
             {/* Read-only guest details */}
             <div className="sb-card" style={{ padding:12, border:"1px solid var(--border)", borderRadius:10, background:"var(--panel)" }}>
@@ -2442,9 +2442,6 @@ function EditFormBookingModal({
                 )}
               </div>
             )}
-
-            {/* Editable fields */}
-            {!isSmall && bookingFieldsCard(false)}
 
             {(!valid() && startDate && endDate && endDate < startDate) && (
               <div style={{ color:"var(--danger)" }}>{lang === "ro" ? "Data de sfarsit nu poate fi inaintea datei de inceput." : "End date cannot be before start date."}</div>

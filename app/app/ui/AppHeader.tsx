@@ -694,6 +694,18 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
   const transparentMobileHeader = isMobileNav;
   const mobileHeaderRadius = 23;
+  const drawerFixedBg =
+    theme === "light"
+      ? "color-mix(in srgb, var(--panel) 88%, #0f172a 12%)"
+      : "color-mix(in srgb, var(--panel) 92%, black 8%)";
+  const drawerScrollBg =
+    theme === "dark"
+      ? "color-mix(in srgb, var(--panel) 88%, white 12%)"
+      : "var(--panel)";
+  const drawerDividerColor =
+    theme === "light"
+      ? "color-mix(in srgb, var(--border) 72%, #0f172a 28%)"
+      : "var(--border)";
 
   // When any modal dialog is open, keep the (otherwise transparent) mobile header on a solid surface
   // so the blurred overlay doesn't make the top area look "see-through".
@@ -1139,7 +1151,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             <div
               style={{
                 padding: 16,
-                borderBottom: "1px solid var(--border)",
+                borderBottom: `1px solid ${drawerDividerColor}`,
+                background: drawerFixedBg,
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
@@ -1171,6 +1184,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	            <nav
 	              style={{
 	                padding: isMobileNav ? 12 : 10,
+                  background: drawerScrollBg,
 	                overflowY: "auto",
 	                WebkitOverflowScrolling: "touch",
 	                paddingBottom: isMobileNav ? "calc(16px + var(--safe-bottom, 0px))" : "16px",
@@ -1253,8 +1267,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               <div
                 style={{
                   padding: "12px 12px calc(12px + var(--safe-bottom, 0px))",
-                  borderTop: "1px solid var(--border)",
-                  background: "color-mix(in srgb, var(--panel) 92%, transparent)",
+                  borderTop: `1px solid ${drawerDividerColor}`,
+                  background: drawerFixedBg,
                 }}
               >
                 <button
@@ -1320,7 +1334,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             <div
               style={{
                 padding: 16,
-                borderBottom: "1px solid var(--border)",
+                borderBottom: `1px solid ${drawerDividerColor}`,
+                background: drawerFixedBg,
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
@@ -1378,6 +1393,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	            <nav
 	              style={{
 	                padding: isMobileNav ? 12 : 10,
+                  background: drawerScrollBg,
 	                overflowY: "auto",
 	                WebkitOverflowScrolling: "touch",
 	                paddingBottom: "16px",
@@ -1481,8 +1497,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               <div
                 style={{
                   padding: isMobileNav ? "12px 12px calc(12px + var(--safe-bottom, 0px))" : "12px",
-                  borderTop: "1px solid var(--border)",
-                  background: "color-mix(in srgb, var(--panel) 92%, transparent)",
+                  borderTop: `1px solid ${drawerDividerColor}`,
+                  background: drawerFixedBg,
                 }}
               >
                 <button
