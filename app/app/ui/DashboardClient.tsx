@@ -70,6 +70,9 @@ const LANGUAGE_FIELD_LABEL_STYLE: React.CSSProperties = {
   display: "block",
   fontSize: "clamp(10px, 2.7vw, 13px)",
   lineHeight: 1.2,
+  minHeight: "2.4em",
+  overflowWrap: "anywhere",
+  whiteSpace: "normal",
 };
 
 const COUNTRY_TO_SECOND_LANGUAGE: Record<string, (typeof SECOND_LANGUAGE_OPTIONS)[number]["code"]> = {
@@ -797,11 +800,10 @@ export default function DashboardClient({
   }
 
   // —— UI helpers ——
-  const FIELD_WRAPPER: React.CSSProperties = { width: isSmall ? "100%" : 340, maxWidth: "100%", minWidth: 0 };
+  const FIELD_WRAPPER: React.CSSProperties = { width: 340, maxWidth: "100%", minWidth: 0 };
   const FIELD_STYLE: React.CSSProperties = {
     minWidth: 0,
     width: "100%",
-    maxWidth: "100%",
     boxSizing: "border-box",
     padding: 10,
     background: "var(--card)",
@@ -809,10 +811,7 @@ export default function DashboardClient({
     border: "1px solid var(--border)",
     borderRadius: 8,
     fontFamily: "inherit",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
   };
-  const languageGridColumns = isSmall ? "1fr" : "minmax(0, 1fr) minmax(0, 1fr)";
 
   // —— Desktop-only two-column layout + equal heights ——
   const DESKTOP_BP = 960; // px
@@ -923,7 +922,7 @@ export default function DashboardClient({
           </div>
 
           <div style={{ ...FIELD_WRAPPER, display: "grid", gap: 10 }}>
-            <div style={{ display: "grid", gridTemplateColumns: languageGridColumns, gap: 10, minWidth: 0 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 10, minWidth: 0 }}>
               <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
                 <label style={LANGUAGE_FIELD_LABEL_STYLE}>{t.firstLanguage}</label>
                 <select
@@ -1244,7 +1243,7 @@ export default function DashboardClient({
                 </div>
 
                 <div style={{ display: "grid", gap: 10 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: languageGridColumns, gap: 10, minWidth: 0 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 10, minWidth: 0 }}>
                     <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
                       <label style={LANGUAGE_FIELD_LABEL_STYLE}>{t.firstLanguage}</label>
                       <select
