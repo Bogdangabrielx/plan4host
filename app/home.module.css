@@ -309,22 +309,21 @@ will-change: transform;
 
 /* Ultra small / tall phones: tighten further */
 @media (max-width: 430px) {
-  .nav { gap: 8px; padding: 12px 8px 12px 10px; }
+  .nav { gap: 4px; padding: 10px 6px 10px 8px; }
   .brandWrap { flex: 0 0 auto; gap: 4px; min-width: max-content; }
-  .actions { gap: 4px; }
-  .actions :global(a[href="/auth/login"]) { display: none; }
+  .actions { gap: 2px; }
   .nav .actions .btn {
-    padding: 8px 10px;
+    padding: 7px 7px;
     min-height: 32px;
     min-width: 0;
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1;
     white-space: nowrap;
   }
   .btnLang { padding: 6px; min-height: 32px; border-radius: 999px; }
-  .menuToggle { padding: 8px 10px; min-height: 32px; margin-right: 0; }
-  .menuIcon { width: 18px; height: 12px; }
-  .menuIcon svg { width: 18px; height: 12px; }
+  .menuToggle { padding: 7px 7px; min-height: 32px; margin-right: 0; }
+  .menuIcon { width: 17px; height: 12px; }
+  .menuIcon svg { width: 17px; height: 12px; }
 }
 
 /* Language switcher: compact, no border */
@@ -1547,12 +1546,13 @@ will-change: transform;
 
 @media (max-width: 430px){
   .nav .brand img {
-    width: 44px;
-    height: 44px;
+    width: 38px;
+    height: 38px;
   }
   .btnLang { padding: 6px; min-height: 32px; border-radius: 999px; }
-  .nav .actions .btn { padding: 8px 10px; min-height: 32px; }
-  .menuToggle { padding: 8px 10px; min-height: 32px; }
+  .btnLang img { width: 18px; height: 18px; }
+  .nav .actions .btn { padding: 7px 7px; min-height: 32px; }
+  .menuToggle { padding: 7px 7px; min-height: 32px; }
   .heroHeadlineTagRoLong {
     font-size: 0.78em;
     padding-inline: 9px;
