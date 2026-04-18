@@ -1546,11 +1546,11 @@ will-change: transform;
 
 @media (max-width: 430px){
   .nav .brand img {
-    width: 38px;
-    height: 38px;
+    width: 42px;
+    height: 42px;
   }
   .btnLang { padding: 6px; min-height: 32px; border-radius: 999px; }
-  .btnLang img { width: 18px; height: 18px; }
+  .btnLang img { width: 20px; height: 20px; }
   .nav .actions .btn { padding: 7px 7px; min-height: 32px; }
   .menuToggle { padding: 7px 7px; min-height: 32px; }
   .heroHeadlineTagRoLong {
