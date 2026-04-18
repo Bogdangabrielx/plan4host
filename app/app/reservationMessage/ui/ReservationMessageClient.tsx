@@ -1817,7 +1817,16 @@ export default function ReservationMessageClient({
                 >
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 8 }}>
                     <strong
-                      style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0, flex: 1 }}
+                      style={{
+                        minWidth: 0,
+                        flex: 1,
+                        display: "-webkit-box",
+                        WebkitLineClamp: isSmall ? 2 : 1,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        lineHeight: 1.25,
+                        overflowWrap: "anywhere",
+                      }}
                       dangerouslySetInnerHTML={{ __html: titleToChips((listTitleById[tplItem.id] || tplItem.title) || "(Untitled)") }}
                     />
                   </div>
@@ -1947,7 +1956,7 @@ export default function ReservationMessageClient({
                 </div>
               ))}
             </div>
-            <style dangerouslySetInnerHTML={{ __html: `.rm-token{ display:inline-block; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }` }} />
+            <style dangerouslySetInnerHTML={{ __html: `.rm-token{ display:inline-flex; max-width:100%; vertical-align:baseline; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }` }} />
           </>
 	        )}
 	      </section>
