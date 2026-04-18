@@ -2473,15 +2473,15 @@ function EditFormBookingModal({
                 {lang === "ro" ? "Data de sfarsit nu poate fi inaintea datei de inceput." : "End date cannot be before start date."}
               </div>
             )}
-            <div style={{ display: isSmall ? "grid" : "flex", alignItems:"center", justifyContent:"space-between", gap:8, flexWrap:"wrap" }}>
-              <div style={{ display: isSmall ? "grid" : "flex", alignItems:"center", gap:8, width: isSmall ? "100%" : undefined }}>
+            <div style={{ display: isSmall ? "grid" : "flex", gridTemplateColumns: isSmall ? "minmax(0, 1fr) auto" : undefined, alignItems:"center", justifyContent:"space-between", gap:8, flexWrap:"wrap" }}>
+              <div style={{ display: isSmall ? "grid" : "flex", alignItems:"center", gap:8, minWidth: 0, width: isSmall ? "100%" : undefined }}>
                 {(hasChanges || justSaved || saving || (isSmall && !confirmOnSave)) && (
                   <button
                     type="button"
                     className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
                     disabled={!valid() || saving || deleting || (!confirmOnSave && !roomId) || (!hasChanges && justSaved)}
                     onClick={onSave}
-                    style={{ minHeight:44, width: isSmall ? "100%" : undefined, justifyContent: "center" }}
+                    style={{ minHeight:44, width: isSmall ? "100%" : undefined, justifyContent: "center", minWidth: 0 }}
                   >
                     {saving
                       ? (confirmOnSave
@@ -2497,14 +2497,14 @@ function EditFormBookingModal({
                   </button>
                 )}
               </div>
-              <div style={{ width: isSmall ? "100%" : undefined }}>
+              <div style={{ width: isSmall ? "auto" : undefined, display: "flex", justifyContent: "flex-end" }}>
                 {confirmOnSave ? (
                   <button
                     type="button"
                     className="sb-btn"
                     onClick={() => setCancelOpen(true)}
                     disabled={saving || deleting}
-                    style={{ minHeight:44, borderColor:"var(--danger)", color:"var(--danger)", width: isSmall ? "100%" : undefined, justifyContent: "center" }}
+                    style={{ minHeight:44, borderColor:"var(--danger)", color:"var(--danger)", width: isSmall ? "auto" : undefined, justifyContent: "center", whiteSpace: "nowrap" }}
                     title={lang === "ro" ? "Anuleaza aceasta rezervare" : "Cancel this booking"}
                   >
                     {lang === "ro" ? "Anuleaza rezervarea" : "Cancel booking"}
@@ -2515,10 +2515,43 @@ function EditFormBookingModal({
                     className="sb-btn"
                     onClick={onDelete}
                     disabled={saving || deleting}
-                    style={{ minHeight:44, borderColor:"var(--danger)", color:"var(--danger)", width: isSmall ? "100%" : undefined, justifyContent: "center" }}
+                    style={isSmall
+                      ? {
+                          width: 44,
+                          height: 44,
+                          minWidth: 44,
+                          padding: 0,
+                          borderRadius: 999,
+                          borderColor: "var(--danger)",
+                          color: "var(--danger)",
+                          display: "grid",
+                          placeItems: "center",
+                        }
+                      : { minHeight:44, borderColor:"var(--danger)", color:"var(--danger)", justifyContent: "center" }}
                     title={lang === "ro" ? "Sterge acest formular de rezervare" : "Delete this form booking"}
+                    aria-label={lang === "ro" ? "Sterge formularul" : "Delete form"}
                   >
-                    {deleting ? (lang === "ro" ? "Se sterge…" : "Deleting…") : (lang === "ro" ? "Sterge formularul" : "Delete form")}
+                    {isSmall ? (
+                      <span
+                        aria-hidden
+                        style={{
+                          width: 19,
+                          height: 19,
+                          backgroundColor: "currentColor",
+                          WebkitMaskImage: "url(/delete_svg_form.svg)",
+                          WebkitMaskRepeat: "no-repeat",
+                          WebkitMaskSize: "contain",
+                          WebkitMaskPosition: "center",
+                          maskImage: "url(/delete_svg_form.svg)",
+                          maskRepeat: "no-repeat",
+                          maskSize: "contain",
+                          maskPosition: "center",
+                          display: "block",
+                        }}
+                      />
+                    ) : (
+                      deleting ? (lang === "ro" ? "Se sterge…" : "Deleting…") : (lang === "ro" ? "Sterge formularul" : "Delete form")
+                    )}
                   </button>
                 )}
               </div>
