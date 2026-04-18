@@ -797,10 +797,11 @@ export default function DashboardClient({
   }
 
   // —— UI helpers ——
-  const FIELD_WRAPPER: React.CSSProperties = { width: 340, maxWidth: "100%", minWidth: 0 };
+  const FIELD_WRAPPER: React.CSSProperties = { width: isSmall ? "100%" : 340, maxWidth: "100%", minWidth: 0 };
   const FIELD_STYLE: React.CSSProperties = {
     minWidth: 0,
     width: "100%",
+    maxWidth: "100%",
     boxSizing: "border-box",
     padding: 10,
     background: "var(--card)",
@@ -808,7 +809,10 @@ export default function DashboardClient({
     border: "1px solid var(--border)",
     borderRadius: 8,
     fontFamily: "inherit",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   };
+  const languageGridColumns = isSmall ? "1fr" : "minmax(0, 1fr) minmax(0, 1fr)";
 
   // —— Desktop-only two-column layout + equal heights ——
   const DESKTOP_BP = 960; // px
@@ -880,7 +884,7 @@ export default function DashboardClient({
         }}
       >
       {/* Add property */}
-      <section className="sb-cardglow" ref={addCardRef} style={{ ...card, minWidth: 0, maxWidth: "100%", overflow: "hidden" }}>
+      <section className="sb-cardglow" ref={addCardRef} style={{ ...card, minWidth: 0, maxWidth: "100%", boxSizing: "border-box" }}>
         <h2 style={{ marginTop: 0 }}>{t.newProperty}</h2>
 
         <div style={{ display: "grid", gap: 12 }}>
@@ -919,8 +923,8 @@ export default function DashboardClient({
           </div>
 
           <div style={{ ...FIELD_WRAPPER, display: "grid", gap: 10 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 10 }}>
-              <div style={{ display: "grid", gap: 6 }}>
+            <div style={{ display: "grid", gridTemplateColumns: languageGridColumns, gap: 10, minWidth: 0 }}>
+              <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
                 <label style={LANGUAGE_FIELD_LABEL_STYLE}>{t.firstLanguage}</label>
                 <select
                   value="en"
@@ -938,7 +942,7 @@ export default function DashboardClient({
                 </select>
               </div>
 
-              <div style={{ display: "grid", gap: 6 }}>
+              <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
                 <label style={LANGUAGE_FIELD_LABEL_STYLE}>{t.secondLanguage}</label>
                 <select value={secondLanguage} onChange={(e) => setSecondLanguage(e.currentTarget.value)} style={FIELD_STYLE}>
                   <option value="">{t.selectOption}</option>
@@ -1240,8 +1244,8 @@ export default function DashboardClient({
                 </div>
 
                 <div style={{ display: "grid", gap: 10 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 10 }}>
-                    <div style={{ display: "grid", gap: 6 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: languageGridColumns, gap: 10, minWidth: 0 }}>
+                    <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
                       <label style={LANGUAGE_FIELD_LABEL_STYLE}>{t.firstLanguage}</label>
                       <select
                         value="en"
@@ -1259,7 +1263,7 @@ export default function DashboardClient({
                       </select>
                     </div>
 
-                    <div style={{ display: "grid", gap: 6 }}>
+                    <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
                       <label style={LANGUAGE_FIELD_LABEL_STYLE}>{t.secondLanguage}</label>
                       <select value={secondLanguage} onChange={(e) => setSecondLanguage(e.currentTarget.value)} style={FIELD_STYLE}>
                         <option value="">{t.selectOption}</option>
