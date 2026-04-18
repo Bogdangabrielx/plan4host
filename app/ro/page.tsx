@@ -975,7 +975,8 @@ export default function HomePageRO() {
             href="/auth/login?mode=signup"
             className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}
           >
-            {offerLabelActiveRo ? "90 de zile GRATIS" : "Încearcă"}
+            <span className={styles.ctaDesktopText}>{offerLabelActiveRo ? "90 de zile GRATIS" : "Încearcă"}</span>
+            <span className={styles.ctaMobileText}>Creează cont</span>
           </CtaLink>
           <button
             type="button"

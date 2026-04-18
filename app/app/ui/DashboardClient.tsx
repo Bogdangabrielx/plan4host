@@ -797,9 +797,11 @@ export default function DashboardClient({
   }
 
   // —— UI helpers ——
-  const FIELD_WRAPPER: React.CSSProperties = { width: 340, maxWidth: "100%" };
+  const FIELD_WRAPPER: React.CSSProperties = { width: 340, maxWidth: "100%", minWidth: 0 };
   const FIELD_STYLE: React.CSSProperties = {
+    minWidth: 0,
     width: "100%",
+    boxSizing: "border-box",
     padding: 10,
     background: "var(--card)",
     color: "var(--text)",
@@ -862,9 +864,9 @@ export default function DashboardClient({
   }, [firstWizardOpen]);
 
   return (
-    <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
+    <div style={{ fontFamily: "inherit", color: "var(--text)", maxWidth: "100%", minWidth: 0, overflowX: "clip" }}>
       <PlanHeaderBadge title={t.dashboard} slot="under-title" />
-      <div style={{ padding: isSmall ? "10px 12px 16px" : "16px", display: "grid", gap: 16 }}>
+      <div style={{ padding: isSmall ? "10px 12px calc(var(--nav-h, 88px) + var(--safe-bottom, 0px) + 40px)" : "16px", display: "grid", gap: 16, maxWidth: "100%", minWidth: 0 }}>
 
       {/* 2-column desktop row: New Property + Your Properties */}
       <div 
@@ -873,10 +875,12 @@ export default function DashboardClient({
           gap: 16,
           gridTemplateColumns: isDesktop ? "minmax(0, 1fr) minmax(0, 1fr)" : "1fr",
           alignItems: "start",
+          maxWidth: "100%",
+          minWidth: 0,
         }}
       >
       {/* Add property */}
-      <section className="sb-cardglow" ref={addCardRef} style={card}>
+      <section className="sb-cardglow" ref={addCardRef} style={{ ...card, minWidth: 0, maxWidth: "100%", overflow: "hidden" }}>
         <h2 style={{ marginTop: 0 }}>{t.newProperty}</h2>
 
         <div style={{ display: "grid", gap: 12 }}>
@@ -979,6 +983,8 @@ export default function DashboardClient({
         ref={listCardRef}
         style={{
           ...card,
+          minWidth: 0,
+          maxWidth: "100%",
           // Desktop: match the height of the New Property card and scroll inner list
           height: isDesktop && addCardHeight ? addCardHeight : undefined,
           display: "flex",
@@ -1014,7 +1020,7 @@ export default function DashboardClient({
                   className="propItem"
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr auto", // desktop
+                    gridTemplateColumns: isDesktop ? "minmax(0, 1fr) auto" : "1fr",
                     gap: 10,
                     alignItems: "center",
                     background: "var(--card)",
@@ -1029,7 +1035,7 @@ export default function DashboardClient({
                   }}
                 >
                   {/* Info */}
-                  <div>
+                  <div style={{ minWidth: 0 }}>
                     {renamingId === p.id ? (
                       <input
                         ref={renameInputRef}
@@ -1050,9 +1056,9 @@ export default function DashboardClient({
                         placeholder={t.propertyNamePlaceholderShort}
                       />
                     ) : (
-                      <strong>{p.name}</strong>
+                      <strong style={{ display: "block", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</strong>
                     )}
-                    <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)" }}>
+                    <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {p.country_code
                         ? `${flagEmoji(p.country_code)} ${COUNTRY_NAMES[p.country_code] ?? p.country_code}`
                         : "—"}
@@ -1154,6 +1160,7 @@ export default function DashboardClient({
             className="sb-card"
             style={{
               width: "min(520px, 100%)",
+              minWidth: 0,
               maxHeight:
                 "calc(100dvh - (var(--safe-top, 0px) + var(--app-header-h, 64px) + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 24px))",
               background: "var(--panel)",
@@ -1314,7 +1321,7 @@ export default function DashboardClient({
                           key={opt.mode}
                           style={{
                             display: "grid",
-                            gridTemplateColumns: "1fr auto",
+                            gridTemplateColumns: isSmall ? "1fr" : "minmax(0, 1fr) auto",
                             alignItems: "center",
                             gap: 12,
                             padding: 12,
@@ -1323,18 +1330,19 @@ export default function DashboardClient({
                             background: "color-mix(in srgb, var(--card) 92%, transparent)",
                           }}
                         >
-                          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                          <div style={{ display: "flex", gap: 12, alignItems: "center", minWidth: 0 }}>
                             <MaskedSvgIcon src={opt.icon} size={46} zoom={0.86} color="var(--text)" />
-                            <div>
+                            <div style={{ minWidth: 0 }}>
                               <div style={{ fontWeight: 800 }}>{opt.title}</div>
-                              <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)" }}>{opt.desc}</div>
+                              <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", overflowWrap: "anywhere" }}>{opt.desc}</div>
                             </div>
                           </div>
                           <button
                             type="button"
                             className="sb-btn sb-btn--primary"
                             style={{
-                              minWidth: 140,
+                              minWidth: isSmall ? 0 : 140,
+                              width: isSmall ? "100%" : undefined,
                               borderRadius: 999,
                               background: "var(--primary)",
                               color: "#fff",
@@ -1599,6 +1607,7 @@ export default function DashboardClient({
 	              className="sb-card"
 	              style={{
 	                width: "min(520px, 100%)",
+                  minWidth: 0,
 	                background: "var(--panel)",
 	                border: "1px solid var(--border)",
 	                borderRadius: 14,
@@ -1624,8 +1633,8 @@ export default function DashboardClient({
 		              </div>
               {firstPropertyUnits.length > 0 && (
                 <div style={{ display: "grid", gap: 10, padding: 10, borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                    <div style={{ fontWeight: 800, textTransform: "uppercase", fontSize: "var(--fs-s)", letterSpacing: ".08em", color: "var(--muted)" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, minWidth: 0, flexWrap: "wrap" }}>
+                    <div style={{ fontWeight: 800, textTransform: "uppercase", fontSize: "var(--fs-s)", letterSpacing: ".08em", color: "var(--muted)", minWidth: 0 }}>
                       {t.unitsCreated}
                     </div>
                     {!firstPropertyUnitsEditing ? (
@@ -1663,8 +1672,8 @@ export default function DashboardClient({
                         const rawDraft = firstPropertyUnitDrafts[u.id];
                         const draft = typeof rawDraft === "string" ? rawDraft : (u.name ?? "");
                         return (
-                          <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", justifyContent: "space-between" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", justifyContent: "space-between", minWidth: 0, flexWrap: "wrap" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: "1 1 160px" }}>
                               <img src={isDark ? "/room_fordark.png" : "/room_forlight.png"} alt="" width={18} height={18} />
                               {firstPropertyUnitsEditing ? (
                                 <input
@@ -1676,7 +1685,8 @@ export default function DashboardClient({
                                   }}
                                   style={{
                                     padding: 8,
-                                    minWidth: 140,
+                                    minWidth: 0,
+                                    width: "100%",
                                     background: "var(--card)",
                                     color: "var(--text)",
                                     border: "1px solid var(--border)",
@@ -1685,11 +1695,11 @@ export default function DashboardClient({
                                   }}
                                 />
                               ) : (
-                                <span style={{ fontWeight: 700 }}>{u.name}</span>
+                                <span style={{ fontWeight: 700, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.name}</span>
                               )}
                             </div>
                             {!firstPropertyUnitsEditing ? (
-                              <span style={{ color: "var(--muted)", fontSize: "var(--fs-s)", display: "flex", alignItems: "center", gap: 6 }}>
+                              <span style={{ color: "var(--muted)", fontSize: "var(--fs-s)", display: "flex", alignItems: "center", gap: 6, flex: "0 0 auto" }}>
                                 {t.unitReadySync}
                                 <span
                                   aria-hidden
