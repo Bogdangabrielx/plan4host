@@ -1890,6 +1890,104 @@ function EditFormBookingModal({
     padding: 16,
     borderRadius: 16,
   };
+  const needsUnitToConfirm = !confirmOnSave && !roomId;
+  const bookingFieldsCard = (mobileFocus = false) => (
+    <div
+      className="sb-card"
+      style={{
+        padding: 12,
+        border: mobileFocus && needsUnitToConfirm ? "1.5px solid var(--primary)" : "1px solid var(--border)",
+        borderRadius: 10,
+        background: mobileFocus && needsUnitToConfirm ? "color-mix(in srgb, var(--primary) 8%, var(--panel))" : "var(--panel)",
+        display: "grid",
+        gap: 10,
+        boxShadow: mobileFocus && needsUnitToConfirm ? "0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent)" : undefined,
+      }}
+    >
+      {mobileFocus && (
+        <div style={{ display: "grid", gap: 4 }}>
+          <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--text)" }}>
+            {confirmOnSave
+              ? (lang === "ro" ? "Detalii rezervare" : "Booking details")
+              : (lang === "ro" ? "Pasul 1 · Alege unitatea" : "Step 1 · Select the unit")}
+          </div>
+          <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+            {confirmOnSave
+              ? (lang === "ro" ? "Schimba unitatea sau datele doar daca este nevoie." : "Change the unit or dates only if needed.")
+              : (lang === "ro" ? "Alege unitatea care corespunde rezervarii din calendar. Este obligatoriu inainte de confirmare." : "Choose the unit that matches this guest's calendar reservation. This is required before confirming.")}
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: "grid", gridTemplateColumns: isSmall ? "1fr" : "1fr 1fr", gap: 10 }}>
+        <div style={{ display: "grid", gap: 6 }}>
+          <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{lang === "ro" ? "Data inceput" : "Start date"}</label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate((e.target as HTMLInputElement).value)}
+            style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 8, background: "var(--card)", color: "var(--text)", minHeight: 44, width: "100%", fontFamily: "inherit", boxSizing: "border-box" }}
+          />
+        </div>
+        <div style={{ display: "grid", gap: 6 }}>
+          <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{lang === "ro" ? "Data sfarsit" : "End date"}</label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate((e.target as HTMLInputElement).value)}
+            style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 8, background: "var(--card)", color: "var(--text)", minHeight: 44, width: "100%", fontFamily: "inherit", boxSizing: "border-box" }}
+          />
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gap: 6 }}>
+        <label style={{ fontSize: 12, color: needsUnitToConfirm ? "var(--text)" : "var(--muted)", fontWeight: 900 }}>
+          {rooms.length === 1
+            ? (lang === "ro" ? "Nume unitate" : "Unit name")
+            : (lang === "ro" ? "Nume camera" : "Room name")}
+          {!confirmOnSave && <span style={{ color: "var(--primary)" }}> *</span>}
+        </label>
+        <select
+          value={roomId || ""}
+          onChange={(e) => {
+            const next = String((e.target as HTMLSelectElement).value || "");
+            // Gating doar pentru "Confirm booking" (nu și pentru "Modify booking")
+            if (!confirmOnSave && next && !eligibleRooms.has(next)) {
+              showCalendarGuidancePopup(startDate, endDate, "room_not_available");
+              return;
+            }
+            setRoomId(next);
+          }}
+          style={{
+            padding: 10,
+            border: needsUnitToConfirm ? "1.5px solid var(--primary)" : "1px solid var(--border)",
+            borderRadius: 8,
+            background: "var(--card)",
+            color: "var(--text)",
+            minHeight: 44,
+            width: "100%",
+            boxSizing: "border-box",
+            fontFamily: "inherit",
+          }}
+        >
+          <option value="">{lang === "ro" ? "Alege unitatea…" : "Select unit…"}</option>
+          {rooms.map((r) => {
+            const busy = formBusyRooms.has(String(r.id));
+            return (
+              <option key={r.id} value={r.id}>
+                {r.name}{busy ? (lang === "ro" ? " — ocupata" : " — booked") : ""}
+              </option>
+            );
+          })}
+        </select>
+        {mobileFocus && needsUnitToConfirm && (
+          <div style={{ color: "var(--primary)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", fontWeight: 800 }}>
+            {lang === "ro" ? "Dupa ce alegi unitatea, poti confirma rezervarea din butonul de jos." : "After selecting a unit, you can confirm the booking from the button below."}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <div className="sb-cardglow" role="dialog" aria-modal="true" onClick={() => { if (!popupMsg) onClose(); }} style={wrap}>
@@ -2144,6 +2242,8 @@ function EditFormBookingModal({
             <div style={{ color:"var(--danger)" }}>{error}</div>
           ) : (
             <div style={{ display:"grid", gap:12 }}>
+            {isSmall && bookingFieldsCard(true)}
+
             {/* Read-only guest details */}
             <div className="sb-card" style={{ padding:12, border:"1px solid var(--border)", borderRadius:10, background:"var(--panel)" }}>
               <div style={{ fontSize:12, color:"var(--muted)", fontWeight:800, marginBottom:6 }}>{lang === "ro" ? "Oaspete" : "Guest"}</div>
@@ -2344,59 +2444,7 @@ function EditFormBookingModal({
             )}
 
             {/* Editable fields */}
-            <div className="sb-card" style={{ padding:12, border:"1px solid var(--border)", borderRadius:10, background:"var(--panel)", display:"grid", gap:10 }}>
-              <div style={{ display:"grid", gridTemplateColumns: isSmall ? "1fr" : "1fr 1fr", gap:10 }}>
-                <div style={{ display:"grid", gap:6 }}>
-                  <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>{lang === "ro" ? "Data inceput" : "Start date"}</label>
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e)=>setStartDate((e.target as HTMLInputElement).value)}
-                    style={{ padding:10, border:"1px solid var(--border)", borderRadius:8, background:"var(--card)", color:"var(--text)", minHeight:44, width:"100%", fontFamily:"inherit" }}
-                  />
-                </div>
-                <div style={{ display:"grid", gap:6 }}>
-                  <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>{lang === "ro" ? "Data sfarsit" : "End date"}</label>
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e)=>setEndDate((e.target as HTMLInputElement).value)}
-                    style={{ padding:10, border:"1px solid var(--border)", borderRadius:8, background:"var(--card)", color:"var(--text)", minHeight:44, width:"100%", fontFamily:"inherit" }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display:"grid", gap:6 }}>
-                <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>
-                  {rooms.length === 1
-                    ? (lang === "ro" ? "Nume unitate" : "Unit name")
-                    : (lang === "ro" ? "Nume camera" : "Room name")}
-                </label>
-                <select
-                  value={roomId || ""}
-                  onChange={(e)=>{
-                    const next = String((e.target as HTMLSelectElement).value || '');
-                    // Gating doar pentru "Confirm booking" (nu și pentru "Modify booking")
-                    if (!confirmOnSave && next && !eligibleRooms.has(next)) {
-                      showCalendarGuidancePopup(startDate, endDate, "room_not_available");
-                      return;
-                    }
-                    setRoomId(next);
-                  }}
-                  style={{ padding:10, border:"1px solid var(--border)", borderRadius:8, background:"var(--card)", color:"var(--text)", minHeight:44 }}
-                >
-                  <option value="">—</option>
-                  {rooms.map(r => {
-                    const busy = formBusyRooms.has(String(r.id));
-                    return (
-                      <option key={r.id} value={r.id}>
-                        {r.name}{busy ? (lang === "ro" ? ' — ocupata' : ' — booked') : ''}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-            </div>
+            {!isSmall && bookingFieldsCard(false)}
 
             {(!valid() && startDate && endDate && endDate < startDate) && (
               <div style={{ color:"var(--danger)" }}>{lang === "ro" ? "Data de sfarsit nu poate fi inaintea datei de inceput." : "End date cannot be before start date."}</div>
@@ -2425,15 +2473,15 @@ function EditFormBookingModal({
                 {lang === "ro" ? "Data de sfarsit nu poate fi inaintea datei de inceput." : "End date cannot be before start date."}
               </div>
             )}
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, flexWrap:"wrap" }}>
-              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                {(hasChanges || justSaved || saving) && (
+            <div style={{ display: isSmall ? "grid" : "flex", alignItems:"center", justifyContent:"space-between", gap:8, flexWrap:"wrap" }}>
+              <div style={{ display: isSmall ? "grid" : "flex", alignItems:"center", gap:8, width: isSmall ? "100%" : undefined }}>
+                {(hasChanges || justSaved || saving || (isSmall && !confirmOnSave)) && (
                   <button
                     type="button"
                     className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
-                    disabled={!valid() || saving || deleting || (!hasChanges && justSaved)}
+                    disabled={!valid() || saving || deleting || (!confirmOnSave && !roomId) || (!hasChanges && justSaved)}
                     onClick={onSave}
-                    style={{ minHeight:44 }}
+                    style={{ minHeight:44, width: isSmall ? "100%" : undefined, justifyContent: "center" }}
                   >
                     {saving
                       ? (confirmOnSave
@@ -2441,20 +2489,22 @@ function EditFormBookingModal({
                           : (lang === "ro" ? "Se confirma…" : "Confirming…"))
                       : (justSaved
                           ? (lang === "ro" ? "Salvat" : "Saved")
-                          : (confirmOnSave
+                          : (!confirmOnSave && !roomId
+                              ? (lang === "ro" ? "Alege intai unitatea" : "Select a unit first")
+                              : confirmOnSave
                               ? (lang === "ro" ? "Salveaza modificarile" : "Save changes")
                               : (lang === "ro" ? "Confirma rezervarea" : "Confirm booking")))}
                   </button>
                 )}
               </div>
-              <div>
+              <div style={{ width: isSmall ? "100%" : undefined }}>
                 {confirmOnSave ? (
                   <button
                     type="button"
                     className="sb-btn"
                     onClick={() => setCancelOpen(true)}
                     disabled={saving || deleting}
-                    style={{ minHeight:44, borderColor:"var(--danger)", color:"var(--danger)" }}
+                    style={{ minHeight:44, borderColor:"var(--danger)", color:"var(--danger)", width: isSmall ? "100%" : undefined, justifyContent: "center" }}
                     title={lang === "ro" ? "Anuleaza aceasta rezervare" : "Cancel this booking"}
                   >
                     {lang === "ro" ? "Anuleaza rezervarea" : "Cancel booking"}
@@ -2465,7 +2515,7 @@ function EditFormBookingModal({
                     className="sb-btn"
                     onClick={onDelete}
                     disabled={saving || deleting}
-                    style={{ minHeight:44, borderColor:"var(--danger)", color:"var(--danger)" }}
+                    style={{ minHeight:44, borderColor:"var(--danger)", color:"var(--danger)", width: isSmall ? "100%" : undefined, justifyContent: "center" }}
                     title={lang === "ro" ? "Sterge acest formular de rezervare" : "Delete this form booking"}
                   >
                     {deleting ? (lang === "ro" ? "Se sterge…" : "Deleting…") : (lang === "ro" ? "Sterge formularul" : "Delete form")}
