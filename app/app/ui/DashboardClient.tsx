@@ -800,7 +800,12 @@ export default function DashboardClient({
   }
 
   // —— UI helpers ——
-  const FIELD_WRAPPER: React.CSSProperties = { width: 340, maxWidth: "100%", minWidth: 0 };
+  const FIELD_WRAPPER: React.CSSProperties = {
+    width: "100%",
+    maxWidth: "100%",
+    minWidth: 0,
+    boxSizing: "border-box",
+  };
   const FIELD_STYLE: React.CSSProperties = {
     minWidth: 0,
     width: "100%",
