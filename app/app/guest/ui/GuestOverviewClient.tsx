@@ -2550,7 +2550,27 @@ function EditFormBookingModal({
                         }}
                       />
                     ) : (
-                      deleting ? (lang === "ro" ? "Se sterge…" : "Deleting…") : (lang === "ro" ? "Sterge formularul" : "Delete form")
+                      <>
+                        <span
+                          aria-hidden
+                          style={{
+                            width: 16,
+                            height: 16,
+                            backgroundColor: "currentColor",
+                            WebkitMaskImage: "url(/delete_svg_form.svg)",
+                            WebkitMaskRepeat: "no-repeat",
+                            WebkitMaskSize: "contain",
+                            WebkitMaskPosition: "center",
+                            maskImage: "url(/delete_svg_form.svg)",
+                            maskRepeat: "no-repeat",
+                            maskSize: "contain",
+                            maskPosition: "center",
+                            display: "inline-block",
+                            flex: "0 0 auto",
+                          }}
+                        />
+                        <span>{deleting ? (lang === "ro" ? "Se sterge…" : "Deleting…") : (lang === "ro" ? "Sterge formularul" : "Delete form")}</span>
+                      </>
                     )}
                   </button>
                 )}
