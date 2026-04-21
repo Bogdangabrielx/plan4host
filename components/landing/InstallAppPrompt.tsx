@@ -165,8 +165,8 @@ export default function InstallAppPrompt({ lang }: { lang?: Lang }) {
           onClick={dismiss}
           style={{
             position: "absolute",
-            top: -7,
-            right: 8,
+            top: -30,
+            right: 16,
             width: 22,
             height: 22,
             borderRadius: 999,
