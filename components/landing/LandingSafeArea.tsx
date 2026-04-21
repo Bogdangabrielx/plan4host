@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import InstallAppPrompt from "@/components/landing/InstallAppPrompt";
 
 function isPwaMode() {
   if (typeof window === "undefined") return false;
@@ -14,45 +15,10 @@ function isPwaMode() {
 
 export default function LandingSafeArea() {
   const [isPwa, setIsPwa] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<any>(null);
-  const [showInstall, setShowInstall] = useState(false);
 
   useEffect(() => {
     setIsPwa(isPwaMode());
   }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (window.location.pathname.startsWith("/app")) return;
-
-    const ua = navigator.userAgent || "";
-    const isAndroid = /Android/i.test(ua);
-    if (!isAndroid) return;
-
-    function onBeforeInstallPrompt(e: any) {
-      e.preventDefault();
-      setInstallPrompt(e);
-      setShowInstall(true);
-    }
-
-    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
-    return () => {
-      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
-    };
-  }, []);
-
-  const handleInstall = async () => {
-    try {
-      if (!installPrompt) return;
-      await installPrompt.prompt();
-      await installPrompt.userChoice;
-    } catch {
-      // ignore
-    } finally {
-      setShowInstall(false);
-      setInstallPrompt(null);
-    }
-  };
 
   const isRo = typeof window !== "undefined" && window.location.pathname.startsWith("/ro");
 
@@ -146,49 +112,7 @@ export default function LandingSafeArea() {
         />
       )}
 
-      {showInstall && installPrompt && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "calc(var(--safe-bottom, 0px) + 16px)",
-            right: 16,
-            left: 16,
-            zIndex: 120,
-            maxWidth: 420,
-            margin: "0 auto",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 16,
-            padding: "16px 16px",
-            borderRadius: 999,
-            border: "1px solid rgba(148,163,184,0.65)",
-            background: "color-mix(in srgb, var(--card) 80%, #020617 20%)",
-            boxShadow: "0 14px 40px rgba(15,23,42,0.6)",
-          }}
-        >
-          <span style={{ fontSize: "var(--fs-s)" }}>
-            {isRo ? "Instaleaza" : "Install"} <strong>Plan4Host</strong> {isRo ? "pe telefon" : "on your phone"}
-          </span>
-          <button
-            type="button"
-            onClick={handleInstall}
-            style={{
-              borderRadius: 999,
-              border: "1px solid rgba(15,23,42,0.7)",
-              background: "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
-              color: "#f9fafb",
-              padding: "8px 16px",
-              fontSize: "var(--fs-s)",
-              fontWeight: "var(--fw-bold)",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {isRo ? "Instaleaza aplicatia" : "Install app"}
-          </button>
-        </div>
-      )}
+      <InstallAppPrompt lang={isRo ? "ro" : "en"} />
     </>
   );
 }
