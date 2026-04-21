@@ -170,8 +170,8 @@ export default function InstallAppPrompt({ lang }: { lang?: Lang }) {
             width: 22,
             height: 22,
             borderRadius: 999,
-            border: "1px solid rgba(148,163,184,0.55)",
-            background: "var(--panel)",
+            border: "none",
+            background: "transparent",
             color: "var(--muted)",
             cursor: "pointer",
             display: "grid",
@@ -179,7 +179,7 @@ export default function InstallAppPrompt({ lang }: { lang?: Lang }) {
             fontSize: 14,
             fontWeight: 800,
             lineHeight: 1,
-            boxShadow: "0 8px 18px rgba(15,23,42,0.24)",
+            boxShadow: "none",
           }}
         >
           ×
