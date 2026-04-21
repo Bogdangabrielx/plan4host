@@ -1,8 +1,9 @@
 // /app/api/auth/login/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { logAccountLoginActivity } from "@/lib/auth/login-activity-server";
 
-type Body = { email?: unknown; password?: unknown };
+type Body = { email?: unknown; password?: unknown; activity?: unknown };
 
 export async function POST(req: Request) {
   try {
@@ -60,6 +61,13 @@ export async function POST(req: Request) {
 
     // 2) Fără bootstrap în login. Tenantul se creează doar pe signup (admin)
     //    sau de trigger-ul DB la crearea userului (handle_new_user).
+    await logAccountLoginActivity({
+      supabase,
+      user,
+      eventType: "login",
+      payload: typeof body.activity === "object" && body.activity ? body.activity : null,
+      req,
+    });
 
     // 3) Succes — UI-ul face redirect dacă găsește x-redirect
     const res = NextResponse.json({ ok: true }, { status: 200 });

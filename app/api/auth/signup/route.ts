@@ -1,10 +1,11 @@
 // /app/api/auth/signup/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { logAccountLoginActivity } from "@/lib/auth/login-activity-server";
 
 export async function POST(req: Request) {
   try {
-    const { email, password } = await req.json().catch(() => ({}));
+    const { email, password, activity } = await req.json().catch(() => ({}));
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password are required." }, { status: 400 });
     }
@@ -53,6 +54,14 @@ export async function POST(req: Request) {
     if (auErr) {
       return NextResponse.json({ error: auErr.message }, { status: 400 });
     }
+
+    await logAccountLoginActivity({
+      supabase,
+      user,
+      eventType: "signup",
+      payload: typeof activity === "object" && activity ? activity : null,
+      req,
+    });
 
     // Done. Cookie with the session is set by supabase server client.
     return NextResponse.json({ ok: true });

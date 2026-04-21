@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import ThemeToggle from "@/app/app/ui/ThemeToggle";
 import LoadingPill from "@/app/app/_components/LoadingPill";
 import overlayStyles from "@/app/app/_components/AppLoadingOverlay.module.css";
+import { collectLoginActivityPayload } from "@/lib/auth/login-activity-client";
 
 type Theme = "light" | "dark";
 type Mode = "login" | "signup";
@@ -306,7 +307,11 @@ export default function LoginClient({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ email: emailTrim, password: passTrim }),
+        body: JSON.stringify({
+          email: emailTrim,
+          password: passTrim,
+          activity: collectLoginActivityPayload(),
+        }),
       });
 
       // Acceptă și 204 (No Content) ca succes
@@ -400,14 +405,15 @@ export default function LoginClient({
       (typeof process !== "undefined" && (process as any).env?.NEXT_PUBLIC_APP_URL) ||
       (typeof window !== "undefined" ? window.location.origin : "https://plan4host.com");
     const next = nextParam || (desiredPlan ? `/app/subscription?plan=${desiredPlan}&hl=1` : "/app/calendar");
+    const activity = collectLoginActivityPayload({ includeUserAgent: false });
     try {
       const intent = mode === "login" ? "signin" : "signup";
-      window.location.href = `${APP_URL}/auth/oauth/google?next=${encodeURIComponent(next)}&intent=${intent}`;
+      window.location.href = `${APP_URL}/auth/oauth/google?next=${encodeURIComponent(next)}&intent=${intent}&activity=${encodeURIComponent(JSON.stringify(activity))}`;
     } catch {
       // fallback sigur
       const intent = mode === "login" ? "signin" : "signup";
       const nx = encodeURIComponent(next);
-      location.assign(`/auth/oauth/google?next=${nx}&intent=${intent}`);
+      location.assign(`/auth/oauth/google?next=${nx}&intent=${intent}&activity=${encodeURIComponent(JSON.stringify(activity))}`);
     }
   }
 

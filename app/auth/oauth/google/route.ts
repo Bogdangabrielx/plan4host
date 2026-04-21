@@ -9,6 +9,7 @@ export async function GET(req: Request) {
   // Optional: redirect after login (e.g., /app/calendar)
   const next = url.searchParams.get("next") || "/app/calendar";
   const intent = url.searchParams.get("intent") || "signin";
+  const activity = url.searchParams.get("activity") || "";
 
   // Force consent screen if "?consent=1"
   const wantConsent = url.searchParams.get("consent") === "1";
@@ -16,7 +17,9 @@ export async function GET(req: Request) {
 
   // Use your canonical site URL (set this in Vercel env)
   const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://plan4host.com";
-  const redirectTo = `${APP_URL}/auth/callback?next=${encodeURIComponent(next)}&intent=${encodeURIComponent(intent)}`;
+  const callbackParams = new URLSearchParams({ next, intent });
+  if (activity) callbackParams.set("activity", activity);
+  const redirectTo = `${APP_URL}/auth/callback?${callbackParams.toString()}`;
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
