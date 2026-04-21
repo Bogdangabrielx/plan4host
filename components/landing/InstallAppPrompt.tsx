@@ -165,13 +165,13 @@ export default function InstallAppPrompt({ lang }: { lang?: Lang }) {
           onClick={dismiss}
           style={{
             position: "absolute",
-            top: -7,
-            right: 8,
+            top: 4,
+            right: 6,
             width: 22,
             height: 22,
             borderRadius: 999,
-            border: "none",
-            background: "transparent",
+            border: "1px solid rgba(148,163,184,0.38)",
+            background: "color-mix(in srgb, var(--card) 72%, transparent)",
             color: "var(--muted)",
             cursor: "pointer",
             display: "grid",
@@ -179,7 +179,7 @@ export default function InstallAppPrompt({ lang }: { lang?: Lang }) {
             fontSize: 14,
             fontWeight: 800,
             lineHeight: 1,
-            boxShadow: "none",
+            boxShadow: "0 4px 10px rgba(15,23,42,0.16)",
           }}
         >
           ×
