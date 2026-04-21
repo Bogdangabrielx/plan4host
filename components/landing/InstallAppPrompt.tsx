@@ -29,6 +29,7 @@ export default function InstallAppPrompt({ lang }: { lang?: Lang }) {
   const [kind, setKind] = useState<PromptKind | null>(null);
   const [showInstructions, setShowInstructions] = useState(false);
   const [isSafari, setIsSafari] = useState(true);
+  const [dismissed, setDismissed] = useState(false);
 
   const isRo = useMemo(() => {
     if (lang) return lang === "ro";
@@ -39,6 +40,7 @@ export default function InstallAppPrompt({ lang }: { lang?: Lang }) {
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (window.location.pathname.startsWith("/app")) return;
+    if (window.sessionStorage.getItem("p4h:install-helper-dismissed") === "1") return;
     if (isPwaMode()) return;
 
     const ua = navigator.userAgent || "";
@@ -83,7 +85,18 @@ export default function InstallAppPrompt({ lang }: { lang?: Lang }) {
     }
   };
 
-  if (!kind || (kind === "android" && !installPrompt)) return null;
+  const dismiss = () => {
+    setDismissed(true);
+    setKind(null);
+    setInstallPrompt(null);
+    try {
+      window.sessionStorage.setItem("p4h:install-helper-dismissed", "1");
+    } catch {
+      // ignore
+    }
+  };
+
+  if (dismissed || !kind || (kind === "android" && !installPrompt)) return null;
 
   const title = isRo ? "Instaleaza" : "Install";
   const suffix =
@@ -110,11 +123,12 @@ export default function InstallAppPrompt({ lang }: { lang?: Lang }) {
           alignItems: "center",
           justifyContent: "space-between",
           gap: 10,
-          padding: "14px 14px",
+          padding: "6px 10px",
           borderRadius: 999,
           border: "1px solid rgba(148,163,184,0.65)",
           background: "color-mix(in srgb, var(--card) 80%, #020617 20%)",
           boxShadow: "0 14px 40px rgba(15,23,42,0.6)",
+          minHeight: 42,
         }}
       >
         <span
@@ -135,7 +149,8 @@ export default function InstallAppPrompt({ lang }: { lang?: Lang }) {
             border: "1px solid rgba(15,23,42,0.7)",
             background: "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
             color: "#f9fafb",
-            padding: "8px 14px",
+            minHeight: 34,
+            padding: "7px 13px",
             fontSize: "clamp(10px, 2.8vw, 12px)",
             fontWeight: "var(--fw-bold)",
             cursor: "pointer",
@@ -143,6 +158,31 @@ export default function InstallAppPrompt({ lang }: { lang?: Lang }) {
           }}
         >
           {isRo ? "Instaleaza aplicatia" : "Install app"}
+        </button>
+        <button
+          type="button"
+          aria-label={isRo ? "Ascunde" : "Dismiss"}
+          onClick={dismiss}
+          style={{
+            position: "absolute",
+            top: -7,
+            right: 8,
+            width: 22,
+            height: 22,
+            borderRadius: 999,
+            border: "1px solid rgba(148,163,184,0.55)",
+            background: "var(--panel)",
+            color: "var(--muted)",
+            cursor: "pointer",
+            display: "grid",
+            placeItems: "center",
+            fontSize: 14,
+            fontWeight: 800,
+            lineHeight: 1,
+            boxShadow: "0 8px 18px rgba(15,23,42,0.24)",
+          }}
+        >
+          ×
         </button>
       </div>
 
