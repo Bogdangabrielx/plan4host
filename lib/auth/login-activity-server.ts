@@ -1,5 +1,6 @@
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { resolveTeamAccountContext } from "@/lib/auth/team-account";
+import { getServiceSupabase } from "@/lib/supabase/service";
 
 export type LoginActivityEventType = "login" | "signup";
 
@@ -95,11 +96,12 @@ export async function logAccountLoginActivity({
   req?: Request;
 }) {
   try {
-    const { accountId } = await resolveTeamAccountContext(supabase, user.id);
+    const admin = getServiceSupabase();
+    const { accountId } = await resolveTeamAccountContext(admin, user.id);
     if (!accountId) return;
 
     const activity = normalizeActivityPayload(payload, req);
-    const { error } = await supabase.from("account_login_activity").insert({
+    const { error } = await admin.from("account_login_activity").insert({
       account_id: accountId,
       user_id: user.id,
       email: user.email ?? asString(payload?.metadata && (payload.metadata as any).email),
