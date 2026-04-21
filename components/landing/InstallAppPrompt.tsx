@@ -100,7 +100,7 @@ export default function InstallAppPrompt({ lang }: { lang?: Lang }) {
       <div
         style={{
           position: "fixed",
-          bottom: "calc(var(--safe-bottom, 0px) + 16px)",
+          bottom: "calc(var(--safe-bottom, 0px) + 92px)",
           right: 16,
           left: 16,
           zIndex: 120,
@@ -109,15 +109,22 @@ export default function InstallAppPrompt({ lang }: { lang?: Lang }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: 16,
-          padding: "16px 16px",
+          gap: 10,
+          padding: "14px 14px",
           borderRadius: 999,
           border: "1px solid rgba(148,163,184,0.65)",
           background: "color-mix(in srgb, var(--card) 80%, #020617 20%)",
           boxShadow: "0 14px 40px rgba(15,23,42,0.6)",
         }}
       >
-        <span style={{ fontSize: "var(--fs-s)" }}>
+        <span
+          style={{
+            minWidth: 0,
+            fontSize: "clamp(10px, 2.8vw, 12px)",
+            lineHeight: 1.15,
+            letterSpacing: "-0.01em",
+          }}
+        >
           {title} <strong>Plan4Host</strong> {suffix}
         </span>
         <button
@@ -128,8 +135,8 @@ export default function InstallAppPrompt({ lang }: { lang?: Lang }) {
             border: "1px solid rgba(15,23,42,0.7)",
             background: "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
             color: "#f9fafb",
-            padding: "8px 16px",
-            fontSize: "var(--fs-s)",
+            padding: "8px 14px",
+            fontSize: "clamp(10px, 2.8vw, 12px)",
             fontWeight: "var(--fw-bold)",
             cursor: "pointer",
             whiteSpace: "nowrap",
@@ -174,8 +181,8 @@ export default function InstallAppPrompt({ lang }: { lang?: Lang }) {
                 </div>
                 <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
                   {isRo
-                    ? "iOS nu permite instalarea automata, dar dureaza cateva secunde din Safari."
-                    : "iOS does not allow automatic install, but Safari can add it in a few seconds."}
+                    ? "Adauga aplicatia pe ecranul principal si intra mai rapid in Plan4Host."
+                    : "Add the app to your Home Screen and open Plan4Host faster next time."}
                 </div>
               </div>
               <button
