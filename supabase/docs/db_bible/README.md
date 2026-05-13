@@ -19,6 +19,14 @@ Fișiere curente:
   Harta relațiilor dintre tabelele din `public`, cu accent pe foreign keys și regulile de ștergere.
 - `03_public_schema_constraints.md`
   Regulile de integritate observate în schema `public`: primary keys, unique constraints și check constraints.
+- `04_public_schema_indexes.md`
+  Harta indexurilor din `public`, cu accent pe lookup, listare, timeline, partial indexes și cazuri speciale de performanță.
+- `05_public_schema_functions.md`
+  Catalogul funcțiilor din `public`, separat între logică de aplicație și funcții tehnice de extensie.
+- `06_public_schema_triggers.md`
+  Harta triggerelor efective din `public`, cu tabelele afectate și funcțiile apelate automat.
+- `07_public_schema_views.md`
+  Catalogul view-urilor din `public`, cu accent pe scopul lor de reporting și agregare.
 
 Referințe utile deja existente:
 - `../2026-05_db_inventory_may_2026.sql`
