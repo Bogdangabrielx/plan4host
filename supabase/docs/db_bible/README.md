@@ -13,6 +13,8 @@ Reguli simple:
 - snapshot-urile datate rămân separate de documentele canonice
 
 Fișiere curente:
+- `DB_MASTER_INDEX.md`
+  Pagina principală de orientare rapidă pentru întreaga documentație DB.
 - `01_public_schema_structure.md`
   Prima hartă a schemei `public`, pornită din inventarierea din mai 2026.
 - `02_public_schema_relationships.md`
@@ -27,6 +29,12 @@ Fișiere curente:
   Harta triggerelor efective din `public`, cu tabelele afectate și funcțiile apelate automat.
 - `07_public_schema_views.md`
   Catalogul view-urilor din `public`, cu accent pe scopul lor de reporting și agregare.
+- `08_public_schema_access_model.md`
+  Rezumatul grants + RLS + policy counts pentru tabelele din `public`, inclusiv excepțiile importante.
+- `09_public_schema_policy_catalog.md`
+  Catalogul politicilor RLS din `public`, grupat pe tabele și pe pattern-uri de acces.
+- `10_public_schema_known_notes.md`
+  Observații, outliers și note de audit care merită ținute minte când revenim la schema DB.
 
 Referințe utile deja existente:
 - `../2026-05_db_inventory_may_2026.sql`
