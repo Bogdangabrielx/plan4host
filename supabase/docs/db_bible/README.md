@@ -17,6 +17,8 @@ Fișiere curente:
   Prima hartă a schemei `public`, pornită din inventarierea din mai 2026.
 - `02_public_schema_relationships.md`
   Harta relațiilor dintre tabelele din `public`, cu accent pe foreign keys și regulile de ștergere.
+- `03_public_schema_constraints.md`
+  Regulile de integritate observate în schema `public`: primary keys, unique constraints și check constraints.
 
 Referințe utile deja existente:
 - `../2026-05_db_inventory_may_2026.sql`
