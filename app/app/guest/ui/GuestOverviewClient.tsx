@@ -740,6 +740,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   // Filter by name
   const [showPast, setShowPast] = useState(false);
   const [showDownloadOptions, setShowDownloadOptions] = useState(false);
+  const [selectedExportKeys, setSelectedExportKeys] = useState<Set<string>>(() => new Set());
   const downloadRef = useRef<HTMLDivElement | null>(null);
   const todayYmd = useMemo(() => {
     const d = new Date();
@@ -783,6 +784,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     };
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
+  }, [showDownloadOptions]);
+
+  useEffect(() => {
+    if (!showDownloadOptions) {
+      setSelectedExportKeys(new Set());
+    }
   }, [showDownloadOptions]);
 
   const exportBaseName = useMemo(() => {
@@ -1237,7 +1244,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   // Viewers: no action toggling
                   if (!canEditGuest) return;
                   const target = e.target as HTMLElement;
-                  if (target && target.closest('button')) return;
+                  if (target && target.closest('button,input,label')) return;
                   // toggle actions visibility for this card (one-at-a-time)
                   setOpenActions(prev => {
                     const s = new Set(prev);
@@ -1267,6 +1274,43 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       >
                         {statusLabel(kind, lang)}
                       </span>
+                    )}
+                    {showDownloadOptions && (
+                      <label
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 8,
+                          width: "max-content",
+                          color: "var(--muted)",
+                          fontSize: 12,
+                          userSelect: "none",
+                          cursor: "pointer",
+                          marginBottom: 2,
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedExportKeys.has(key)}
+                          onChange={() => {
+                            setSelectedExportKeys((prev) => {
+                              const next = new Set(prev);
+                              if (next.has(key)) next.delete(key);
+                              else next.add(key);
+                              return next;
+                            });
+                          }}
+                          style={{
+                            width: 16,
+                            height: 16,
+                            margin: 0,
+                            accentColor: "var(--primary)",
+                            cursor: "pointer",
+                          }}
+                        />
+                        <span>{lang === "ro" ? "Selecteaza" : "Select"}</span>
+                      </label>
                     )}
                     {/* OTA badge will be rendered under the dates (see below) */}
 
