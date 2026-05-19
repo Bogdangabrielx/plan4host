@@ -1386,6 +1386,9 @@ will-change: transform;
   font-size: var(--fs-s);
   font-weight: var(--fw-medium);
   min-height: 44px;
+  color: var(--cookie-text);
+  background: rgba(255,255,255,0.92);
+  border: 1px solid var(--cookie-border-strong);
 }
 .cookieBtnPrimary { font-weight: var(--fw-bold); }
 .cookieBtnPrimary:global(.sb-btn--primary){

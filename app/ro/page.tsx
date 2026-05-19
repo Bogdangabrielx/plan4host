@@ -831,7 +831,7 @@ export default function HomePageRO() {
       <nav ref={navRef as any} className={styles.nav} data-open={navOpen ? "true" : "false"} aria-label="Primary">
         <div className={styles.brandWrap}>
           <Link href="/ro" className={`${styles.brand} ${styles.focusable}`}>
-            <img src="/Logo_Landing_AI.png" alt="Plan4host" className={styles.logoDark} />
+            <img src="/Logo_Landing.png" alt="Plan4host" className={styles.logoDark} />
           </Link>
           {/* Switch limbă (lipit de logo) */}
           <Link href="/" className={`${styles.btnLang} ${styles.focusable}`} aria-label="Switch to English">
@@ -1796,7 +1796,7 @@ export default function HomePageRO() {
             "@type": "Organization",
             name: "Plan4Host",
             url: "https://www.plan4host.com",
-            logo: "https://www.plan4host.com/Logo_Landing_AI.png",
+            logo: "https://www.plan4host.com/Logo_Landing.png",
             sameAs: [
               "https://www.plan4host.com"
             ],
