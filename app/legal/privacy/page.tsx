@@ -183,7 +183,7 @@ export default function PrivacyPolicyPage() {
                   <td>Global infrastructure; transfers protected by SCCs and other safeguards</td>
                 </tr>
                 <tr>
-                  <td>Microsoft 365 (via GoDaddy)</td>
+                  <td>Microsoft 365</td>
                   <td>Email service</td>
                   <td>Support communications</td>
                   <td>Global infrastructure; transfers protected by SCCs</td>
