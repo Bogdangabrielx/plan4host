@@ -1223,6 +1223,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             const typeName = it._room_type_name ?? "—";
             const propertyId = activePropertyId!;
             const key = `${it.id ?? "noid"}|${it.start_date}|${it.end_date}|${it._room_type_id ?? "null"}`;
+            const isSelectedForExport = selectedExportKeys.has(key);
 
             const showCopy = false;
             // Row-level actions allowed only for admin/editor (viewers are read-only)
@@ -1241,6 +1242,13 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   display: "grid",
                   gap: 8,
                   overflow: "hidden",
+                  opacity: showDownloadOptions && !isSelectedForExport ? 0.58 : 1,
+                  filter: showDownloadOptions && !isSelectedForExport ? "grayscale(0.12)" : "none",
+                  boxShadow:
+                    showDownloadOptions && isSelectedForExport
+                      ? "0 0 0 1px color-mix(in srgb, var(--primary) 45%, transparent)"
+                      : undefined,
+                  transition: "opacity 140ms ease, filter 140ms ease, box-shadow 140ms ease",
                 }}
                 onPointerUp={(e) => {
                   // Viewers: no action toggling
@@ -1304,13 +1312,51 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                             });
                           }}
                           style={{
-                            width: 16,
-                            height: 16,
-                            margin: 0,
-                            accentColor: "var(--primary)",
-                            cursor: "pointer",
+                            position: "absolute",
+                            opacity: 0,
+                            pointerEvents: "none",
                           }}
                         />
+                        <span
+                          aria-hidden="true"
+                          style={{
+                            width: 20,
+                            height: 20,
+                            borderRadius: 999,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            border: `1.5px solid ${
+                              isSelectedForExport
+                                ? "var(--primary)"
+                                : "color-mix(in srgb, var(--muted) 42%, var(--border))"
+                            }`,
+                            background: isSelectedForExport
+                              ? "var(--primary)"
+                              : "color-mix(in srgb, var(--panel) 80%, var(--muted) 20%)",
+                            color: isSelectedForExport ? "#fff" : "var(--muted)",
+                            transition: "all 140ms ease",
+                            boxShadow: isSelectedForExport
+                              ? "0 0 0 3px color-mix(in srgb, var(--primary) 16%, transparent)"
+                              : "none",
+                          }}
+                        >
+                          <svg
+                            width={12}
+                            height={12}
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            style={{ display: "block" }}
+                          >
+                            <path
+                              d="M3.5 8.5 6.5 11.5 12.5 4.5"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </span>
                         <span>{lang === "ro" ? "Selecteaza" : "Select"}</span>
                       </label>
                     )}
