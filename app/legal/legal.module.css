@@ -87,38 +87,40 @@
     var(--card);
   box-shadow: var(--shadow);
   display: grid;
-  gap: 14px;
+  gap: 12px;
   text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+.headerInner::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--accent1) 72%, white 28%));
+  opacity: 0.95;
 }
 .headerBrand {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   width: fit-content;
-  padding: 6px 10px 6px 6px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.04);
 }
 .headerLogo {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  border: 1px solid var(--border-strong);
-  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
-  padding: 4px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
 }
 .headerEyebrow {
   color: color-mix(in srgb, var(--text) 88%, white 12%);
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 .headerLead {
   margin: 0;
-  max-width: 62ch;
+  max-width: 58ch;
   color: var(--muted);
   font-size: 15px;
   line-height: 1.68;
@@ -126,7 +128,8 @@
 .headerMetaRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px 14px;
+  align-items: center;
 }
 .container > section {
   width: min(100%, var(--content-width));
@@ -149,17 +152,15 @@
 }
 .meta {
   margin: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  width: fit-content;
-  padding: 8px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.04);
   font-size: 13px;
   color: var(--muted);
   letter-spacing: 0.01em;
+}
+.meta + .meta::before {
+  content: "•";
+  display: inline-block;
+  margin-right: 14px;
+  color: color-mix(in srgb, var(--muted) 74%, transparent);
 }
 
 /* AI gradient title (for "Guest AI assistant") */
@@ -319,7 +320,6 @@
     gap: 16px;
   }
 
-  .header > div,
   .headerInner,
   .container > section {
     border-radius: 24px;
@@ -327,17 +327,25 @@
   }
 
   .headerBrand {
-    gap: 10px;
+    gap: 8px;
   }
 
   .headerLogo {
-    width: 34px;
-    height: 34px;
+    width: 20px;
+    height: 20px;
   }
 
   .headerLead {
     font-size: 14px;
     line-height: 1.62;
+  }
+
+  .headerMetaRow {
+    gap: 6px 12px;
+  }
+
+  .meta + .meta::before {
+    margin-right: 12px;
   }
 
   .h1 {
