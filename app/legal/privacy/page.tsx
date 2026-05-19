@@ -114,6 +114,10 @@ export default function PrivacyPolicyPage() {
             information, not a consent to processing.
           </p>
           <p className={s.p}>
+            Where a property asks for a separate optional consent for a specific purpose, that consent is distinct from the
+            core check‑in flow and does not replace the legal bases used for required registration and accommodation processing.
+          </p>
+          <p className={s.p}>
             <strong>Retention.</strong> Reservation and guest records (including details of companions/other guests) are retained
             for the duration of the contractual relationship and for the statutory/accounting periods required by law.
             Acknowledgement records (privacy/house rules) are kept for the stay and for a reasonable audit period thereafter

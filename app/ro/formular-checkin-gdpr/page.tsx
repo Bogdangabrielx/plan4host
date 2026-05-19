@@ -10,8 +10,9 @@ export default function RoCheckinFormsGdprPage() {
       <ul>
         <li>Câmpuri personalizabile (nume, email, telefon, adresă, naționalitate, detalii sejur).</li>
         <li>Încărcare imagine act (CI/pașaport) — pentru verificare la sosire.</li>
-        <li>Capturare consimțământ — textele de informare și acord GDPR la îndemână.</li>
+        <li>Informare clară a oaspetelui și confirmarea citirii politicii de confidențialitate direct în formular.</li>
         <li>Date stocate în UE, acces controlat, criptare în tranzit.</li>
+        <li>Suport pentru prelucrarea necesară check‑in‑ului și obligațiilor legale ale proprietății, plus consimțăminte separate acolo unde chiar sunt necesare.</li>
         <li><a href="/legal/dpa">Acord de prelucrare a datelor (DPA)</a> și <a href="/legal/privacy">Politică de confidențialitate</a> clare.</li>
       </ul>
 
@@ -19,7 +20,7 @@ export default function RoCheckinFormsGdprPage() {
       <ol>
         <li>Trimiți oaspetelui linkul de check‑in (automat din Plan4Host sau manual).</li>
         <li>Oaspetele completează formularul pe telefon ori desktop, înainte de sosire.</li>
-        <li>Datele apar în contul tău; poți verifica actul și confirmarea acordului.</li>
+        <li>Datele apar în contul tău; poți verifica actul și confirmarea informării, iar unde este cazul și opțiunile de consimțământ distinct.</li>
       </ol>
 
       <p style={{ marginTop: 24 }}>
@@ -28,4 +29,3 @@ export default function RoCheckinFormsGdprPage() {
     </main>
   );
 }
-
