@@ -303,6 +303,7 @@ Observații generale:
 - tabela centrală de rezervări
 - coloane importante:
   - `id uuid default gen_random_uuid()`
+  - `booking_number bigint`
   - `property_id uuid`
   - `room_id uuid`
   - `start_date date`

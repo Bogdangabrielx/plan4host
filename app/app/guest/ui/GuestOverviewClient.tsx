@@ -892,13 +892,18 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           ];
         }
 
-        const [{ data: formData, error: formError }, docsRes] = await Promise.all([
+        const [{ data: formData, error: formError }, { data: bookingData }, docsRes] = await Promise.all([
           supabase
             .from("form_bookings")
             .select(
               "id,created_at,state,guest_first_name,guest_last_name,guest_email,guest_phone,guest_companions"
             )
             .eq("id", formId)
+            .maybeSingle(),
+          supabase
+            .from("bookings")
+            .select("booking_number")
+            .eq("form_id", formId)
             .maybeSingle(),
           fetch(`/api/form-bookings/${formId}/documents`, { cache: "no-store" })
             .then(async (res) => (res.ok ? res.json() : { documents: [] }))
@@ -935,7 +940,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         const rowsForForm: string[][] = [];
         rowsForForm.push([
           propertyName,
-          "",
+          bookingData?.booking_number != null ? String((bookingData as any).booking_number) : "",
           exportBookingStatusLabel(formData.state, fallbackStatus, lang),
           formatLongDateYmd(row.start_date, lang),
           formatLongDateYmd(row.end_date, lang),
@@ -956,7 +961,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         for (const companion of companions) {
           rowsForForm.push([
             propertyName,
-            "",
+            bookingData?.booking_number != null ? String((bookingData as any).booking_number) : "",
             exportBookingStatusLabel(formData.state, fallbackStatus, lang),
             formatLongDateYmd(row.start_date, lang),
             formatLongDateYmd(row.end_date, lang),

@@ -71,6 +71,7 @@ Notă:
 - asta nu înseamnă automat bug, dar este un punct foarte bun de reverificat când facem audit fin
 
 ### Bookings And Messaging
+- `bookings_booking_number_key(booking_number)`
 - `bookings_form_id_unique(form_id) WHERE form_id IS NOT NULL`
 - `uq_bookings_property_ical(property_id, ical_uid) WHERE ical_uid IS NOT NULL`
 - `reservation_messages_property_id_booking_id_key(property_id, booking_id)`
