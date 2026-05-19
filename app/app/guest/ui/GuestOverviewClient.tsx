@@ -8,7 +8,9 @@ import QrWithLogo from "@/components/QrWithLogo";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 import { usePersistentPropertyState } from "@/app/app/_components/PropertySelection";
+import LoadingPill from "@/app/app/_components/LoadingPill";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
+import overlayStyles from "@/app/app/_components/AppLoadingOverlay.module.css";
 import RoomDetailModal from "@/app/app/calendar/ui/RoomDetailModal";
 
 /* ───────────────── Types ───────────────── */
@@ -598,6 +600,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         : "If you allow access now, this booking will be treated as started and the guest will be able to see any access codes and instructions that you have scheduled in automatic messages.",
     allowAccessNow: lang === "ro" ? "Permite accesul acum" : "Allow access now",
     applying: lang === "ro" ? "Se aplica…" : "Applying…",
+    generatingFile: lang === "ro" ? "Se genereaza fisierul..." : "Generating file...",
   } as const;
 
   // Responsive (small/mobile)
@@ -1127,6 +1130,16 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       }
     } catch {}
   }, []);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (!exportingFormat) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [exportingFormat]);
 
   return (
     <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
@@ -1933,6 +1946,30 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               >
                 {t.close}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {exportingFormat && (
+        <div
+          className={overlayStyles.overlay}
+          role="status"
+          aria-live="polite"
+          aria-label={t.generatingFile}
+          style={{ zIndex: 245, gap: 12 }}
+        >
+          <div style={{ display: "grid", justifyItems: "center", gap: 12 }}>
+            <LoadingPill title={t.generatingFile} />
+            <div
+              className={overlayStyles.messageText}
+              style={{
+                maxWidth: "min(320px, calc(100vw - 64px))",
+                padding: "0 10px",
+                color: "white",
+                textShadow: "0 1px 12px rgba(0,0,0,.35)",
+              }}
+            >
+              {t.generatingFile}
             </div>
           </div>
         </div>
