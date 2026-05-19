@@ -8,6 +8,7 @@ import { useHeader } from "@/app/app/_components/HeaderContext";
 import { usePersistentPropertyState } from "@/app/app/_components/PropertySelection";
 import LoadingPill from "@/app/app/_components/LoadingPill";
 import overlayStyles from "@/app/app/_components/AppLoadingOverlay.module.css";
+import { writePreferenceStorage } from "@/components/consent/consentStorage";
 
 /** DB types */
 type Property = { id: string; name: string; timezone: string | null };
@@ -2595,7 +2596,7 @@ function ManageTypeModal({
     const key = norm(p);
     setColorMap(prev => {
       const next = { ...prev, [key]: c };
-      try { localStorage.setItem(LS_KEY, JSON.stringify(next)); } catch {}
+      writePreferenceStorage(LS_KEY, JSON.stringify(next));
       return next;
     });
   }
@@ -2614,7 +2615,7 @@ function ManageTypeModal({
     const key = norm(providerName);
     setLogoMap(prev => {
       const next = { ...prev, [key]: dataUrl };
-      try { localStorage.setItem(LS_LOGO_KEY, JSON.stringify(next)); } catch {}
+      writePreferenceStorage(LS_LOGO_KEY, JSON.stringify(next));
       return next;
     });
   }
@@ -3022,7 +3023,7 @@ function ManageRoomModal({
     const key = norm(p);
     setColorMap(prev => {
       const next = { ...prev, [key]: c };
-      try { localStorage.setItem(LS_KEY, JSON.stringify(next)); } catch {}
+      writePreferenceStorage(LS_KEY, JSON.stringify(next));
       return next;
     });
   }
@@ -3041,7 +3042,7 @@ function ManageRoomModal({
     const key = norm(providerName);
     setLogoMap(prev => {
       const next = { ...prev, [key]: dataUrl };
-      try { localStorage.setItem(LS_LOGO_KEY, JSON.stringify(next)); } catch {}
+      writePreferenceStorage(LS_LOGO_KEY, JSON.stringify(next));
       return next;
     });
   }

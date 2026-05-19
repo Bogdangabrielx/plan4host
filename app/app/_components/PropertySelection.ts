@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { writePreferenceStorage } from "@/components/consent/consentStorage";
 
 // LocalStorage key for persisting the selected property across pages
 export const SELECTED_PROPERTY_KEY = "p4h:selectedPropertyId";
@@ -15,10 +16,7 @@ function readFromLocalStorage(key: string): string | null {
 }
 
 function writeToLocalStorage(key: string, value: string) {
-  try {
-    if (typeof window === "undefined") return;
-    localStorage.setItem(key, value);
-  } catch {}
+  writePreferenceStorage(key, value);
 }
 
 function readFromURL(): string | null {

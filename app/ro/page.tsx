@@ -11,6 +11,7 @@ import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
 import WhatsAppPill from "@/components/landing/WhatsAppPill";
 import CookieFab from "@/components/landing/CookieFab";
 import InstallAppPrompt from "@/components/landing/InstallAppPrompt";
+import { clearPreferencePersistence } from "@/components/consent/consentStorage";
 
 // Copiem componentele ușoare din landing (CTA + Cookie consent + Carousel)
 
@@ -493,7 +494,7 @@ function CookieConsentLanding() {
   type ConsentShape = { necessary: true; preferences: boolean };
   const LS_KEY = "p4h:consent:v2";
   const COOKIE_NAME = "p4h_consent";
-  const EXPIRE_DAYS = 180;
+  const EXPIRE_DAYS = 365;
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [showPrefs, setShowPrefs] = useState(false);
@@ -543,6 +544,7 @@ function CookieConsentLanding() {
       const secure = location.protocol === "https:" ? "; Secure" : "";
       document.cookie = `${COOKIE_NAME}=${encodeURIComponent(JSON.stringify(payload))}; Max-Age=${EXPIRE_DAYS * 24 * 60 * 60}; Path=/; SameSite=Lax${secure}`;
     } catch {}
+    if (!consent.preferences) clearPreferencePersistence();
     document.documentElement.setAttribute("data-consent-preferences", String(!!consent.preferences));
     try { window.dispatchEvent(new CustomEvent("p4h:consent", { detail: payload })); } catch {}
   }

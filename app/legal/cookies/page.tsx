@@ -2,10 +2,6 @@
 import type { Metadata } from "next";
 import s from "../legal.module.css";
 import OpenCookieSettingsButton from "@/components/consent/OpenCookieSettingsButton";
-// ...
-<OpenCookieSettingsButton className={`${s.btn} ${s.btnPrimary}`}>
-  Cookie settings
-</OpenCookieSettingsButton>
 
 export const metadata: Metadata = {
   title: "Cookie Policy — Plan4Host",
@@ -14,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function CookiePolicyPage() {
-  const lastUpdated = "25 September 2025";
+  const lastUpdated = "19 May 2026";
 
   return (
     <main className={s.page}>
@@ -65,14 +61,19 @@ export default function CookiePolicyPage() {
           <ul className={s.list}>
             <li className={s.p}>
               <strong>Essential (always on)</strong> — Required for core functionality such as session,
-              security, consent storage, <em>and theme selection</em>. These cookies are necessary for
+              security, and consent storage. These cookies are necessary for
               the Website to function and cannot be switched off.
+            </li>
+            <li className={s.p}>
+              <strong>Preferences (optional)</strong> — Used only if you choose to allow preferences.
+              These help us remember interface choices in the application area, such as theme, language,
+              the selected property, and certain UI customizations on your device.
             </li>
           </ul>
           <p className={`${s.p} ${s.muted}`}>
-            We currently do <strong>not</strong> use any non-essential cookies (such as Preferences,
-            Analytics, or Marketing). If this changes, this page will be updated and you will be asked
-            for consent where required.
+            We do <strong>not</strong> use analytics or advertising cookies. Preference cookies/storage are optional
+            and are written only after you allow <strong>Preferences</strong>. If we add any new non-essential
+            category in the future, we will update this page and request consent where required.
           </p>
 
           <div className={s.card} style={{ margin: "16px 0 6px" }}>
@@ -82,8 +83,8 @@ export default function CookiePolicyPage() {
               . (This opens a small settings modal.)
             </p>
             <p className={`${s.p} ${s.muted}`} style={{ marginTop: 8 }}>
-              At this time we only use essential cookies, so there is nothing to opt in/out of. If we introduce
-              non-essential categories in the future, you will be able to manage your choices here.
+              You can keep only essential cookies or allow optional preference storage. If we introduce any further
+              non-essential category in the future, you will be able to manage your choices here.
             </p>
           </div>
 
@@ -132,8 +133,24 @@ export default function CookiePolicyPage() {
                 </tr>
                 <tr>
                   <td><code>app_theme</code></td>
-                  <td>Essential</td>
-                  <td>Remembers your selected theme (light/dark).</td>
+                  <td>Preferences (optional)</td>
+                  <td>Remembers your selected theme (light/dark) in the application area where theme switching is available.</td>
+                  <td>First-party (Plan4Host)</td>
+                  <td>Cookie</td>
+                  <td>12 months</td>
+                </tr>
+                <tr>
+                  <td><code>app_lang</code></td>
+                  <td>Preferences (optional)</td>
+                  <td>Remembers your selected language in the application area.</td>
+                  <td>First-party (Plan4Host)</td>
+                  <td>Cookie</td>
+                  <td>12 months</td>
+                </tr>
+                <tr>
+                  <td><code>p4h_guest_lang</code></td>
+                  <td>Preferences (optional)</td>
+                  <td>Remembers the guest-facing language chosen in the public check-in form.</td>
                   <td>First-party (Plan4Host)</td>
                   <td>Cookie</td>
                   <td>12 months</td>
@@ -152,19 +169,23 @@ export default function CookiePolicyPage() {
 
           <h2 className={s.h2}>5.1. Similar technologies (localStorage)</h2>
           <p className={s.p}>
-            We also use <em>localStorage</em> for interface preferences and draft content. This storage stays on your
-            device and can be cleared any time from your browser settings. We do not use localStorage for analytics
-            or advertising.
+            We also use <em>localStorage</em> in two ways:
           </p>
           <ul className={s.list}>
-            <li className={s.p}><code>theme_v1</code> — remembers theme (light/dark). Retention: until cleared.</li>
-            <li className={s.p}><code>p4h:selectedPropertyId</code> — last selected property in the app. Retention: until cleared.</li>
-            <li className={s.p}><code>p4h:rm:template:&lt;propertyId&gt;</code> — draft reservation message template. Retention: until cleared.</li>
-            <li className={s.p}><code>p4h:otaColors:type:&lt;id&gt;</code>, <code>p4h:otaColors:room:&lt;id&gt;</code> — per‑provider color preferences. Retention: until cleared.</li>
-            <li className={s.p}><code>p4h:otaLogos:type:&lt;id&gt;</code>, <code>p4h:otaLogos:room:&lt;id&gt;</code> — custom OTA logos (data URLs). Retention: until cleared.</li>
-            <li className={s.p}><code>p4h:inboxCount</code> — UI badge cache. Retention: until cleared.</li>
-            <li className={s.p}><code>p4h:push:asked</code> — remembers if you already responded to the browser prompt for notifications. Retention: until cleared.</li>
-            <li className={s.p}><code>p4h:push:endpoint</code> — last known Web Push endpoint for this device, used to help with unsubscribe cleanup. Retention: until cleared.</li>
+            <li className={s.p}>
+              <strong>Preference storage (optional, only after consent)</strong> — used to remember interface choices
+              on this device, such as <code>theme_v1</code>, <code>app_lang</code>,
+              <code>p4h_guest_lang</code>, <code>p4h:selectedPropertyId</code>,
+              <code>p4h:rm:lang</code>, <code>p4h:otaColors:*</code>, and <code>p4h:otaLogos:*</code>.
+              These preferences mainly affect the logged-in application experience, not every public page on the site.
+              Retention: until cleared or until you withdraw preference consent.
+            </li>
+            <li className={s.p}>
+              <strong>Strictly functional device storage</strong> — some authenticated features may keep temporary
+              or feature-specific data on your device, such as draft message content, notification state, or
+              non-tracking UI caches. This storage supports features you actively use and is not used for analytics
+              or advertising. Retention: usually until cleared or refreshed by the feature.
+            </li>
           </ul>
 
           <h2 className={s.h2}>5.2. Service Workers & Web Push</h2>
@@ -177,16 +198,17 @@ export default function CookiePolicyPage() {
 
           <h2 className={s.h2}>6. Your choices</h2>
           <p className={s.p}>
-            On your first visit, you may see a small banner. At this time we only use essential cookies.
-            Some UI preferences (theme, language, etc.) are stored in localStorage (see above) and are not used for tracking. If we
-            introduce non-essential cookies in the future, we will ask for your consent and you will be able to
-            manage your choices here.
+            On your first visit, you may see a cookie banner. You can choose <strong>Only necessary</strong> or allow
+            optional <strong>Preferences</strong>. If you do not allow preferences, we do not persist theme, language,
+            property selection, or similar application-area interface choices on your device. Public pages that are
+            intentionally fixed to a specific theme are not changed by this preference. You can change your choice later
+            from Cookie settings.
           </p>
 
           <h2 className={s.h2}>7. Legal basis</h2>
           <p className={s.p}>
             Essential cookies are used based on our legitimate interest in providing a secure and functional
-            service. If we add non-essential cookies in the future, they will be used only with your consent.
+            service. Preference cookies and preference storage are used only with your consent.
           </p>
 
           <h2 className={s.h2}>8. International transfers</h2>

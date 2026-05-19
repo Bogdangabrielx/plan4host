@@ -9,7 +9,7 @@ type ConsentState = {
 
 const LS_KEY = "p4h:consent:v1";
 const CK_NAME = "p4h_consent";
-const CK_MAX_AGE_DAYS = 180;
+const CK_MAX_AGE_DAYS = 365;
 
 /* ─── Cookie & storage helpers ─── */
 function getCookie(name: string): string | null {

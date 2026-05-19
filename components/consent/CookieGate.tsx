@@ -12,7 +12,7 @@ type Consent = {
 
 const COOKIE_NAME = "p4h_consent";
 const CONSENT_VERSION = 2;   // ↑ bump ca să forțeze re-consent dacă exista vechiul format
-const TTL_DAYS = 180;        // 6 luni
+const TTL_DAYS = 365;        // 12 luni
 
 function parseConsent(): Consent | null {
   try {

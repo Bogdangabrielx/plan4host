@@ -4,6 +4,7 @@
 import React, { useEffect, useMemo, useRef, useState, useImperativeHandle } from "react";
 import Image from "next/image";
 import QrWithLogo from "@/components/QrWithLogo";
+import { writePreferenceCookie } from "@/components/consent/consentStorage";
 import { DIAL_OPTIONS } from "@/lib/phone/dialOptions";
 import { CHECKIN_I18N, GUEST_CHECKIN_LANG_OPTIONS, resolveGuestCheckinLang, type CheckinTextSet, type GuestCheckinLang } from "./checkinI18n";
 
@@ -456,7 +457,7 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
     });
   });
   useEffect(() => {
-    try { document.cookie = `p4h_guest_lang=${lang}; path=/; max-age=${60*60*24*365}`; } catch {}
+    writePreferenceCookie("p4h_guest_lang", lang, 60 * 60 * 24 * 365);
     try { document.documentElement.setAttribute('lang', lang); } catch {}
   }, [lang]);
 

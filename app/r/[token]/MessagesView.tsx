@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import LanguageViewer from "./LanguageViewer";
+import { writePreferenceStorage } from "@/components/consent/consentStorage";
 
 type GuestPortalLang = "ro" | "el" | "fr" | "de" | "it" | "pt" | "es";
 type PortalLang = GuestPortalLang | "en";
@@ -168,7 +169,7 @@ export default function MessagesView({ token, data }: { token: string; data: any
     if (prefer === "en" || prefer === secondaryLang) return prefer;
     return (itemsAll.find((i) => (i.html_secondary || i.html_ro)?.trim()) ? secondaryLang : "en");
   });
-  useEffect(() => { try { localStorage.setItem("p4h:rm:lang", lang); } catch {} }, [lang]);
+  useEffect(() => { writePreferenceStorage("p4h:rm:lang", lang); }, [lang]);
   useEffect(() => {
     setLang((prev) => (prev === "en" ? "en" : secondaryLang));
   }, [secondaryLang]);

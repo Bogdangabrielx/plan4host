@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { writePreferenceCookie, writePreferenceStorage } from "@/components/consent/consentStorage";
 
 type Theme = "light" | "dark";
 type Size = "sm" | "md";
@@ -35,7 +36,7 @@ export default function ThemeToggle({ theme, onChange, size = "md" }: Props) {
     };
 
     // Initial sync (also ensures html+storage are aligned like before)
-    apply(readTheme(), false);
+    apply(readTheme(), { notify: false, persist: false });
 
     function onThemeChange(e: Event) {
       const detail = (e as CustomEvent).detail as { theme?: Theme } | undefined;
@@ -60,13 +61,15 @@ export default function ThemeToggle({ theme, onChange, size = "md" }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [controlled]);
 
-  function apply(next: Theme, notify = true) {
+  function apply(next: Theme, opts?: { notify?: boolean; persist?: boolean }) {
+    const notify = opts?.notify ?? true;
+    const persist = opts?.persist ?? true;
     if (!controlled) setInner(next);
     document.documentElement.setAttribute("data-theme", next);
-    try {
-      localStorage.setItem("theme_v1", next);
-      document.cookie = `app_theme=${next}; path=/; max-age=${60*60*24*365}`;
-    } catch {}
+    if (persist) {
+      writePreferenceStorage("theme_v1", next);
+      writePreferenceCookie("app_theme", next, 60 * 60 * 24 * 365);
+    }
     if (notify) window.dispatchEvent(new CustomEvent("themechange", { detail: { theme: next } }));
     onChange?.(next);
   }

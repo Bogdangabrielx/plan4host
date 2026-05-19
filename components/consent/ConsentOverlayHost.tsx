@@ -78,7 +78,7 @@ export default function ConsentOverlayHost() {
           <div>
             <h3 id="cookie-title" style={{ margin: 0 }}>Cookies & Privacy</h3>
             <div style={{ color: "var(--muted)", fontSize: 13 }}>
-              We use essential cookies and, optionally, preferences (theme).
+              We use essential cookies and, optionally, preference storage for theme, language, and UI choices in the application area.
             </div>
           </div>
         </div>
@@ -128,8 +128,8 @@ export default function ConsentOverlayHost() {
 
               <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
                 <div>
-                  <strong>Preferences (theme)</strong>
-                  <div style={{ color: "var(--muted)", fontSize: 12 }}>Remember your theme choice</div>
+                  <strong>Preferences</strong>
+                  <div style={{ color: "var(--muted)", fontSize: 12 }}>Remember theme, language, and app UI preferences on this device</div>
                 </div>
                 <input
                   type="checkbox"

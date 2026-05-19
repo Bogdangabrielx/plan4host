@@ -5,6 +5,7 @@ import ThemeToggle from "@/app/app/ui/ThemeToggle";
 import LoadingPill from "@/app/app/_components/LoadingPill";
 import overlayStyles from "@/app/app/_components/AppLoadingOverlay.module.css";
 import { collectLoginActivityPayload } from "@/lib/auth/login-activity-client";
+import { hasPreferenceConsent, writePreferenceCookie, writePreferenceStorage } from "@/components/consent/consentStorage";
 
 type Theme = "light" | "dark";
 type Mode = "login" | "signup";
@@ -145,13 +146,16 @@ export default function LoginClient({
     setMounted(true);
 
     const fromHtml = (document.documentElement.getAttribute("data-theme") as Theme | null);
-    const fromLS   = (typeof window !== "undefined" ? (localStorage.getItem("theme_v1") as Theme | null) : null);
+    const fromLS   =
+      typeof window !== "undefined" && hasPreferenceConsent()
+        ? (localStorage.getItem("theme_v1") as Theme | null)
+        : null;
     const current  = fromHtml ?? fromLS ?? initialTheme;
 
     document.documentElement.setAttribute("data-theme", current);
     setTheme(current);
     try {
-      const savedLang = localStorage.getItem("app_lang");
+      const savedLang = hasPreferenceConsent() ? localStorage.getItem("app_lang") : null;
       if (savedLang === "ro" || savedLang === "en") setLang(savedLang);
     } catch {}
 
@@ -159,7 +163,7 @@ export default function LoginClient({
       const detail = (e as CustomEvent).detail as { theme?: Theme } | undefined;
       if (detail?.theme) {
         setTheme(detail.theme);
-        try { document.cookie = `app_theme=${detail.theme}; path=/; max-age=${60*60*24*365}`; } catch {}
+        writePreferenceCookie("app_theme", detail.theme, 60 * 60 * 24 * 365);
       }
     }
     window.addEventListener("themechange" as any, onThemeChange);
@@ -176,7 +180,7 @@ export default function LoginClient({
         const next = prev === "light" ? "dark" : "light";
         try {
           document.documentElement.setAttribute("data-theme", next);
-          document.cookie = `app_theme=${next}; path=/; max-age=${60 * 60 * 24 * 365}`;
+          writePreferenceCookie("app_theme", next, 60 * 60 * 24 * 365);
           window.dispatchEvent(new CustomEvent("themechange", { detail: { theme: next } }));
         } catch {}
         return next;
@@ -210,10 +214,8 @@ export default function LoginClient({
   }, []);
 
   useEffect(() => {
-    try {
-      localStorage.setItem("app_lang", lang);
-      document.cookie = `app_lang=${lang}; path=/; max-age=${60 * 60 * 24 * 365}`;
-    } catch {}
+    writePreferenceStorage("app_lang", lang);
+    writePreferenceCookie("app_lang", lang, 60 * 60 * 24 * 365);
   }, [lang]);
 
   // —— Reset cooldown: persist + live countdown ——
