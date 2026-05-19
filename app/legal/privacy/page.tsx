@@ -16,16 +16,25 @@ export default function PrivacyPolicyPage() {
     <main className={s.page}>
       <div className={s.container}>
         <header className={s.header}>
-          <div style={{ display: "grid", placeItems: "center", gap: 10, textAlign: "center" }}>
-            <img
-              src="/p4h_logo_rotund.png"
-              alt="Plan4Host"
-              width={80}
-              height={80}
-              style={{ borderRadius: 999, border: "2px solid var(--border)", background: "var(--card)" }}
-            />
-            <h1 className={s.h1} style={{ marginBottom: 4 }}>Privacy Policy</h1>
-            <p className={s.meta}>Last updated: {lastUpdated}</p>
+          <div className={s.headerInner}>
+            <div className={s.headerBrand}>
+              <img
+                src="/p4h_logo_rotund.png"
+                alt="Plan4Host"
+                width={38}
+                height={38}
+                className={s.headerLogo}
+              />
+              <span className={s.headerEyebrow}>Plan4Host Legal</span>
+            </div>
+            <h1 className={s.h1}>Privacy Policy</h1>
+            <p className={s.headerLead}>
+              Important information about how personal data is collected, used, retained, and protected across Plan4Host and guest-facing flows.
+            </p>
+            <div className={s.headerMetaRow}>
+              <p className={s.meta}>Last updated: {lastUpdated}</p>
+              <p className={s.meta}>Applies to: plan4host.com and the application area</p>
+            </div>
           </div>
         </header>
 
