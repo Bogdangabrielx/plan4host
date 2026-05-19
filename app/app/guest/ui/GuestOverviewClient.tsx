@@ -1462,12 +1462,14 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   border: "1px solid var(--border)",
                   borderRadius: 12,
                   padding: 12,
-                  background: "var(--panel)",
+                  background:
+                    showDownloadOptions && !isSelectedForExport
+                      ? "color-mix(in srgb, var(--panel) 88%, var(--muted) 12%)"
+                      : "var(--panel)",
                   display: "grid",
                   gap: 8,
                   overflow: "hidden",
-                  opacity: showDownloadOptions && !isSelectedForExport ? 0.58 : 1,
-                  filter: showDownloadOptions && !isSelectedForExport ? "grayscale(0.12)" : "none",
+                  filter: showDownloadOptions && !isSelectedForExport ? "grayscale(0.08)" : "none",
                   boxShadow:
                     showDownloadOptions && isSelectedForExport
                       ? "0 0 0 1px color-mix(in srgb, var(--primary) 45%, transparent)"
@@ -1501,26 +1503,50 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   }}
                 >
                   <div style={{ display: "grid", gap: 4, lineHeight: 1.25, minWidth: 0 }}>
-                    {isSmall && (
-                      <span
-                        style={{ ...badgeStyle(kind), marginBottom: 2, justifySelf: "start", width: "max-content" }}
-                        title={statusTooltip(it, lang)}
+                    {(isSmall || showDownloadOptions) && (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 10,
+                          flexWrap: "wrap",
+                          marginBottom: 2,
+                        }}
                       >
-                        {statusLabel(kind, lang)}
-                      </span>
-                    )}
-                    {showDownloadOptions && (
+                        {isSmall ? (
+                          <span
+                            style={{ ...badgeStyle(kind), justifySelf: "start", width: "max-content" }}
+                            title={statusTooltip(it, lang)}
+                          >
+                            {statusLabel(kind, lang)}
+                          </span>
+                        ) : (
+                          <span />
+                        )}
+                        {showDownloadOptions && (
                       <label
                         style={{
                           display: "inline-flex",
                           alignItems: "center",
                           gap: 8,
                           width: "max-content",
-                          color: "var(--muted)",
+                          color: "var(--text)",
                           fontSize: 12,
                           userSelect: "none",
                           cursor: "pointer",
-                          marginBottom: 2,
+                          padding: "6px 10px",
+                          borderRadius: 999,
+                          border: isSelectedForExport
+                            ? "1px solid color-mix(in srgb, var(--success) 45%, transparent)"
+                            : "1px solid color-mix(in srgb, var(--border) 82%, transparent)",
+                          background: isSelectedForExport
+                            ? "color-mix(in srgb, var(--success) 14%, var(--panel))"
+                            : "color-mix(in srgb, var(--panel) 92%, white 8%)",
+                          boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
+                          position: "relative",
+                          zIndex: 1,
+                          fontWeight: 800,
                         }}
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -1561,12 +1587,15 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                             lineHeight: 1,
                             flex: "0 0 auto",
                             transition: "all 140ms ease",
+                            boxShadow: "0 0 0 1px rgba(255,255,255,0.18) inset",
                           }}
                         >
                           ✓
                         </span>
                         <span>{lang === "ro" ? "Selecteaza" : "Select"}</span>
                       </label>
+                        )}
+                      </div>
                     )}
                     {/* OTA badge will be rendered under the dates (see below) */}
 
