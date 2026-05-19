@@ -1518,7 +1518,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   }}
                 >
                   <div style={{ display: "grid", gap: 4, lineHeight: 1.25, minWidth: 0 }}>
-                    {(isSmall || showDownloadOptions) && (
+                    {isSmall && (
                       <div
                         style={{
                           display: "flex",
@@ -1529,17 +1529,86 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                           marginBottom: 2,
                         }}
                       >
-                        {isSmall ? (
-                          <span
-                            style={{ ...badgeStyle(kind), justifySelf: "start", width: "max-content" }}
-                            title={statusTooltip(it, lang)}
-                          >
-                            {statusLabel(kind, lang)}
-                          </span>
-                        ) : (
-                          <span />
-                        )}
+                        <span
+                          style={{ ...badgeStyle(kind), justifySelf: "start", width: "max-content" }}
+                          title={statusTooltip(it, lang)}
+                        >
+                          {statusLabel(kind, lang)}
+                        </span>
                         {showDownloadOptions && (
+                          <label
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 8,
+                              width: "max-content",
+                              color: "var(--text)",
+                              fontSize: 12,
+                              userSelect: "none",
+                              cursor: "pointer",
+                              padding: "6px 10px",
+                              borderRadius: 999,
+                              border: isSelectedForExport
+                                ? "1px solid color-mix(in srgb, var(--success) 45%, transparent)"
+                                : "1px solid color-mix(in srgb, var(--border) 82%, transparent)",
+                              background: isSelectedForExport
+                                ? "color-mix(in srgb, var(--success) 14%, var(--panel))"
+                                : "color-mix(in srgb, var(--panel) 92%, white 8%)",
+                              boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
+                              position: "relative",
+                              zIndex: 1,
+                              fontWeight: 800,
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedExportKeys.has(key)}
+                              onChange={() => {
+                                setSelectedExportKeys((prev) => {
+                                  const next = new Set(prev);
+                                  if (next.has(key)) next.delete(key);
+                                  else next.add(key);
+                                  return next;
+                                });
+                              }}
+                              style={{
+                                position: "absolute",
+                                opacity: 0,
+                                pointerEvents: "none",
+                              }}
+                            />
+                            <span
+                              aria-hidden="true"
+                              style={{
+                                width: 16,
+                                height: 16,
+                                borderRadius: 999,
+                                border: isSelectedForExport
+                                  ? "1px solid color-mix(in srgb, var(--success) 80%, transparent)"
+                                  : "1px solid color-mix(in srgb, var(--muted) 55%, transparent)",
+                                background: isSelectedForExport
+                                  ? "color-mix(in srgb, var(--success) 18%, transparent)"
+                                  : "color-mix(in srgb, var(--muted) 14%, transparent)",
+                                display: "grid",
+                                placeItems: "center",
+                                color: isSelectedForExport ? "var(--success)" : "var(--muted)",
+                                fontWeight: 900,
+                                fontSize: 11,
+                                lineHeight: 1,
+                                flex: "0 0 auto",
+                                transition: "all 140ms ease",
+                                boxShadow: "0 0 0 1px rgba(255,255,255,0.18) inset",
+                              }}
+                            >
+                              ✓
+                            </span>
+                            <span>{lang === "ro" ? "Selecteaza" : "Select"}</span>
+                          </label>
+                        )}
+                      </div>
+                    )}
+                    {!isSmall && showDownloadOptions && (
                       <label
                         style={{
                           display: "inline-flex",
@@ -1562,6 +1631,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                           position: "relative",
                           zIndex: 1,
                           fontWeight: 800,
+                          marginBottom: 2,
                         }}
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -1609,8 +1679,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         </span>
                         <span>{lang === "ro" ? "Selecteaza" : "Select"}</span>
                       </label>
-                        )}
-                      </div>
                     )}
                     {/* OTA badge will be rendered under the dates (see below) */}
 
