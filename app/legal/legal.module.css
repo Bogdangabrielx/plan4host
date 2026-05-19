@@ -139,11 +139,11 @@
   padding: 6px 0 0;
 }
 .h1 {
-  font-size: clamp(38px, 5.4vw, 56px);
-  line-height: 0.98;
+  font-size: clamp(32px, 4.6vw, 46px);
+  line-height: 1.02;
   letter-spacing: -0.045em;
   margin: 0;
-  max-width: 12ch;
+  max-width: 16ch;
 }
 .meta {
   margin: 0;
@@ -348,7 +348,7 @@
   }
 
   .h1 {
-    font-size: clamp(32px, 9vw, 42px);
+    font-size: clamp(30px, 8vw, 38px);
     max-width: 100%;
   }
 
