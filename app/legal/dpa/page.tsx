@@ -28,7 +28,7 @@ export default function DpaPage() {
             </div>
             <h1 className={s.h1}>Data Processing Addendum (DPA)</h1>
             <p className={s.headerLead}>
-              Contractual terms describing how Plan4Host processes personal data on behalf of customers under GDPR Article 28.
+              Contractual terms for processing personal data on behalf of customers.
             </p>
             <div className={s.headerMetaRow}>
               <p className={s.meta}>Last updated: {lastUpdated}</p>

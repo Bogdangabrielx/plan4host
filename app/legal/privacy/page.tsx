@@ -29,7 +29,7 @@ export default function PrivacyPolicyPage() {
             </div>
             <h1 className={s.h1}>Privacy Policy</h1>
             <p className={s.headerLead}>
-              Important information about how personal data is collected, used, retained, and protected across Plan4Host and guest-facing flows.
+              How personal data is collected, used, and protected across Plan4Host.
             </p>
             <div className={s.headerMetaRow}>
               <p className={s.meta}>Last updated: {lastUpdated}</p>

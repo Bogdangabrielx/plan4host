@@ -29,7 +29,7 @@ export default function CookiePolicyPage() {
             </div>
             <h1 className={s.h1}>Cookie Policy</h1>
             <p className={s.headerLead}>
-              Important information about cookies and device storage used on the website and in the application area, including your preference choices.
+              How cookies and device storage are used across Plan4Host.
             </p>
             <div className={s.headerMetaRow}>
               <p className={s.meta}>Last updated: {lastUpdated}</p>

@@ -29,7 +29,7 @@ export default function TermsOfServicePage() {
             </div>
             <h1 className={s.h1}>Terms of Service</h1>
             <p className={s.headerLead}>
-              Legal terms governing access to and use of Plan4Host, including accounts, billing, acceptable use, and service responsibilities.
+              The legal terms governing access to and use of Plan4Host.
             </p>
             <div className={s.headerMetaRow}>
               <p className={s.meta}>Last updated: {lastUpdated}</p>
