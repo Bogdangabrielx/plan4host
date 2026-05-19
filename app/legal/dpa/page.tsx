@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default function DpaPage() {
-  const lastUpdated = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: '2-digit' });
+  const lastUpdated = "25 September 2025";
   return (
     <main className={s.page}>
       <ForceDark />
