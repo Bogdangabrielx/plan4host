@@ -60,7 +60,8 @@ export async function POST() {
               <div>
                 <p style="margin:0 0 14px;">Hello,</p>
                 <p style="margin:0 0 14px;">
-                  We’re sorry to see you go. This email confirms that your Plan4Host account has been closed and your data has been removed.
+                  We’re sorry to see you go. This email confirms that your Plan4Host account has been closed and your
+                  operational data has been removed in accordance with our deletion procedures.
                 </p>
                 <p style="margin:0 0 14px; color:#334155;">
                   If you did not request this, please contact us as soon as possible at <a href="mailto:office@plan4host.com">office@plan4host.com</a>.

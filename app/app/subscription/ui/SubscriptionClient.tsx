@@ -1078,10 +1078,22 @@ export default function SubscriptionClient({
                   className={`${styles.btn} ${styles.btnDangerGhost}`}
                   aria-label={lang === "ro" ? "Sterge contul definitiv" : "Delete account permanently"}
                   onClick={async () => {
-                    const conf = prompt(lang === "ro" ? "Scrie DELETE pentru a confirma stergerea contului. Aceasta actiune sterge TOATE datele." : "Type DELETE to confirm account deletion. This removes ALL your data.");
+                    const conf = prompt(
+                      lang === "ro"
+                        ? "Scrie DELETE pentru a confirma ștergerea contului. Dacă în cont mai există rezervări active sau evenimente în calendar, echipa noastră de suport poate trebui să facă mai întâi cleanup-ul necesar."
+                        : "Type DELETE to confirm account deletion. If your account still has active reservations or calendar events, support may need to complete cleanup before deletion can finish."
+                    );
                     if ((conf || '').trim().toUpperCase() !== 'DELETE') return;
                     try {
                       const res = await fetch('/api/account/delete', { method:'POST' });
+                      if (res.status === 400) {
+                        alert(
+                          lang === "ro"
+                            ? "Ștergerea contului necesită intervenția suportului deoarece există încă rezervări active sau evenimente în calendar. Contact: office@plan4host.com / WhatsApp +40 721 759 329."
+                            : "Account deletion requires support because there are still active reservations or calendar events that must be cleaned up first. Contact: office@plan4host.com / WhatsApp +40 721 759 329."
+                        );
+                        return;
+                      }
                       if (!res.ok) throw new Error(await res.text());
                       // redirect to logout
                       window.location.assign('/auth/logout');

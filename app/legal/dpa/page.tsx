@@ -110,8 +110,11 @@ export default function DpaPage() {
 
           <h2 className={s.h2}>12. Return or deletion of data</h2>
           <p className={s.p}>
-            Upon termination, Processor will delete Personal Data or return it to Controller upon request. Operational deletions occur promptly;
-            residual backups are overwritten within up to 30 days, unless a longer retention is required by law.
+            Upon termination, Processor will delete Personal Data or return it to Controller upon request. Where the
+            Controller account still includes active reservations or calendar events that require operational cleanup,
+            deletion may require support coordination before completion. Once deletion can proceed, operational deletions
+            occur promptly; residual backups are overwritten within up to 30 days, unless a longer retention is required
+            by law.
           </p>
 
           <h2 className={s.h2}>13. Liability</h2>

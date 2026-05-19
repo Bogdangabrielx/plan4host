@@ -31,11 +31,11 @@ const translations = {
     unknown: "Unknown",
     deleteAccount: "Delete account",
     deleteAccountPrompt:
-      "Type delete to confirm account deletion. This removes ALL your data.",
+      "Type delete to confirm account deletion. If your account still has active reservations or calendar events, support may need to complete cleanup before deletion can finish.",
     deleteAccountFailed: "Could not delete account.",
-    deleteBlockedTitle: "Account deactivation failed",
+    deleteBlockedTitle: "Support required to delete account",
     deleteBlockedMessage:
-      "Account deactivation could not be completed because there are active reservations in the calendar.",
+      "Account deletion could not be completed because there are still active reservations or calendar events that require cleanup first.",
     deleteBlockedSupportIntro: "Please contact support:",
     deleteBlockedEmailLabel: "Email",
     deleteBlockedWhatsappLabel: "WhatsApp",
@@ -62,11 +62,11 @@ const translations = {
     unknown: "Necunoscut",
     deleteAccount: "Șterge contul",
     deleteAccountPrompt:
-      "Scrie delete pentru a confirma ștergerea contului. Această acțiune șterge TOATE datele.",
+      "Scrie delete pentru a confirma ștergerea contului. Dacă în cont mai există rezervări active sau evenimente în calendar, echipa noastră de suport poate trebui să facă mai întâi cleanup-ul necesar.",
     deleteAccountFailed: "Contul nu a putut fi șters.",
-    deleteBlockedTitle: "Dezactivarea contului a eșuat",
+    deleteBlockedTitle: "Este necesar suport pentru ștergerea contului",
     deleteBlockedMessage:
-      "Dezactivarea contului nu s-a putut realiza deoarece există rezervări active în calendar.",
+      "Ștergerea contului nu s-a putut finaliza deoarece există încă rezervări active sau evenimente în calendar care trebuie curățate mai întâi.",
     deleteBlockedSupportIntro: "Vă rugăm luați legătura pentru suport:",
     deleteBlockedEmailLabel: "Email",
     deleteBlockedWhatsappLabel: "WhatsApp",

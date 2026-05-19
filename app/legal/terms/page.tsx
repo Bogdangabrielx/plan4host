@@ -162,9 +162,11 @@ export default function TermsOfServicePage() {
               Upon termination, your right to use the Service ceases. We may retain and/or delete data per our policies and legal obligations.
             </li>
             <li className={s.p}>
-              <strong>Account deletion:</strong> You can request account deletion from within the app. Operational data is
-              removed promptly; residual backups may persist for up to <strong>30 days</strong> before being overwritten.
-              We may retain billing records for statutory periods.
+              <strong>Account deletion:</strong> You can request account deletion from within the app where operational
+              cleanup allows it. If your account still has active reservations or calendar events that require manual
+              cleanup, deletion may need to be completed with assistance from our support team. Once deletion can proceed,
+              operational data is removed promptly; residual backups may persist for up to <strong>30 days</strong> before
+              being overwritten. We may retain billing records for statutory periods.
             </li>
           </ul>
 
