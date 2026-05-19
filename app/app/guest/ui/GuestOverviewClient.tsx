@@ -1320,42 +1320,26 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         <span
                           aria-hidden="true"
                           style={{
-                            width: 20,
-                            height: 20,
+                            width: 16,
+                            height: 16,
                             borderRadius: 999,
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            border: `1.5px solid ${
-                              isSelectedForExport
-                                ? "var(--primary)"
-                                : "color-mix(in srgb, var(--muted) 42%, var(--border))"
-                            }`,
+                            border: isSelectedForExport
+                              ? "1px solid color-mix(in srgb, var(--success) 80%, transparent)"
+                              : "1px solid color-mix(in srgb, var(--muted) 55%, transparent)",
                             background: isSelectedForExport
-                              ? "var(--primary)"
-                              : "color-mix(in srgb, var(--panel) 80%, var(--muted) 20%)",
-                            color: isSelectedForExport ? "#fff" : "var(--muted)",
+                              ? "color-mix(in srgb, var(--success) 18%, transparent)"
+                              : "color-mix(in srgb, var(--muted) 14%, transparent)",
+                            display: "grid",
+                            placeItems: "center",
+                            color: isSelectedForExport ? "var(--success)" : "var(--muted)",
+                            fontWeight: 900,
+                            fontSize: 11,
+                            lineHeight: 1,
+                            flex: "0 0 auto",
                             transition: "all 140ms ease",
-                            boxShadow: isSelectedForExport
-                              ? "0 0 0 3px color-mix(in srgb, var(--primary) 16%, transparent)"
-                              : "none",
                           }}
                         >
-                          <svg
-                            width={12}
-                            height={12}
-                            viewBox="0 0 16 16"
-                            fill="none"
-                            style={{ display: "block" }}
-                          >
-                            <path
-                              d="M3.5 8.5 6.5 11.5 12.5 4.5"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
+                          ✓
                         </span>
                         <span>{lang === "ro" ? "Selecteaza" : "Select"}</span>
                       </label>
