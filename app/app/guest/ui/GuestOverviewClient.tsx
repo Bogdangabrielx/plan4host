@@ -166,6 +166,242 @@ function highlight(text: string, query: string): React.ReactNode {
   return parts;
 }
 
+type ExportRow = {
+  guest: string;
+  unit: string;
+  type: string;
+  dates: string;
+  status: string;
+  provider: string;
+};
+
+function escapeCsvCell(value: string): string {
+  const s = String(value ?? "");
+  if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
+function buildCsv(rows: ExportRow[]): string {
+  const header = ["Guest", "Unit", "Type", "Dates", "Status", "Provider"];
+  const lines = [header.join(",")];
+  for (const row of rows) {
+    lines.push(
+      [
+        row.guest,
+        row.unit,
+        row.type,
+        row.dates,
+        row.status,
+        row.provider,
+      ].map(escapeCsvCell).join(",")
+    );
+  }
+  return lines.join("\n");
+}
+
+function xmlEscape(value: string): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function makeXlsxSheetXml(rows: ExportRow[]): string {
+  const header = ["Guest", "Unit", "Type", "Dates", "Status", "Provider"];
+  const allRows = [header, ...rows.map((row) => [row.guest, row.unit, row.type, row.dates, row.status, row.provider])];
+  const sheetRows = allRows
+    .map((cols, rowIndex) => {
+      const cells = cols
+        .map((value, colIndex) => {
+          const colRef = String.fromCharCode(65 + colIndex);
+          const ref = `${colRef}${rowIndex + 1}`;
+          return `<c r="${ref}" t="inlineStr"><is><t>${xmlEscape(value)}</t></is></c>`;
+        })
+        .join("");
+      return `<row r="${rowIndex + 1}">${cells}</row>`;
+    })
+    .join("");
+
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <sheetViews>
+    <sheetView workbookViewId="0"/>
+  </sheetViews>
+  <sheetFormatPr defaultRowHeight="15"/>
+  <sheetData>${sheetRows}</sheetData>
+</worksheet>`;
+}
+
+function crc32(bytes: Uint8Array): number {
+  let crc = 0xffffffff;
+  for (let i = 0; i < bytes.length; i += 1) {
+    crc ^= bytes[i];
+    for (let j = 0; j < 8; j += 1) {
+      const mask = -(crc & 1);
+      crc = (crc >>> 1) ^ (0xedb88320 & mask);
+    }
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function writeUint16LE(target: Uint8Array, offset: number, value: number) {
+  target[offset] = value & 0xff;
+  target[offset + 1] = (value >>> 8) & 0xff;
+}
+
+function writeUint32LE(target: Uint8Array, offset: number, value: number) {
+  target[offset] = value & 0xff;
+  target[offset + 1] = (value >>> 8) & 0xff;
+  target[offset + 2] = (value >>> 16) & 0xff;
+  target[offset + 3] = (value >>> 24) & 0xff;
+}
+
+function createZip(files: Array<{ name: string; content: string }>): Blob {
+  const encoder = new TextEncoder();
+  const encoded = files.map((file) => {
+    const nameBytes = encoder.encode(file.name);
+    const dataBytes = encoder.encode(file.content);
+    return {
+      nameBytes,
+      dataBytes,
+      crc: crc32(dataBytes),
+    };
+  });
+
+  const localParts: Uint8Array[] = [];
+  const centralParts: Uint8Array[] = [];
+  let offset = 0;
+
+  for (let i = 0; i < encoded.length; i += 1) {
+    const { nameBytes, dataBytes, crc } = encoded[i];
+
+    const localHeader = new Uint8Array(30 + nameBytes.length);
+    writeUint32LE(localHeader, 0, 0x04034b50);
+    writeUint16LE(localHeader, 4, 20);
+    writeUint16LE(localHeader, 6, 0);
+    writeUint16LE(localHeader, 8, 0);
+    writeUint16LE(localHeader, 10, 0);
+    writeUint16LE(localHeader, 12, 0);
+    writeUint32LE(localHeader, 14, crc);
+    writeUint32LE(localHeader, 18, dataBytes.length);
+    writeUint32LE(localHeader, 22, dataBytes.length);
+    writeUint16LE(localHeader, 26, nameBytes.length);
+    writeUint16LE(localHeader, 28, 0);
+    localHeader.set(nameBytes, 30);
+
+    localParts.push(localHeader, dataBytes);
+
+    const centralHeader = new Uint8Array(46 + nameBytes.length);
+    writeUint32LE(centralHeader, 0, 0x02014b50);
+    writeUint16LE(centralHeader, 4, 20);
+    writeUint16LE(centralHeader, 6, 20);
+    writeUint16LE(centralHeader, 8, 0);
+    writeUint16LE(centralHeader, 10, 0);
+    writeUint16LE(centralHeader, 12, 0);
+    writeUint16LE(centralHeader, 14, 0);
+    writeUint32LE(centralHeader, 16, crc);
+    writeUint32LE(centralHeader, 20, dataBytes.length);
+    writeUint32LE(centralHeader, 24, dataBytes.length);
+    writeUint16LE(centralHeader, 28, nameBytes.length);
+    writeUint16LE(centralHeader, 30, 0);
+    writeUint16LE(centralHeader, 32, 0);
+    writeUint16LE(centralHeader, 34, 0);
+    writeUint16LE(centralHeader, 36, 0);
+    writeUint32LE(centralHeader, 38, 0);
+    writeUint32LE(centralHeader, 42, offset);
+    centralHeader.set(nameBytes, 46);
+
+    centralParts.push(centralHeader);
+    offset += localHeader.length + dataBytes.length;
+  }
+
+  const centralSize = centralParts.reduce((sum, part) => sum + part.length, 0);
+  const endRecord = new Uint8Array(22);
+  writeUint32LE(endRecord, 0, 0x06054b50);
+  writeUint16LE(endRecord, 4, 0);
+  writeUint16LE(endRecord, 6, 0);
+  writeUint16LE(endRecord, 8, encoded.length);
+  writeUint16LE(endRecord, 10, encoded.length);
+  writeUint32LE(endRecord, 12, centralSize);
+  writeUint32LE(endRecord, 16, offset);
+  writeUint16LE(endRecord, 20, 0);
+
+  return new Blob([...localParts, ...centralParts, endRecord], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+}
+
+function buildXlsx(rows: ExportRow[]): Blob {
+  const files = [
+    {
+      name: "[Content_Types].xml",
+      content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+</Types>`,
+    },
+    {
+      name: "_rels/.rels",
+      content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`,
+    },
+    {
+      name: "xl/workbook.xml",
+      content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets>
+    <sheet name="Guest Overview" sheetId="1" r:id="rId1"/>
+  </sheets>
+</workbook>`,
+    },
+    {
+      name: "xl/_rels/workbook.xml.rels",
+      content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`,
+    },
+    {
+      name: "xl/styles.xml",
+      content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts>
+  <fills count="1"><fill><patternFill patternType="none"/></fill></fills>
+  <borders count="1"><border/></borders>
+  <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+  <cellXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/></cellXfs>
+  <cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`,
+    },
+    {
+      name: "xl/worksheets/sheet1.xml",
+      content: makeXlsxSheetXml(rows),
+    },
+  ];
+
+  return createZip(files);
+}
+
+function triggerDownload(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 // Render {{token}} as chip HTML for titles (safe)
 function rmTitleToChips(title: string): string {
   const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string));
@@ -503,6 +739,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
   // Filter by name
   const [showPast, setShowPast] = useState(false);
+  const [showDownloadOptions, setShowDownloadOptions] = useState(false);
+  const downloadRef = useRef<HTMLDivElement | null>(null);
   const todayYmd = useMemo(() => {
     const d = new Date();
     const y = d.getFullYear();
@@ -520,6 +758,54 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     if (q) arr = arr.filter((r) => norm(fullName(r)).includes(q));
     return arr;
   }, [rows, query, showPast, todayYmd]);
+
+  const exportRows = useMemo<ExportRow[]>(() => {
+    return visibleRows.map((it) => {
+      const kind: OverviewRow["status"] = it.status === "green" && !it.room_id ? "yellow" : it.status;
+      const ota = otaMetaForRow(it, kind);
+      return {
+        guest: fullName(it),
+        unit: it._room_label ?? "—",
+        type: it._room_type_name ?? "—",
+        dates: formatRange(it.start_date, it.end_date),
+        status: statusLabel(kind, lang),
+        provider: ota?.provider || "—",
+      };
+    });
+  }, [visibleRows, lang]);
+
+  useEffect(() => {
+    if (!showDownloadOptions) return;
+    const onDoc = (e: MouseEvent) => {
+      const target = e.target as Node | null;
+      if (downloadRef.current && target && downloadRef.current.contains(target)) return;
+      setShowDownloadOptions(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [showDownloadOptions]);
+
+  const exportBaseName = useMemo(() => {
+    const propertyName = properties.find((p) => p.id === activePropertyId)?.name || "guest-overview";
+    const safeName = propertyName
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .toLowerCase();
+    return `${safeName || "guest-overview"}-${todayYmd}`;
+  }, [properties, activePropertyId, todayYmd]);
+
+  const downloadCsv = useCallback(() => {
+    const csv = buildCsv(exportRows);
+    triggerDownload(new Blob([csv], { type: "text/csv;charset=utf-8" }), `${exportBaseName}.csv`);
+    setShowDownloadOptions(false);
+  }, [exportRows, exportBaseName]);
+
+  const downloadXlsx = useCallback(() => {
+    triggerDownload(buildXlsx(exportRows), `${exportBaseName}.xlsx`);
+    setShowDownloadOptions(false);
+  }, [exportRows, exportBaseName]);
 
   // Styles
   const containerStyle: React.CSSProperties = {
@@ -861,6 +1147,61 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             </svg>
             {!isSmall && (showPast ? t.hidePastShort : t.showPastShort)}
           </button>
+          <div
+            ref={downloadRef}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginLeft: isSmall ? undefined : 0,
+            }}
+          >
+            {!showDownloadOptions ? (
+              <button
+                type="button"
+                className="sb-btn sb-cardglow"
+                onClick={() => setShowDownloadOptions(true)}
+                title={lang === "ro" ? "Descarca export" : "Download export"}
+                aria-label={lang === "ro" ? "Descarca export" : "Download export"}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: isSmall ? "6px 10px" : "8px 12px",
+                  minWidth: 44,
+                }}
+              >
+                <svg aria-hidden width={16} height={16} viewBox="0 0 24 24" fill="none" style={{ display: "block" }}>
+                  <path d="M12 4v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <path d="m8 11 4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M5 19h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="sb-btn sb-cardglow"
+                  onClick={downloadXlsx}
+                  title={lang === "ro" ? "Descarca Excel" : "Download Excel"}
+                  aria-label={lang === "ro" ? "Descarca Excel" : "Download Excel"}
+                  style={{ padding: isSmall ? "6px 10px" : undefined }}
+                >
+                  .xlsx
+                </button>
+                <button
+                  type="button"
+                  className="sb-btn sb-cardglow"
+                  onClick={downloadCsv}
+                  title={lang === "ro" ? "Descarca CSV" : "Download CSV"}
+                  aria-label={lang === "ro" ? "Descarca CSV" : "Download CSV"}
+                  style={{ padding: isSmall ? "6px 10px" : undefined }}
+                >
+                  .csv
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Rows */}
