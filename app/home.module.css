@@ -1311,6 +1311,11 @@ will-change: transform;
 
 /* Cookie consent (landing) */
 .cookieOverlay {
+  --cookie-text: #131313;
+  --cookie-muted: rgba(19, 19, 19, 0.68);
+  --cookie-border: rgba(16, 24, 40, 0.10);
+  --cookie-border-strong: rgba(16, 24, 40, 0.16);
+  --cookie-primary: #2f8f5b;
   position: fixed;
   inset: 0;
   z-index: 2147483646;
@@ -1333,10 +1338,11 @@ will-change: transform;
   padding: 24px;
   display: grid;
   gap: 20px;
+  color: var(--cookie-text);
   background:
     radial-gradient(120% 180% at 14% 0%, rgba(255,255,255,0.20), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,0.88), rgba(255,255,255,0.74));
-  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  border: 1px solid var(--cookie-border);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
           backdrop-filter: blur(14px) saturate(140%);
   box-shadow:
@@ -1364,13 +1370,13 @@ will-change: transform;
   place-items: center;
   border-radius: 999px;
   background: rgba(255,255,255,0.72);
-  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  border: 1px solid var(--cookie-border);
   box-shadow: 0 16px 40px rgba(0,0,0,0.14);
 }
 .cookieIcon svg { width: 24px; height: 24px; }
 .cookieIcon span { font-size: 32px; line-height: 1; }
 .cookieTitle { margin: 0; font-size: 18px; font-weight: var(--fw-bold); line-height: 1.25; letter-spacing: -0.01em; }
-.cookieText { color: color-mix(in srgb, var(--text) 70%, transparent); font-size: var(--fs-s); font-weight: var(--fw-medium); line-height: var(--lh-s); }
+.cookieText { color: var(--cookie-muted); font-size: var(--fs-s); font-weight: var(--fw-medium); line-height: var(--lh-s); }
 .cookieActions { display: grid; gap: 16px; }
 .cookieButtons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .cookieButtons > :nth-child(3){ grid-column: 1 / -1; }
@@ -1384,19 +1390,19 @@ will-change: transform;
 .cookieBtnPrimary { font-weight: var(--fw-bold); }
 .cookieBtnPrimary:global(.sb-btn--primary){
   background: transparent;
-  color: var(--text);
-  border: 1px solid color-mix(in srgb, var(--primary) 60%, var(--border));
+  color: var(--cookie-text);
+  border: 1px solid color-mix(in srgb, var(--cookie-primary) 60%, var(--cookie-border-strong));
   box-shadow: none;
 }
 .cookieBtnPrimary:global(.sb-btn--primary):hover{
-  background: color-mix(in srgb, var(--primary) 6%, transparent);
-  border-color: var(--primary);
+  background: color-mix(in srgb, var(--cookie-primary) 6%, transparent);
+  border-color: var(--cookie-primary);
 }
-.cookieHint { margin: 0; color: color-mix(in srgb, var(--text) 70%, transparent); font-size: var(--fs-s); line-height: var(--lh-s); }
-.cookieLink { color: var(--primary); text-decoration: none; }
-.cookieLink:hover { text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--primary) 45%, transparent); }
+.cookieHint { margin: 0; color: var(--cookie-muted); font-size: var(--fs-s); line-height: var(--lh-s); }
+.cookieLink { color: var(--cookie-primary); text-decoration: none; }
+.cookieLink:hover { text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--cookie-primary) 45%, transparent); }
 .cookiePrefsBox {
-  border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+  border: 1px solid var(--cookie-border);
   background: rgba(255,255,255,0.70);
   border-radius: 16px;
   padding: 16px;
@@ -1404,7 +1410,7 @@ will-change: transform;
   gap: 16px;
 }
 .cookieLabel { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.cookieMeta { color: var(--muted); font-size: var(--fs-s); line-height: var(--lh-s); }
+.cookieMeta { color: var(--cookie-muted); font-size: var(--fs-s); line-height: var(--lh-s); }
 .cookieFooterActions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
 
 .cookieLabel input[type="checkbox"]{
@@ -1413,7 +1419,7 @@ will-change: transform;
   width: 44px;
   height: 26px;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
+  border: 1px solid var(--cookie-border-strong);
   background: rgba(15, 23, 42, 0.10);
   position: relative;
   flex: 0 0 auto;
@@ -1433,9 +1439,9 @@ will-change: transform;
   transition: transform .18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .cookieLabel input[type="checkbox"]:checked{
-  background: color-mix(in srgb, var(--primary) 44%, transparent);
-  border-color: color-mix(in srgb, var(--primary) 48%, var(--border));
-  box-shadow: 0 0 0 5px color-mix(in srgb, var(--primary) 18%, transparent);
+  background: color-mix(in srgb, var(--cookie-primary) 44%, transparent);
+  border-color: color-mix(in srgb, var(--cookie-primary) 48%, var(--cookie-border));
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--cookie-primary) 18%, transparent);
 }
 .cookieLabel input[type="checkbox"]:checked::after{
   transform: translateX(18px);
