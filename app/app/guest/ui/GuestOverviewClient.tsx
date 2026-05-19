@@ -741,6 +741,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const [showPast, setShowPast] = useState(false);
   const [showDownloadOptions, setShowDownloadOptions] = useState(false);
   const [selectedExportKeys, setSelectedExportKeys] = useState<Set<string>>(() => new Set());
+  const exportAreaRef = useRef<HTMLDivElement | null>(null);
   const downloadRef = useRef<HTMLDivElement | null>(null);
   const todayYmd = useMemo(() => {
     const d = new Date();
@@ -779,7 +780,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     if (!showDownloadOptions) return;
     const onDoc = (e: MouseEvent) => {
       const target = e.target as Node | null;
-      if (downloadRef.current && target && downloadRef.current.contains(target)) return;
+      if (exportAreaRef.current && target && exportAreaRef.current.contains(target)) return;
       setShowDownloadOptions(false);
     };
     document.addEventListener("mousedown", onDoc);
@@ -1073,6 +1074,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           </div>
         </div>
 
+        <div ref={exportAreaRef} style={{ display: "grid", gap: 10 }}>
         {/* Legend with popovers (legendInfo) */}
         <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 12, flexWrap: "wrap" }}>
           {(["green","yellow"] as const).map((k) => (
@@ -1498,6 +1500,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               )}
             </div>
           )}
+        </div>
         </div>
 
         {/* Modals */}
