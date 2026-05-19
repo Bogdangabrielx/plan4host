@@ -166,13 +166,9 @@ function highlight(text: string, query: string): React.ReactNode {
   return parts;
 }
 
-type ExportRow = {
-  guest: string;
-  unit: string;
-  type: string;
-  dates: string;
-  status: string;
-  provider: string;
+type ExportTable = {
+  headers: string[];
+  rows: string[][];
 };
 
 function escapeCsvCell(value: string): string {
@@ -181,21 +177,9 @@ function escapeCsvCell(value: string): string {
   return s;
 }
 
-function buildCsv(rows: ExportRow[]): string {
-  const header = ["Guest", "Unit", "Type", "Dates", "Status", "Provider"];
-  const lines = [header.join(",")];
-  for (const row of rows) {
-    lines.push(
-      [
-        row.guest,
-        row.unit,
-        row.type,
-        row.dates,
-        row.status,
-        row.provider,
-      ].map(escapeCsvCell).join(",")
-    );
-  }
+function buildCsv(table: ExportTable): string {
+  const lines = [table.headers.map(escapeCsvCell).join(",")];
+  for (const row of table.rows) lines.push(row.map(escapeCsvCell).join(","));
   return lines.join("\n");
 }
 
@@ -208,9 +192,8 @@ function xmlEscape(value: string): string {
     .replace(/'/g, "&apos;");
 }
 
-function makeXlsxSheetXml(rows: ExportRow[]): string {
-  const header = ["Guest", "Unit", "Type", "Dates", "Status", "Provider"];
-  const allRows = [header, ...rows.map((row) => [row.guest, row.unit, row.type, row.dates, row.status, row.provider])];
+function makeXlsxSheetXml(table: ExportTable): string {
+  const allRows = [table.headers, ...table.rows];
   const sheetRows = allRows
     .map((cols, rowIndex) => {
       const cells = cols
@@ -333,7 +316,7 @@ function createZip(files: Array<{ name: string; content: string }>): Blob {
   });
 }
 
-function buildXlsx(rows: ExportRow[]): Blob {
+function buildXlsx(table: ExportTable): Blob {
   const files = [
     {
       name: "[Content_Types].xml",
@@ -384,7 +367,7 @@ function buildXlsx(rows: ExportRow[]): Blob {
     },
     {
       name: "xl/worksheets/sheet1.xml",
-      content: makeXlsxSheetXml(rows),
+      content: makeXlsxSheetXml(table),
     },
   ];
 
@@ -400,6 +383,53 @@ function triggerDownload(blob: Blob, fileName: string) {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+function formatLongDateYmd(ymd: string, lang: Lang): string {
+  if (!ymd) return "";
+  const dt = new Date(`${ymd}T12:00:00Z`);
+  return new Intl.DateTimeFormat(lang === "ro" ? "ro-RO" : "en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(dt);
+}
+
+function formatLongDateTimeIso(iso: string | null | undefined, lang: Lang): string {
+  if (!iso) return "";
+  const dt = new Date(iso);
+  if (Number.isNaN(dt.getTime())) return "";
+  return new Intl.DateTimeFormat(lang === "ro" ? "ro-RO" : "en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "Europe/Bucharest",
+  }).format(dt);
+}
+
+function exportBookingStatusLabel(state: string | null | undefined, fallback: OverviewRow["status"], lang: Lang): string {
+  const normalized = (state || "").toLowerCase();
+  if (normalized === "linked") return lang === "ro" ? "Confirmată" : "Confirmed";
+  if (normalized === "cancelled") return lang === "ro" ? "Neconfirmată" : "Unconfirmed";
+  if (normalized === "open") return lang === "ro" ? "Neconfirmată" : "Unconfirmed";
+  if (fallback === "green") return lang === "ro" ? "Confirmată" : "Confirmed";
+  if (fallback === "yellow") return lang === "ro" ? "Neconfirmată" : "Unconfirmed";
+  return lang === "ro" ? "Neconfirmată" : "Unconfirmed";
+}
+
+function exportDocTypeLabel(docType: string | null | undefined, lang: Lang): string {
+  const normalized = (docType || "").toLowerCase();
+  if (normalized === "id_card") return lang === "ro" ? "Carte de Identitate" : "ID Card";
+  if (normalized === "passport") return lang === "ro" ? "Pașaport" : "Passport";
+  return normalized ? docType || "" : "";
+}
+
+function exportDocSeriesNumber(series: string | null | undefined, number: string | null | undefined): string {
+  const left = (series || "").trim();
+  const right = (number || "").trim();
+  if (left && right) return `${left} ${right}`;
+  return left || right || "";
 }
 
 // Render {{token}} as chip HTML for titles (safe)
@@ -761,20 +791,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     return arr;
   }, [rows, query, showPast, todayYmd]);
 
-  const exportRows = useMemo<ExportRow[]>(() => {
-    return visibleRows.map((it) => {
-      const kind: OverviewRow["status"] = it.status === "green" && !it.room_id ? "yellow" : it.status;
-      const ota = otaMetaForRow(it, kind);
-      return {
-        guest: fullName(it),
-        unit: it._room_label ?? "—",
-        type: it._room_type_name ?? "—",
-        dates: formatRange(it.start_date, it.end_date),
-        status: statusLabel(kind, lang),
-        provider: ota?.provider || "—",
-      };
+  const selectedRowsForExport = useMemo(() => {
+    return visibleRows.filter((it) => {
+      const key = `${it.id ?? "noid"}|${it.start_date}|${it.end_date}|${it._room_type_id ?? "null"}`;
+      return selectedExportKeys.has(key);
     });
-  }, [visibleRows, lang]);
+  }, [visibleRows, selectedExportKeys]);
 
   useEffect(() => {
     if (!showDownloadOptions) return;
@@ -804,16 +826,182 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     return `${safeName || "guest-overview"}-${todayYmd}`;
   }, [properties, activePropertyId, todayYmd]);
 
-  const downloadCsv = useCallback(() => {
-    const csv = buildCsv(exportRows);
-    triggerDownload(new Blob([csv], { type: "text/csv;charset=utf-8" }), `${exportBaseName}.csv`);
-    setShowDownloadOptions(false);
-  }, [exportRows, exportBaseName]);
+  const [exportingFormat, setExportingFormat] = useState<null | "csv" | "xlsx">(null);
 
-  const downloadXlsx = useCallback(() => {
-    triggerDownload(buildXlsx(exportRows), `${exportBaseName}.xlsx`);
-    setShowDownloadOptions(false);
-  }, [exportRows, exportBaseName]);
+  const buildSelectedGuestExportTable = useCallback(async (): Promise<ExportTable> => {
+    const headers = lang === "ro"
+      ? [
+          "Proprietate",
+          "Număr rezervare",
+          "Status",
+          "Check-In",
+          "Check-Out",
+          "Camere",
+          "Creat la",
+          "Nume",
+          "Email",
+          "Telefon",
+          "CI/ Pașaport",
+          "Cetățenia",
+          "Seria / Numărul",
+        ]
+      : [
+          "Property",
+          "Reservation number",
+          "Status",
+          "Check-In",
+          "Check-Out",
+          "Rooms",
+          "Created at",
+          "Name",
+          "Email",
+          "Phone",
+          "ID / Passport",
+          "Citizenship",
+          "Series / Number",
+        ];
+
+    const propertyName =
+      properties.find((p) => String(p.id) === String(activePropertyId))?.name ||
+      "—";
+
+    const details = await Promise.all(
+      selectedRowsForExport.map(async (row) => {
+        const fallbackStatus: OverviewRow["status"] =
+          row.status === "green" && !row.room_id ? "yellow" : row.status;
+        const fallbackGuestName = fullName(row);
+        const formId = row.id;
+
+        if (!formId) {
+          return [
+            [
+              propertyName,
+              "",
+              exportBookingStatusLabel(null, fallbackStatus, lang),
+              formatLongDateYmd(row.start_date, lang),
+              formatLongDateYmd(row.end_date, lang),
+              "1",
+              "",
+              fallbackGuestName,
+              "",
+              "",
+              "",
+              "",
+              "",
+            ],
+          ];
+        }
+
+        const [{ data: formData, error: formError }, docsRes] = await Promise.all([
+          supabase
+            .from("form_bookings")
+            .select(
+              "id,created_at,state,guest_first_name,guest_last_name,guest_email,guest_phone,guest_companions"
+            )
+            .eq("id", formId)
+            .maybeSingle(),
+          fetch(`/api/form-bookings/${formId}/documents`, { cache: "no-store" })
+            .then(async (res) => (res.ok ? res.json() : { documents: [] }))
+            .catch(() => ({ documents: [] })),
+        ]);
+
+        if (formError || !formData) {
+          return [
+            [
+              propertyName,
+              "",
+              exportBookingStatusLabel(null, fallbackStatus, lang),
+              formatLongDateYmd(row.start_date, lang),
+              formatLongDateYmd(row.end_date, lang),
+              "1",
+              "",
+              fallbackGuestName,
+              "",
+              "",
+              "",
+              "",
+              "",
+            ],
+          ];
+        }
+
+        const docs = Array.isArray((docsRes as any)?.documents) ? (docsRes as any).documents : [];
+        const mainDoc =
+          docs.find((d: any) => {
+            const t = String(d?.doc_type || "").toLowerCase();
+            return t === "id_card" || t === "passport";
+          }) || null;
+
+        const rowsForForm: string[][] = [];
+        rowsForForm.push([
+          propertyName,
+          "",
+          exportBookingStatusLabel(formData.state, fallbackStatus, lang),
+          formatLongDateYmd(row.start_date, lang),
+          formatLongDateYmd(row.end_date, lang),
+          "1",
+          formatLongDateTimeIso((formData as any).created_at, lang),
+          [formData.guest_first_name, formData.guest_last_name].filter(Boolean).join(" ").trim() || fallbackGuestName,
+          (formData as any).guest_email || "",
+          (formData as any).guest_phone || "",
+          exportDocTypeLabel(mainDoc?.doc_type, lang),
+          (mainDoc?.doc_nationality || "").trim(),
+          exportDocSeriesNumber(mainDoc?.doc_series, mainDoc?.doc_number),
+        ]);
+
+        const companions = Array.isArray((formData as any).guest_companions)
+          ? ((formData as any).guest_companions as any[])
+          : [];
+
+        for (const companion of companions) {
+          rowsForForm.push([
+            propertyName,
+            "",
+            exportBookingStatusLabel(formData.state, fallbackStatus, lang),
+            formatLongDateYmd(row.start_date, lang),
+            formatLongDateYmd(row.end_date, lang),
+            "1",
+            formatLongDateTimeIso((formData as any).created_at, lang),
+            [companion?.first_name, companion?.last_name].filter(Boolean).join(" ").trim(),
+            "",
+            "",
+            exportDocTypeLabel(companion?.doc_type, lang),
+            (companion?.citizenship || companion?.residence_country || "").trim(),
+            exportDocSeriesNumber(companion?.doc_series, companion?.doc_number),
+          ]);
+        }
+
+        return rowsForForm;
+      })
+    );
+
+    return { headers, rows: details.flat() };
+  }, [activePropertyId, lang, properties, selectedRowsForExport, supabase]);
+
+  const downloadCsv = useCallback(async () => {
+    if (selectedRowsForExport.length === 0) return;
+    setExportingFormat("csv");
+    try {
+      const table = await buildSelectedGuestExportTable();
+      const csv = `\uFEFF${buildCsv(table)}`;
+      triggerDownload(new Blob([csv], { type: "text/csv;charset=utf-8" }), `${exportBaseName}.csv`);
+      setShowDownloadOptions(false);
+    } finally {
+      setExportingFormat(null);
+    }
+  }, [buildSelectedGuestExportTable, exportBaseName, selectedRowsForExport.length]);
+
+  const downloadXlsx = useCallback(async () => {
+    if (selectedRowsForExport.length === 0) return;
+    setExportingFormat("xlsx");
+    try {
+      const table = await buildSelectedGuestExportTable();
+      triggerDownload(buildXlsx(table), `${exportBaseName}.xlsx`);
+      setShowDownloadOptions(false);
+    } finally {
+      setExportingFormat(null);
+    }
+  }, [buildSelectedGuestExportTable, exportBaseName, selectedRowsForExport.length]);
 
   // Styles
   const containerStyle: React.CSSProperties = {
@@ -1192,21 +1380,39 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   type="button"
                   className="sb-btn sb-cardglow"
                   onClick={downloadXlsx}
-                  title={lang === "ro" ? "Descarca Excel" : "Download Excel"}
+                  disabled={selectedRowsForExport.length === 0 || exportingFormat !== null}
+                  title={
+                    selectedRowsForExport.length === 0
+                      ? (lang === "ro" ? "Selectează cel puțin un formular" : "Select at least one form")
+                      : (lang === "ro" ? "Descarca Excel" : "Download Excel")
+                  }
                   aria-label={lang === "ro" ? "Descarca Excel" : "Download Excel"}
-                  style={{ padding: isSmall ? "6px 10px" : undefined }}
+                  style={{
+                    padding: isSmall ? "6px 10px" : undefined,
+                    opacity: selectedRowsForExport.length === 0 || exportingFormat === "csv" ? 0.55 : 1,
+                    cursor: selectedRowsForExport.length === 0 || exportingFormat !== null ? "not-allowed" : "pointer",
+                  }}
                 >
-                  .xlsx
+                  {exportingFormat === "xlsx" ? ".xlsx…" : ".xlsx"}
                 </button>
                 <button
                   type="button"
                   className="sb-btn sb-cardglow"
                   onClick={downloadCsv}
-                  title={lang === "ro" ? "Descarca CSV" : "Download CSV"}
+                  disabled={selectedRowsForExport.length === 0 || exportingFormat !== null}
+                  title={
+                    selectedRowsForExport.length === 0
+                      ? (lang === "ro" ? "Selectează cel puțin un formular" : "Select at least one form")
+                      : (lang === "ro" ? "Descarca CSV" : "Download CSV")
+                  }
                   aria-label={lang === "ro" ? "Descarca CSV" : "Download CSV"}
-                  style={{ padding: isSmall ? "6px 10px" : undefined }}
+                  style={{
+                    padding: isSmall ? "6px 10px" : undefined,
+                    opacity: selectedRowsForExport.length === 0 || exportingFormat === "xlsx" ? 0.55 : 1,
+                    cursor: selectedRowsForExport.length === 0 || exportingFormat !== null ? "not-allowed" : "pointer",
+                  }}
                 >
-                  .csv
+                  {exportingFormat === "csv" ? ".csv…" : ".csv"}
                 </button>
               </>
             )}
