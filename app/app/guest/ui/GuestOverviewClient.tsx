@@ -818,6 +818,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     }
   }, [showDownloadOptions]);
 
+  useEffect(() => {
+    if (showDownloadOptions) {
+      setOpenActions(new Set());
+    }
+  }, [showDownloadOptions]);
+
   const exportBaseName = useMemo(() => {
     const propertyName = properties.find((p) => p.id === activePropertyId)?.name || "guest-overview";
     const safeName = propertyName
@@ -1452,7 +1458,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             const showCopy = false;
             // Row-level actions allowed only for admin/editor (viewers are read-only)
             const canEditFormBooking = canEditGuest && !!it.id;
-            const showActions = canEditGuest && (kind !== "green" || openActions.has(key));
+            const showActions = !showDownloadOptions && canEditGuest && (kind !== "green" || openActions.has(key));
 
   return (
               <section
@@ -1477,10 +1483,19 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   transition: "opacity 140ms ease, filter 140ms ease, box-shadow 140ms ease",
                 }}
                 onPointerUp={(e) => {
-                  // Viewers: no action toggling
-                  if (!canEditGuest) return;
                   const target = e.target as HTMLElement;
                   if (target && target.closest('button,input,label')) return;
+                  if (showDownloadOptions) {
+                    setSelectedExportKeys((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(key)) next.delete(key);
+                      else next.add(key);
+                      return next;
+                    });
+                    return;
+                  }
+                  // Viewers: no action toggling
+                  if (!canEditGuest) return;
                   // toggle actions visibility for this card (one-at-a-time)
                   setOpenActions(prev => {
                     const s = new Set(prev);
